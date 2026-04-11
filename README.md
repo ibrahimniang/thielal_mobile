@@ -1,16 +1,40 @@
-# thielal
+# Thielal / LifeLink - Frontend Flutter
 
-A new Flutter project.
+Frontend mobile Flutter de l’application de don de sang Thielal / LifeLink.
 
-## Getting Started
+## Stack
 
-This project is a starting point for a Flutter application.
+- Flutter
+- Riverpod
+- GoRouter
+- Dio
+- Flutter Secure Storage
 
-A few resources to get you started if this is your first Flutter project:
+## Architecture
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Le projet suit une architecture modulaire organisée par features :
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- auth
+- profile
+- home
+- alerts
+- donations
+- donors
+- centers
+- notifications
+- staff
+- admin
+
+## Organisation équipe
+
+- Dev 1 : Core / Auth / Intégration
+- Dev 2 : UI utilisateur mobile
+- Dev 3 : Don / Alertes / Staff-Admin
+
+## Branches
+
+- main
+- develop
+- dev1/core-auth
+- dev2/user-ui
+- dev3/don-alerts-admin
