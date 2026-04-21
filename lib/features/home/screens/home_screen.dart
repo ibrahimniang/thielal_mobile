@@ -5,22 +5,9 @@ import '../../../../app/theme/app_spacing.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../auth/application/auth_controller.dart';
+import '../../../core/services/location_service.dart';
+import '../../profile/application/profile_controller.dart'; // ✅ AJOUT
 
-/// Écran d'accueil principal.
-///
-/// UX choisie pour le projet :
-/// - après l'inscription, l'utilisateur arrive ici
-/// - si le mot de passe n'est pas encore défini, on affiche un modal obligatoire
-/// - ce modal empêche l'utilisation normale tant que le mot de passe n'est pas créé
-///
-/// Important pour l'équipe :
-/// - ce HomeScreen est encore une base Dev 1 / début Dev 2
-/// - il pourra être enrichi plus tard avec :
-///   - actions rapides
-///   - alertes de sang
-///   - statut du donneur
-///   - notifications
-///   - carte / centres / historique dons
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -35,22 +22,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
 
-    // On attend que l'écran soit construit avant d'afficher le modal.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showSetPasswordModalIfNeeded();
+      _initLocation(); // ✅ AJOUT
     });
   }
 
-  /// Affiche le modal de définition du mot de passe si nécessaire.
-  ///
-  /// Pour l'instant, la logique est basée sur :
-  /// - présence d'une identité en attente (pendingPhone / pendingEmail)
-  /// - utilisateur non encore authentifié complètement
-  ///
-  /// Plus tard, on pourra remplacer cette logique par un vrai champ backend
-  /// du style :
-  /// - hasPassword
-  /// - motDePasseDefini
+  /// ✅ NOUVELLE FONCTION LOCALISATION
+  Future<void> _initLocation() async {
+    try {
+      final service = LocationService();
+
+      final position = await service.getLocation();
+
+      if (position != null) {
+        print("LAT: ${position.latitude}");
+        print("LNG: ${position.longitude}");
+
+        await ref
+            .read(profileControllerProvider.notifier)
+            .updateLocation(position.latitude, position.longitude);
+
+        print("LOCATION SENT TO BACKEND");
+      } else {
+        print("LOCATION NOT AVAILABLE");
+      }
+    } catch (e) {
+      print("LOCATION ERROR: $e");
+    }
+  }
+
   void _showSetPasswordModalIfNeeded() {
     if (_passwordModalShown) return;
 
@@ -76,7 +77,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     await showDialog<void>(
       context: context,
-      barrierDismissible: false, // modal obligatoire
+      barrierDismissible: false,
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setModalState) {
@@ -235,12 +236,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(height: 24),
 
-              /// Zone d'information temporaire.
-              ///
-              /// Plus tard Dev 2 / Dev 3 pourront remplacer ceci par :
-              /// - cartes de statut
-              /// - alertes urgentes
-              /// - raccourcis dons / centres / notifications
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
@@ -268,7 +263,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
               const SizedBox(height: 24),
 
-              /// Bouton temporaire utile pour les tests Dev 1
               CustomButton(
                 text: 'Déconnexion',
                 onPressed: () async {

@@ -102,6 +102,7 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
                     if (!mounted) return;
 
                     final state = ref.read(authControllerProvider);
+
                     if (state.errorMessage == null) {
                       final identifier =
                           state.pendingPhone ?? state.pendingEmail;

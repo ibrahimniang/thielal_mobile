@@ -4,20 +4,12 @@ import 'package:flutter_riverpod/legacy.dart';
 import '../../../../core/network/network_exceptions.dart';
 import '../data/repositories/auth_repository.dart';
 import 'auth_state.dart';
+import '../../../core/storage/secure_storage_service.dart';
 
-/// Provider du repository auth.
-///
-/// Rôle :
-/// fournir une seule source d'accès aux appels backend liés à l'authentification.
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository();
 });
 
-/// Provider principal du controller auth.
-///
-/// Ce provider expose :
-/// - l'état `AuthState`
-/// - les actions métier de connexion / OTP / inscription / logout
 final authControllerProvider = StateNotifierProvider<AuthController, AuthState>(
   (ref) {
     final repository = ref.watch(authRepositoryProvider);
@@ -25,16 +17,6 @@ final authControllerProvider = StateNotifierProvider<AuthController, AuthState>(
   },
 );
 
-/// Controller principal d'authentification.
-///
-/// Rôle :
-/// - centraliser toute la logique auth du frontend
-/// - parler au repository
-/// - mettre à jour l'état global auth
-///
-/// Important pour les autres développeurs :
-/// toute nouvelle logique liée à l'authentification doit passer ici,
-/// pas directement dans les écrans.
 class AuthController extends StateNotifier<AuthState> {
   final AuthRepository _repository;
 
@@ -44,16 +26,12 @@ class AuthController extends StateNotifier<AuthState> {
   // OTP
   // ==========================
 
-  /// Envoie un code OTP vers téléphone ou email.
-  ///
-  /// Utilisé dans le premier écran d'entrée de l'application.
   Future<void> sendOtp({String? phone, String? email}) async {
     try {
       state = state.copyWith(isLoading: true, clearError: true);
 
       await _repository.sendOtp(phone: phone, email: email);
 
-      // On garde en mémoire l'identité utilisée pendant tout le flow.
       state = state.copyWith(
         isLoading: false,
         pendingPhone: phone,
@@ -64,7 +42,6 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
-  /// Vérifie le code OTP saisi par l'utilisateur.
   Future<void> verifyOtp({
     String? phone,
     String? email,
@@ -73,12 +50,27 @@ class AuthController extends StateNotifier<AuthState> {
     try {
       state = state.copyWith(isLoading: true, clearError: true);
 
-      await _repository.verifyOtp(phone: phone, email: email, code: code);
+      /// 🔥 CORRECTION : récupérer data
+      final data = await _repository.verifyOtp(
+        phone: phone,
+        email: email,
+        code: code,
+      );
+
+      /// 🔥 EXTRACTION user_id
+      final int? userId =
+          data['user_id'] ??
+          data['id_utilisateur'] ??
+          (data['user'] is Map ? data['user']['id_utilisateur'] : null) ??
+          (data['utilisateur'] is Map
+              ? data['utilisateur']['id_utilisateur']
+              : null);
 
       state = state.copyWith(
         isLoading: false,
         pendingPhone: phone ?? state.pendingPhone,
         pendingEmail: email ?? state.pendingEmail,
+        pendingUserId: userId, // 🔥 IMPORTANT
         otpVerified: true,
       );
     } catch (e) {
@@ -90,8 +82,6 @@ class AuthController extends StateNotifier<AuthState> {
   // INSCRIPTION - ÉTAPE 1
   // ==========================
 
-  /// Étape 1 de l'inscription :
-  /// identité de base.
   Future<void> registerStep1({
     required String nom,
     required String prenom,
@@ -101,7 +91,11 @@ class AuthController extends StateNotifier<AuthState> {
     try {
       state = state.copyWith(isLoading: true, clearError: true);
 
+      final userId = state.pendingUserId;
+      if (userId == null) throw Exception("user_id manquant");
+
       await _repository.registerStep1(
+        userId: userId,
         nom: nom,
         prenom: prenom,
         genre: genre,
@@ -120,8 +114,6 @@ class AuthController extends StateNotifier<AuthState> {
   // INSCRIPTION - ÉTAPE 2
   // ==========================
 
-  /// Étape 2 de l'inscription :
-  /// localisation / ville / quartier / coordonnées.
   Future<void> registerStep2({
     String? ville,
     String? quartier,
@@ -131,8 +123,12 @@ class AuthController extends StateNotifier<AuthState> {
     try {
       state = state.copyWith(isLoading: true, clearError: true);
 
+      final userId = state.pendingUserId;
+      if (userId == null) throw Exception("user_id manquant");
+
       await _repository.registerStep2(
-        phone: state.pendingPhone,
+        userId: userId,
+        phone: state.pendingPhone, // 🔥 AUTO
         email: state.pendingEmail,
         ville: ville,
         quartier: quartier,
@@ -150,22 +146,26 @@ class AuthController extends StateNotifier<AuthState> {
   // INSCRIPTION - ÉTAPE 3
   // ==========================
 
-  /// Étape 3 de l'inscription :
-  /// données médicales + consentements.
   Future<void> registerStep3({
     String? groupeSanguin,
     required bool accepteConditions,
     required bool acceptePolitiqueConfidentialite,
+    required bool aDonneRecemment, // 🔥 AJOUT
   }) async {
     try {
       state = state.copyWith(isLoading: true, clearError: true);
 
+      final userId = state.pendingUserId;
+      if (userId == null) throw Exception("user_id manquant");
+
       await _repository.registerStep3(
+        userId: userId,
         phone: state.pendingPhone,
         email: state.pendingEmail,
         groupeSanguin: groupeSanguin,
         accepteConditions: accepteConditions,
         acceptePolitiqueConfidentialite: acceptePolitiqueConfidentialite,
+        aDonneRecemment: aDonneRecemment, // 🔥 IMPORTANT
       );
 
       state = state.copyWith(isLoading: false);
@@ -178,12 +178,15 @@ class AuthController extends StateNotifier<AuthState> {
   // MOT DE PASSE INITIAL
   // ==========================
 
-  /// Définit le mot de passe après inscription.
   Future<void> setPassword({required String password}) async {
     try {
       state = state.copyWith(isLoading: true, clearError: true);
 
+      final userId = state.pendingUserId;
+      if (userId == null) throw Exception("user_id manquant");
+
       await _repository.setPassword(
+        userId: userId,
         phone: state.pendingPhone,
         email: state.pendingEmail,
         password: password,
@@ -196,10 +199,9 @@ class AuthController extends StateNotifier<AuthState> {
   }
 
   // ==========================
-  // LOGIN USER
+  // LOGIN (INCHANGÉ)
   // ==========================
 
-  /// Connexion utilisateur mobile.
   Future<void> loginUser({
     required String identifier,
     required String password,
@@ -224,12 +226,6 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
-  // ==========================
-  // LOGIN OFFICE
-  // ==========================
-
-  /// Connexion back-office :
-  /// admin / staff / directeur.
   Future<void> loginOffice({
     required String identifier,
     required String password,
@@ -255,15 +251,14 @@ class AuthController extends StateNotifier<AuthState> {
   }
 
   // ==========================
-  // FORGOT PASSWORD
+  // FORGOT PASSWORD (FIX TELEPHONE)
   // ==========================
 
-  /// Envoie le code OTP de réinitialisation du mot de passe.
-  Future<void> forgotPasswordSendCode({required String email}) async {
+  Future<void> forgotPasswordSendCode({required String telephone}) async {
     try {
       state = state.copyWith(isLoading: true, clearError: true);
 
-      await _repository.forgotPasswordSendCode(email: email);
+      await _repository.forgotPasswordSendCode(telephone: telephone);
 
       state = state.copyWith(isLoading: false);
     } catch (e) {
@@ -271,15 +266,17 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
-  /// Vérifie le code OTP de reset password.
   Future<void> forgotPasswordVerifyCode({
-    required String email,
+    required String telephone,
     required String code,
   }) async {
     try {
       state = state.copyWith(isLoading: true, clearError: true);
 
-      await _repository.forgotPasswordVerifyCode(email: email, code: code);
+      await _repository.forgotPasswordVerifyCode(
+        telephone: telephone,
+        code: code,
+      );
 
       state = state.copyWith(isLoading: false);
     } catch (e) {
@@ -287,19 +284,16 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
-  /// Met à jour le mot de passe oublié après validation du code.
   Future<void> forgotPasswordResetPassword({
-    required String email,
-    required String code,
-    required String newPassword,
+    required String telephone,
+    required String password,
   }) async {
     try {
       state = state.copyWith(isLoading: true, clearError: true);
 
       await _repository.forgotPasswordResetPassword(
-        email: email,
-        code: code,
-        newPassword: newPassword,
+        telephone: telephone,
+        password: password,
       );
 
       state = state.copyWith(isLoading: false);
@@ -309,19 +303,15 @@ class AuthController extends StateNotifier<AuthState> {
   }
 
   // ==========================
-  // SESSION UTILISATEUR
+  // RESTE INTACT
   // ==========================
 
-  /// Recharge l'utilisateur connecté à partir du token sauvegardé.
-  ///
-  /// Utilisé au démarrage de l'application / splash plus tard.
   Future<void> loadCurrentUser() async {
     try {
       state = state.copyWith(isLoading: true, clearError: true);
 
       final token = await _repository.getSavedAccessToken();
 
-      // S'il n'y a pas de token, on remet l'état auth à zéro.
       if (token == null || token.isEmpty) {
         state = state.copyWith(
           isLoading: false,
@@ -341,15 +331,11 @@ class AuthController extends StateNotifier<AuthState> {
         accessToken: token,
       );
     } catch (e) {
-      // En cas d'échec, on nettoie la session.
       await logout();
-
       state = state.copyWith(errorMessage: _mapError(e));
     }
   }
 
-  /// Permet de connecter automatiquement l'utilisateur
-  /// juste après le set password.
   Future<void> completeRegistrationAndLogin({
     required String identifier,
     required String password,
@@ -357,27 +343,29 @@ class AuthController extends StateNotifier<AuthState> {
     await loginUser(identifier: identifier, password: password);
   }
 
-  /// Déconnexion complète.
   Future<void> logout() async {
-    await _repository.logout();
-    state = const AuthState();
+    await SecureStorageService.instance.deleteAll();
+
+    state = state.copyWith(
+      isAuthenticated: false,
+      clearUser: true,
+      clearToken: true,
+      clearError: true,
+      clearPendingPhone: true,
+      clearPendingEmail: true,
+      clearPendingUserId: true,
+      otpVerified: false,
+    );
   }
 
-  // ==========================
-  // HELPERS UI
-  // ==========================
-
-  /// Efface le dernier message d'erreur affiché.
   void clearError() {
     state = state.copyWith(clearError: true);
   }
 
-  /// Sauvegarde temporairement l'identité utilisée dans le flow OTP.
   void setPendingIdentity({String? phone, String? email}) {
     state = state.copyWith(pendingPhone: phone, pendingEmail: email);
   }
 
-  /// Transforme une erreur brute en message lisible pour l'utilisateur.
   String _mapError(Object error) {
     final dynamic err = error;
 
@@ -385,6 +373,16 @@ class AuthController extends StateNotifier<AuthState> {
       return NetworkExceptions.getMessage(err);
     } catch (_) {
       return 'Une erreur est survenue';
+    }
+  }
+
+  Future<void> checkAuth() async {
+    final token = await SecureStorageService.instance.read(key: 'token');
+
+    if (token != null) {
+      state = state.copyWith(isAuthenticated: true, accessToken: token);
+    } else {
+      state = state.copyWith(isAuthenticated: false);
     }
   }
 }

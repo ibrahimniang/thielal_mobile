@@ -8,10 +8,9 @@ import '../../../../shared/widgets/custom_text_field.dart';
 import '../../application/auth_controller.dart';
 
 class ResetPasswordScreen extends ConsumerStatefulWidget {
-  final String? email;
-  final String? code;
+  final String? telephone;
 
-  const ResetPasswordScreen({super.key, this.email, this.code});
+  const ResetPasswordScreen({super.key, this.telephone});
 
   @override
   ConsumerState<ResetPasswordScreen> createState() =>
@@ -97,14 +96,19 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                     final isValid = _formKey.currentState?.validate() ?? false;
                     if (!isValid) return;
 
-                    if (widget.email == null || widget.code == null) return;
+                    if (widget.telephone == null ||
+                        widget.telephone!.trim().isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Téléphone introuvable')),
+                      );
+                      return;
+                    }
 
                     await ref
                         .read(authControllerProvider.notifier)
                         .forgotPasswordResetPassword(
-                          email: widget.email!,
-                          code: widget.code!,
-                          newPassword: _passwordController.text.trim(),
+                          telephone: widget.telephone!.trim(),
+                          password: _passwordController.text.trim(),
                         );
                   },
                 ),

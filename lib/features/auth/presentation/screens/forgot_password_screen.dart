@@ -19,15 +19,28 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _telephoneController = TextEditingController();
   final _codeController = TextEditingController();
+
   bool _codeSent = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _telephoneController.dispose();
     _codeController.dispose();
     super.dispose();
+  }
+
+  String? _validateTelephone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Veuillez entrer votre numéro de téléphone';
+    }
+
+    if (value.trim().length < 8) {
+      return 'Numéro de téléphone invalide';
+    }
+
+    return null;
   }
 
   @override
@@ -45,11 +58,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               children: [
                 const SizedBox(height: 24),
                 CustomTextField(
-                  controller: _emailController,
-                  hintText: 'Email',
-                  labelText: 'Email',
-                  keyboardType: TextInputType.emailAddress,
-                  validator: Validators.email,
+                  controller: _telephoneController,
+                  hintText: 'Téléphone',
+                  labelText: 'Téléphone',
+                  keyboardType: TextInputType.phone,
+                  validator: _validateTelephone,
                 ),
                 if (_codeSent) ...[
                   const SizedBox(height: 16),
@@ -75,12 +88,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     final isValid = _formKey.currentState?.validate() ?? false;
                     if (!isValid) return;
 
+                    final authCtrl = ref.read(authControllerProvider.notifier);
+
                     if (!_codeSent) {
-                      await ref
-                          .read(authControllerProvider.notifier)
-                          .forgotPasswordSendCode(
-                            email: _emailController.text.trim(),
-                          );
+                      await authCtrl.forgotPasswordSendCode(
+                        telephone: _telephoneController.text.trim(),
+                      );
 
                       if (!mounted) return;
 
@@ -89,12 +102,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         setState(() => _codeSent = true);
                       }
                     } else {
-                      await ref
-                          .read(authControllerProvider.notifier)
-                          .forgotPasswordVerifyCode(
-                            email: _emailController.text.trim(),
-                            code: _codeController.text.trim(),
-                          );
+                      await authCtrl.forgotPasswordVerifyCode(
+                        telephone: _telephoneController.text.trim(),
+                        code: _codeController.text.trim(),
+                      );
 
                       if (!mounted) return;
 
@@ -103,8 +114,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         context.push(
                           RouteNames.resetPassword,
                           extra: {
-                            'email': _emailController.text.trim(),
-                            'code': _codeController.text.trim(),
+                            'telephone': _telephoneController.text.trim(),
                           },
                         );
                       }

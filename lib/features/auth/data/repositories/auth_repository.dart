@@ -3,20 +3,6 @@ import '../models/auth_tokens_model.dart';
 import '../models/user_model.dart';
 import '../services/auth_remote_service.dart';
 
-/// Repository auth.
-///
-/// Rôle :
-/// - servir d'intermédiaire entre le controller et le remote service
-/// - transformer les réponses backend si besoin
-/// - centraliser le stockage des tokens
-///
-/// Important pour l'équipe :
-/// - le controller appelle le repository
-/// - le repository appelle le remote service
-/// - le remote service parle directement au backend
-///
-/// Donc :
-/// UI -> Controller -> Repository -> RemoteService -> API
 class AuthRepository {
   final AuthRemoteService _remoteService;
 
@@ -27,26 +13,31 @@ class AuthRepository {
   // OTP
   // ==========================
 
-  /// Envoie un code OTP au backend.
   Future<void> sendOtp({String? phone, String? email}) async {
     await _remoteService.sendOtp(phone: phone, email: email);
   }
 
-  /// Vérifie le code OTP auprès du backend.
-  Future<void> verifyOtp({
+  /// 🔥 CORRECTION : retourne data pour récupérer user_id
+  Future<Map<String, dynamic>> verifyOtp({
     String? phone,
     String? email,
     required String code,
   }) async {
-    await _remoteService.verifyOtp(phone: phone, email: email, code: code);
+    final response = await _remoteService.verifyOtp(
+      phone: phone,
+      email: email,
+      code: code,
+    );
+
+    return _extractPayload(response.data);
   }
 
   // ==========================
   // INSCRIPTION
   // ==========================
 
-  /// Étape 1 de l'inscription.
   Future<void> registerStep1({
+    required int userId, // 🔥 AJOUT
     required String nom,
     required String prenom,
     String? genre,
@@ -55,6 +46,7 @@ class AuthRepository {
     String? email,
   }) async {
     await _remoteService.registerStep1(
+      userId: userId, // 🔥 IMPORTANT
       nom: nom,
       prenom: prenom,
       genre: genre,
@@ -64,8 +56,8 @@ class AuthRepository {
     );
   }
 
-  /// Étape 2 de l'inscription.
   Future<void> registerStep2({
+    required int userId, // 🔥 AJOUT
     String? phone,
     String? email,
     String? ville,
@@ -74,6 +66,7 @@ class AuthRepository {
     double? longitude,
   }) async {
     await _remoteService.registerStep2(
+      userId: userId, // 🔥 IMPORTANT
       phone: phone,
       email: email,
       ville: ville,
@@ -83,30 +76,34 @@ class AuthRepository {
     );
   }
 
-  /// Étape 3 de l'inscription.
   Future<void> registerStep3({
+    required int userId, // 🔥 AJOUT
     String? phone,
     String? email,
     String? groupeSanguin,
     required bool accepteConditions,
     required bool acceptePolitiqueConfidentialite,
+    required bool aDonneRecemment, // 🔥 AJOUT
   }) async {
     await _remoteService.registerStep3(
+      userId: userId, // 🔥 IMPORTANT
       phone: phone,
       email: email,
       groupeSanguin: groupeSanguin,
       accepteConditions: accepteConditions,
       acceptePolitiqueConfidentialite: acceptePolitiqueConfidentialite,
+      aDonneRecemment: aDonneRecemment, // 🔥 IMPORTANT
     );
   }
 
-  /// Définit le mot de passe après inscription.
   Future<void> setPassword({
+    required int userId, // 🔥 AJOUT
     String? phone,
     String? email,
     required String password,
   }) async {
     await _remoteService.setPassword(
+      userId: userId, // 🔥 IMPORTANT
       phone: phone,
       email: email,
       password: password,
@@ -114,16 +111,9 @@ class AuthRepository {
   }
 
   // ==========================
-  // LOGIN USER
+  // LOGIN USER (INCHANGÉ)
   // ==========================
 
-  /// Connexion utilisateur mobile.
-  ///
-  /// Ici on :
-  /// - récupère la réponse backend
-  /// - extrait l'utilisateur
-  /// - extrait les tokens
-  /// - sauvegarde access + refresh tokens
   Future<(UserModel user, AuthTokensModel tokens)> loginUser({
     required String identifier,
     required String password,
@@ -144,10 +134,9 @@ class AuthRepository {
   }
 
   // ==========================
-  // LOGIN OFFICE
+  // LOGIN OFFICE (INCHANGÉ)
   // ==========================
 
-  /// Connexion back-office admin/staff/directeur.
   Future<(UserModel user, AuthTokensModel tokens)> loginOffice({
     required String identifier,
     required String password,
@@ -168,65 +157,55 @@ class AuthRepository {
   }
 
   // ==========================
-  // FORGOT PASSWORD
+  // FORGOT PASSWORD (FIX TELEPHONE)
   // ==========================
 
-  /// Envoie le code OTP de mot de passe oublié.
-  Future<void> forgotPasswordSendCode({required String email}) async {
-    await _remoteService.forgotPasswordSendCode(email: email);
+  Future<void> forgotPasswordSendCode({required String telephone}) async {
+    await _remoteService.forgotPasswordSendCode(telephone: telephone);
   }
 
-  /// Vérifie le code reçu pour le reset password.
   Future<void> forgotPasswordVerifyCode({
-    required String email,
+    required String telephone,
     required String code,
   }) async {
-    await _remoteService.forgotPasswordVerifyCode(email: email, code: code);
+    await _remoteService.forgotPasswordVerifyCode(
+      telephone: telephone,
+      code: code,
+    );
   }
 
-  /// Réinitialise le mot de passe oublié.
   Future<void> forgotPasswordResetPassword({
-    required String email,
-    required String code,
-    required String newPassword,
+    required String telephone,
+    required String password,
   }) async {
     await _remoteService.forgotPasswordResetPassword(
-      email: email,
-      code: code,
-      newPassword: newPassword,
+      telephone: telephone,
+      password: password,
     );
   }
 
   // ==========================
-  // SESSION UTILISATEUR
+  // RESTE INTACT
   // ==========================
 
-  /// Récupère le profil utilisateur connecté.
   Future<UserModel> getCurrentUser() async {
     final response = await _remoteService.getMe();
     final data = _extractPayload(response.data);
     return _extractUser(data);
   }
 
-  /// Supprime les tokens sauvegardés localement.
   Future<void> logout() async {
     await TokenStorage.clearTokens();
   }
 
-  /// Lit l'access token sauvegardé.
   Future<String?> getSavedAccessToken() async {
     return TokenStorage.getAccessToken();
   }
 
   // ==========================
-  // HELPERS PRIVÉS
+  // HELPERS (INCHANGÉS)
   // ==========================
 
-  /// Extrait le vrai payload utile de la réponse backend.
-  ///
-  /// Beaucoup d'APIs retournent soit :
-  /// - directement l'objet
-  /// - soit un objet enveloppé dans `data`
   Map<String, dynamic> _extractPayload(dynamic responseData) {
     if (responseData is Map<String, dynamic>) {
       final nested = responseData['data'];
@@ -241,10 +220,6 @@ class AuthRepository {
     return <String, dynamic>{};
   }
 
-  /// Extrait l'objet utilisateur depuis la réponse backend.
-  ///
-  /// On essaie plusieurs clés possibles pour rendre le frontend
-  /// plus robuste face aux variations de réponse.
   UserModel _extractUser(Map<String, dynamic> data) {
     final possibleUser = data['user'] ?? data['utilisateur'] ?? data['profile'];
 
@@ -255,12 +230,6 @@ class AuthRepository {
     return UserModel.fromJson(data);
   }
 
-  /// Extrait les tokens depuis la réponse backend.
-  ///
-  /// Accepte plusieurs structures possibles :
-  /// - tokens
-  /// - tokenData
-  /// - ou data directement
   AuthTokensModel _extractTokens(Map<String, dynamic> data) {
     final possibleTokens = data['tokens'] ?? data['tokenData'] ?? data;
 

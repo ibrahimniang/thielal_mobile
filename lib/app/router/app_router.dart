@@ -1,3 +1,4 @@
+//app/router/app_router.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,14 +11,22 @@ import '../../features/auth/presentation/screens/login_user_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/auth/presentation/screens/set_password_screen.dart';
+
 import '../../features/home/screens/home_screen.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/settings/settings_screen.dart';
+import '../../features/map/map_screen.dart';
+
 import '../../features/splash/presentation/splash_screen.dart';
+
+import '../../core/navigation/main_navigation.dart';
 import 'route_names.dart';
 
 class AppRouter {
   static GoRouter router(WidgetRef ref) {
     return GoRouter(
       initialLocation: RouteNames.splash,
+
       redirect: (context, state) {
         final authState = ref.read(authControllerProvider);
         final isAuthenticated = authState.isAuthenticated;
@@ -47,6 +56,7 @@ class AppRouter {
           RouteNames.home,
         ];
 
+        // 🔒 Non connecté
         if (!isAuthenticated) {
           if (isInRegistrationFlow && registrationFlowRoutes.contains(path)) {
             return null;
@@ -57,6 +67,7 @@ class AppRouter {
           }
         }
 
+        // ✅ Connecté
         if (isAuthenticated) {
           if (publicRoutes.contains(path)) {
             final role = authState.currentUser?.role?.toLowerCase();
@@ -87,7 +98,9 @@ class AppRouter {
 
         return null;
       },
+
       routes: [
+        // ================= PUBLIC =================
         GoRoute(
           path: RouteNames.splash,
           builder: (_, __) => const SplashScreen(),
@@ -133,44 +146,66 @@ class AppRouter {
             final extra = state.extra as Map<String, dynamic>?;
 
             return ResetPasswordScreen(
-              email: extra?['email']?.toString(),
-              code: extra?['code']?.toString(),
+              telephone: extra?['telephone']?.toString(),
             );
           },
         ),
-        GoRoute(path: RouteNames.home, builder: (_, __) => const HomeScreen()),
-        GoRoute(
-          path: RouteNames.profile,
-          builder: (_, __) => const _PlaceholderScreen(title: 'Profile Screen'),
+
+        // ================= APP AVEC NAVBAR =================
+        ShellRoute(
+          builder: (context, state, child) {
+            return MainNavigation(child: child);
+          },
+          routes: [
+            GoRoute(
+              path: RouteNames.home,
+              builder: (_, __) => const HomeScreen(),
+            ),
+            GoRoute(
+              path: RouteNames.map,
+              builder: (_, __) => const MapScreen(),
+            ),
+            GoRoute(
+              path: RouteNames.profile,
+              builder: (_, __) => const ProfileScreen(),
+            ),
+            GoRoute(
+              path: RouteNames.settings,
+              builder: (_, __) => const SettingsScreen(),
+            ),
+
+            // ===== AUTRES ROUTES (inchangées) =====
+            GoRoute(
+              path: RouteNames.notifications,
+              builder:
+                  (_, __) =>
+                      const _PlaceholderScreen(title: 'Notifications Screen'),
+            ),
+            GoRoute(
+              path: RouteNames.alerts,
+              builder:
+                  (_, __) => const _PlaceholderScreen(title: 'Alerts Screen'),
+            ),
+            GoRoute(
+              path: RouteNames.donations,
+              builder:
+                  (_, __) =>
+                      const _PlaceholderScreen(title: 'Donations Screen'),
+            ),
+            GoRoute(
+              path: RouteNames.centers,
+              builder:
+                  (_, __) => const _PlaceholderScreen(title: 'Centers Screen'),
+            ),
+            GoRoute(
+              path: RouteNames.donors,
+              builder:
+                  (_, __) => const _PlaceholderScreen(title: 'Donors Screen'),
+            ),
+          ],
         ),
-        GoRoute(
-          path: RouteNames.settings,
-          builder:
-              (_, __) => const _PlaceholderScreen(title: 'Settings Screen'),
-        ),
-        GoRoute(
-          path: RouteNames.notifications,
-          builder:
-              (_, __) =>
-                  const _PlaceholderScreen(title: 'Notifications Screen'),
-        ),
-        GoRoute(
-          path: RouteNames.alerts,
-          builder: (_, __) => const _PlaceholderScreen(title: 'Alerts Screen'),
-        ),
-        GoRoute(
-          path: RouteNames.donations,
-          builder:
-              (_, __) => const _PlaceholderScreen(title: 'Donations Screen'),
-        ),
-        GoRoute(
-          path: RouteNames.centers,
-          builder: (_, __) => const _PlaceholderScreen(title: 'Centers Screen'),
-        ),
-        GoRoute(
-          path: RouteNames.donors,
-          builder: (_, __) => const _PlaceholderScreen(title: 'Donors Screen'),
-        ),
+
+        // ================= DASHBOARDS =================
         GoRoute(
           path: RouteNames.staffDashboard,
           builder:
@@ -182,6 +217,7 @@ class AppRouter {
               (_, __) => const _PlaceholderScreen(title: 'Admin Dashboard'),
         ),
       ],
+
       errorBuilder:
           (_, state) => Scaffold(
             body: Center(child: Text('Route introuvable : ${state.uri.path}')),
@@ -190,6 +226,7 @@ class AppRouter {
   }
 }
 
+// ================= PLACEHOLDER =================
 class _PlaceholderScreen extends StatelessWidget {
   final String title;
 

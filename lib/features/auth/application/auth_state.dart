@@ -10,6 +10,7 @@ import '../data/models/user_model.dart';
 /// - les erreurs à afficher
 /// - l'identité en attente pendant le flow OTP
 /// - si l'OTP a été validé ou non
+/// - l'id utilisateur temporaire renvoyé après verify OTP
 ///
 /// Important pour l'équipe :
 /// cet objet doit rester simple, immutable, et facile à copier
@@ -41,6 +42,12 @@ class AuthState {
   /// Email saisi lors du flow OTP / inscription.
   final String? pendingEmail;
 
+  /// ID utilisateur temporaire reçu après verify OTP.
+  ///
+  /// Important :
+  /// le backend attend `user_id` pour register step-1, step-2 et step-3.
+  final int? pendingUserId;
+
   /// Indique si le code OTP a été validé.
   final bool otpVerified;
 
@@ -52,6 +59,7 @@ class AuthState {
     this.errorMessage,
     this.pendingPhone,
     this.pendingEmail,
+    this.pendingUserId,
     this.otpVerified = false,
   });
 
@@ -68,12 +76,14 @@ class AuthState {
     String? errorMessage,
     String? pendingPhone,
     String? pendingEmail,
+    int? pendingUserId,
     bool? otpVerified,
     bool clearError = false,
     bool clearUser = false,
     bool clearToken = false,
     bool clearPendingPhone = false,
     bool clearPendingEmail = false,
+    bool clearPendingUserId = false,
   }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
@@ -85,6 +95,8 @@ class AuthState {
           clearPendingPhone ? null : (pendingPhone ?? this.pendingPhone),
       pendingEmail:
           clearPendingEmail ? null : (pendingEmail ?? this.pendingEmail),
+      pendingUserId:
+          clearPendingUserId ? null : (pendingUserId ?? this.pendingUserId),
       otpVerified: otpVerified ?? this.otpVerified,
     );
   }

@@ -1,4 +1,6 @@
 class RegisterRequestModel {
+  final int? userId;
+
   final String? nom;
   final String? prenom;
   final String? genre;
@@ -14,10 +16,12 @@ class RegisterRequestModel {
   final String? groupeSanguin;
   final bool accepteConditions;
   final bool acceptePolitiqueConfidentialite;
+  final bool? aDonneRecemment;
 
   final String? password;
 
   const RegisterRequestModel({
+    this.userId,
     this.nom,
     this.prenom,
     this.genre,
@@ -31,11 +35,13 @@ class RegisterRequestModel {
     this.groupeSanguin,
     this.accepteConditions = false,
     this.acceptePolitiqueConfidentialite = false,
+    this.aDonneRecemment,
     this.password,
   });
 
   Map<String, dynamic> toJson() {
     return {
+      'user_id': userId,
       'nom': nom,
       'prenom': prenom,
       'genre': genre,
@@ -49,11 +55,13 @@ class RegisterRequestModel {
       'groupe_sanguin': groupeSanguin,
       'accepte_conditions': accepteConditions,
       'accepte_politique_confidentialite': acceptePolitiqueConfidentialite,
+      'a_donne_recemment': aDonneRecemment,
       'password': password,
-    };
+    }..removeWhere((key, value) => value == null);
   }
 
   RegisterRequestModel copyWith({
+    int? userId,
     String? nom,
     String? prenom,
     String? genre,
@@ -67,9 +75,11 @@ class RegisterRequestModel {
     String? groupeSanguin,
     bool? accepteConditions,
     bool? acceptePolitiqueConfidentialite,
+    bool? aDonneRecemment,
     String? password,
   }) {
     return RegisterRequestModel(
+      userId: userId ?? this.userId,
       nom: nom ?? this.nom,
       prenom: prenom ?? this.prenom,
       genre: genre ?? this.genre,
@@ -85,6 +95,7 @@ class RegisterRequestModel {
       acceptePolitiqueConfidentialite:
           acceptePolitiqueConfidentialite ??
           this.acceptePolitiqueConfidentialite,
+      aDonneRecemment: aDonneRecemment ?? this.aDonneRecemment,
       password: password ?? this.password,
     );
   }
