@@ -18,14 +18,16 @@ class AppDioInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    // Lecture du token stocké localement
     final token = await TokenStorage.getAccessToken();
 
-    // Si un token existe, on l'ajoute automatiquement
-    // à chaque requête protégée.
+    print('INTERCEPTOR -> token found: $token');
+    print('INTERCEPTOR -> request url: ${options.uri}');
+
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
     }
+
+    print('INTERCEPTOR -> headers: ${options.headers}');
 
     return handler.next(options);
   }

@@ -1,21 +1,28 @@
 import 'package:dio/dio.dart';
-import '../../../../core/network/api_client.dart';
+
 import '../../../../core/config/api_endpoints.dart';
+import '../../../../core/network/api_client.dart';
 
 class ProfileRemoteService {
   final Dio _dio = ApiClient().dio;
 
-  Future<Response> getProfile() async {
-    return await _dio.get(ApiEndpoints.me);
+  // ==========================
+  // GET PROFILE
+  // ==========================
+  Future<Response<dynamic>> getProfile() {
+    return _dio.get(ApiEndpoints.me);
   }
 
-  Future<Response> updateProfile({
+  // ==========================
+  // UPDATE PROFILE
+  // ==========================
+  Future<Response<dynamic>> updateProfile({
     required String nom,
     required String prenom,
     String? ville,
     String? quartier,
-  }) async {
-    return await _dio.put(
+  }) {
+    return _dio.put(
       ApiEndpoints.updateMe,
       data: {
         'nom': nom,
@@ -26,43 +33,53 @@ class ProfileRemoteService {
     );
   }
 
-  Future<void> requestEmailChange(String email) async {
-    await _dio.post(ApiEndpoints.requestEmailChange, data: {'email': email});
+  // ==========================
+  // EMAIL CHANGE
+  // ==========================
+  Future<Response<dynamic>> requestEmailChange(String email) {
+    return _dio.post(ApiEndpoints.requestEmailChange, data: {'email': email});
   }
 
-  Future<void> verifyEmailChange({
+  Future<Response<dynamic>> verifyEmailChange({
     required String email,
     required String code,
-  }) async {
-    await _dio.post(
+  }) {
+    return _dio.post(
       ApiEndpoints.verifyEmailChange,
       data: {'email': email, 'code': code},
     );
   }
 
-  Future<void> requestPhoneChange(String phone) async {
-    await _dio.post(
+  // ==========================
+  // PHONE CHANGE
+  // ==========================
+  Future<Response<dynamic>> requestPhoneChange(String phone) {
+    return _dio.post(
       ApiEndpoints.requestPhoneChange,
       data: {'telephone': phone},
     );
   }
 
-  Future<void> verifyPhoneChange({
+  Future<Response<dynamic>> verifyPhoneChange({
     required String phone,
     required String code,
-  }) async {
-    await _dio.post(
+  }) {
+    return _dio.post(
       ApiEndpoints.verifyPhoneChange,
       data: {'telephone': phone, 'code': code},
     );
   }
 
-  Future<Response> updateLocation({
+  // ==========================
+  // UPDATE LOCATION
+  // ==========================
+  Future<Response<dynamic>> updateLocation({
     required double latitude,
     required double longitude,
-  }) async {
-    print(_dio.options.headers);
-    return await _dio.put(
+  }) {
+    // ✅ Idéalement, ajoute cette route dans ApiEndpoints :
+    // static const String updateLocation = '/users/location';
+    return _dio.put(
       '/users/location',
       data: {'latitude': latitude, 'longitude': longitude},
     );

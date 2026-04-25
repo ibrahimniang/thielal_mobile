@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
@@ -11,33 +12,33 @@ import 'theme/app_theme.dart';
 /// - le routeur principal
 /// - la configuration générale de MaterialApp
 ///
-/// Pourquoi utiliser ConsumerWidget ici ?
-/// Parce que le routeur dépend de Riverpod (`WidgetRef`)
-/// pour lire l'état d'authentification et appliquer les redirections.
-class ThielalApp extends ConsumerWidget {
+/// IMPORTANT :
+/// le GoRouter doit être créé une seule fois.
+/// S'il est recréé à chaque build, il repart sur `initialLocation`
+/// et peut provoquer une boucle infinie sur le SplashScreen.
+class ThielalApp extends ConsumerStatefulWidget {
   const ThielalApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // On crée l'instance du routeur à partir de l'état global.
-    // Cela permet de protéger les routes selon :
-    // - utilisateur connecté ou non
-    // - rôle user / staff / admin
-    final router = AppRouter.router(ref);
+  ConsumerState<ThielalApp> createState() => _ThielalAppState();
+}
 
+class _ThielalAppState extends ConsumerState<ThielalApp> {
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    _router = AppRouter.router(ref);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return MaterialApp.router(
-      // On retire la bannière DEBUG pour garder une interface plus propre
-      // pendant le développement et les démonstrations.
       debugShowCheckedModeBanner: false,
-
-      // Nom affiché par Flutter pour l'application.
       title: 'Thielal / LifeLink',
-
-      // Thème global de l'application.
       theme: AppTheme.lightTheme,
-
-      // Routeur principal basé sur GoRouter.
-      routerConfig: router,
+      routerConfig: _router,
     );
   }
 }

@@ -32,15 +32,23 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   final _groupeSanguinController = TextEditingController();
 
-  String? _genreUiValue; // Masculin / Féminin
+  String? _genreUiValue;
+  String? _selectedBloodGroup;
 
   bool _accepteConditions = false;
   bool _acceptePolitique = false;
-
-  /// null = pas encore répondu
-  /// true = oui, a donné du sang récemment
-  /// false = non
   bool? _aDonneRecemment;
+
+  static const List<String> _bloodGroups = [
+    'O+',
+    'O-',
+    'A+',
+    'A-',
+    'B+',
+    'B-',
+    'AB+',
+    'AB-',
+  ];
 
   @override
   void dispose() {
@@ -88,6 +96,157 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       default:
         return '';
     }
+  }
+
+  Future<void> _pickBirthDate() async {
+    final now = DateTime.now();
+    final initialDate = DateTime(now.year - 18, 1, 1);
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(1940),
+      lastDate: now,
+      helpText: 'Choisir la date de naissance',
+      cancelText: 'Annuler',
+      confirmText: 'Valider',
+    );
+
+    if (picked != null) {
+      final formatted =
+          '${picked.year.toString().padLeft(4, '0')}-'
+          '${picked.month.toString().padLeft(2, '0')}-'
+          '${picked.day.toString().padLeft(2, '0')}';
+
+      setState(() {
+        _dateNaissanceController.text = formatted;
+      });
+    }
+  }
+
+  Future<void> _selectBloodGroup() async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 20,
+                offset: const Offset(0, -6),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              const SizedBox(height: 18),
+              const Text(
+                'Choisissez votre groupe sanguin',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 18),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children:
+                    _bloodGroups.map((group) {
+                      final isSelected = _selectedBloodGroup == group;
+                      return GestureDetector(
+                        onTap: () => Navigator.pop(context, group),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(18),
+                            gradient:
+                                isSelected
+                                    ? LinearGradient(
+                                      colors: [
+                                        Colors.red.shade500,
+                                        Colors.red.shade700,
+                                      ],
+                                    )
+                                    : null,
+                            color: isSelected ? null : Colors.red.shade50,
+                            border: Border.all(
+                              color:
+                                  isSelected
+                                      ? Colors.transparent
+                                      : Colors.red.shade100,
+                            ),
+                          ),
+                          child: Text(
+                            group,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              color:
+                                  isSelected
+                                      ? Colors.white
+                                      : Colors.red.shade700,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (selected != null) {
+      setState(() {
+        _selectedBloodGroup = selected;
+        _groupeSanguinController.text = selected;
+      });
+    }
+  }
+
+  Future<bool> _confirmBloodGroup() async {
+    final group = _groupeSanguinController.text.trim();
+
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Confirmation'),
+              content: Text(
+                group.isEmpty
+                    ? 'Confirmez-vous continuer sans groupe sanguin ?'
+                    : 'Confirmez-vous votre groupe sanguin : $group ?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Annuler'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Confirmer'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
   }
 
   Future<void> _submitStep() async {
@@ -155,6 +314,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         );
         return;
       }
+
+      final confirmed = await _confirmBloodGroup();
+      if (!confirmed) return;
 
       await authCtrl.registerStep3(
         groupeSanguin:
@@ -521,10 +683,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          CustomTextField(
-            controller: _dateNaissanceController,
-            hintText: 'YYYY-MM-DD',
-            labelText: 'Date de naissance',
+          GestureDetector(
+            onTap: _pickBirthDate,
+            child: AbsorbPointer(
+              child: CustomTextField(
+                controller: _dateNaissanceController,
+                hintText: 'Choisir une date',
+                labelText: 'Date de naissance',
+                suffixIcon: const Icon(Icons.calendar_month_rounded),
+              ),
+            ),
           ),
         ],
       ),
@@ -579,16 +747,26 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
+  Widget _buildBloodGroupSelector() {
+    return GestureDetector(
+      onTap: _selectBloodGroup,
+      child: AbsorbPointer(
+        child: CustomTextField(
+          controller: _groupeSanguinController,
+          hintText: 'Choisir votre groupe sanguin',
+          labelText: 'Groupe sanguin',
+          suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded),
+        ),
+      ),
+    );
+  }
+
   Widget _buildStep3() {
     return _buildSectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CustomTextField(
-            controller: _groupeSanguinController,
-            hintText: 'Ex: O+, A-, B+',
-            labelText: 'Groupe sanguin',
-          ),
+          _buildBloodGroupSelector(),
           const SizedBox(height: 22),
           Text(
             'Avez-vous donné du sang durant les 4 derniers mois ?',
@@ -677,7 +855,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FC),
-      appBar: AppBar(title: const Text('Inscription'), elevation: 0),
+      appBar: AppBar(
+        title: const Text('Inscription'),
+        elevation: 0,
+        backgroundColor: Colors.red,
+        foregroundColor: Colors.white,
+      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -701,7 +884,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   children: [
                     _buildProgressHeader(),
                     const SizedBox(height: 22),
-
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 250),
                       child: KeyedSubtree(
@@ -714,7 +896,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 : _buildStep3(),
                       ),
                     ),
-
                     if (authState.errorMessage != null) ...[
                       const SizedBox(height: 12),
                       Container(
@@ -734,7 +915,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         ),
                       ),
                     ],
-
                     const SizedBox(height: 24),
                     _buildActionButtons(authState.isLoading),
                     const SizedBox(height: 16),

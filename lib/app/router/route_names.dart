@@ -15,33 +15,21 @@ class RouteNames {
   static const String onboarding = '/onboarding';
 
   // ==========================
-  // Flux d'entrée utilisateur
+  // Auth flow
   // ==========================
-  // Première entrée dans l'application :
-  // téléphone/email -> OTP -> inscription -> mot de passe
   static const String entryIdentity = '/entry-identity';
   static const String otpVerification = '/otp-verification';
-
-  // ==========================
-  // Inscription
-  // ==========================
   static const String register = '/register';
   static const String setPassword = '/set-password';
 
-  // ==========================
-  // Connexion
-  // ==========================
   static const String loginUser = '/login-user';
   static const String loginOffice = '/login-office';
 
-  // ==========================
-  // Mot de passe oublié
-  // ==========================
   static const String forgotPassword = '/forgot-password';
   static const String resetPassword = '/reset-password';
 
   // ==========================
-  // Application principale
+  // App core
   // ==========================
   static const String home = '/home';
   static const String profile = '/profile';
@@ -55,8 +43,19 @@ class RouteNames {
   static const String donors = '/donors';
 
   // ==========================
-  // Espaces protégés staff / admin
+  // Dashboards protégés
   // ==========================
+  static const String directorDashboard = '/director/dashboard';
   static const String staffDashboard = '/staff/dashboard';
   static const String adminDashboard = '/admin/dashboard';
+
+  // ==========================
+  // Staff / Director module
+  // ==========================
+  static const String createStaff = '/director/create-staff';
+  static const String staffRequests = '/staff/requests';
+  static const String staffDonors = '/staff/donors';
+  static const String bloodStock = '/staff/blood-stock';
+  static const String qrScan = '/staff/qr-scan';
+  static const String qrGenerate = '/staff/qr-generate';
 }

@@ -13,8 +13,10 @@ class AuthRepository {
   // OTP
   // ==========================
 
-  Future<void> sendOtp({String? phone, String? email}) async {
-    await _remoteService.sendOtp(phone: phone, email: email);
+  Future<Map<String, dynamic>> sendOtp({String? phone, String? email}) async {
+    final response = await _remoteService.sendOtp(phone: phone, email: email);
+
+    return _extractPayload(response.data);
   }
 
   /// 🔥 CORRECTION : retourne data pour récupérer user_id
@@ -31,7 +33,6 @@ class AuthRepository {
 
     return _extractPayload(response.data);
   }
-
   // ==========================
   // INSCRIPTION
   // ==========================

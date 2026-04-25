@@ -11,14 +11,6 @@ import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../application/auth_controller.dart';
 
-/// Écran d'entrée dans l'application.
-///
-/// UX choisie :
-/// - l'utilisateur saisit son téléphone ou son email
-/// - on envoie le code OTP
-/// - un modal premium s'ouvre sur le même écran pour saisir le code
-/// - un timer de 5 minutes est affiché
-/// - si le code est valide -> redirection vers RegisterScreen
 class EntryIdentityScreen extends ConsumerStatefulWidget {
   const EntryIdentityScreen({super.key});
 
@@ -41,18 +33,30 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
     return value.contains('@');
   }
 
-  String _formatDuration(int totalSeconds) {
-    final minutes = (totalSeconds ~/ 60).toString().padLeft(2, '0');
-    final seconds = (totalSeconds % 60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
+  String _formatDurationShort(int totalSeconds) {
+    final minutes = totalSeconds ~/ 60;
+    final seconds = totalSeconds % 60;
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 
   Future<void> _openOtpModal() async {
-    final otpController = TextEditingController();
     final otpFormKey = GlobalKey<FormState>();
+
+    final otpControllers = List.generate(6, (_) => TextEditingController());
+    final otpFocusNodes = List.generate(6, (_) => FocusNode());
 
     Timer? timer;
     int remainingSeconds = 300;
+
+    String getOtpCode() {
+      return otpControllers.map((c) => c.text).join();
+    }
+
+    void clearOtp() {
+      for (final controller in otpControllers) {
+        controller.clear();
+      }
+    }
 
     void startTimer(VoidCallback refresh) {
       timer?.cancel();
@@ -195,69 +199,53 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                                 ),
                               ),
 
-                              const SizedBox(height: 18),
+                              const SizedBox(height: 22),
 
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 14,
-                                ),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(18),
-                                  color: Colors.white.withOpacity(0.78),
-                                  border: Border.all(
-                                    color: Colors.red.shade100,
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.timer_outlined,
-                                      color:
-                                          remainingSeconds > 60
-                                              ? Colors.green.shade700
-                                              : Colors.red.shade700,
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        remainingSeconds > 0
-                                            ? 'Le code expire dans ${_formatDuration(remainingSeconds)}'
-                                            : 'Le code a expiré. Renvoyez un nouveau code.',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          color:
-                                              remainingSeconds > 60
-                                                  ? Colors.green.shade800
-                                                  : Colors.red.shade700,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              Wrap(
+                                alignment: WrapAlignment.center,
+                                spacing: 8,
+                                runSpacing: 10,
+                                children: List.generate(6, (index) {
+                                  return _OtpPinField(
+                                    controller: otpControllers[index],
+                                    focusNode: otpFocusNodes[index],
+                                    autoFocus: index == 0,
+                                    onChanged: (value) {
+                                      if (value.length == 1 && index < 5) {
+                                        otpFocusNodes[index + 1].requestFocus();
+                                      }
+
+                                      if (value.isEmpty && index > 0) {
+                                        otpFocusNodes[index - 1].requestFocus();
+                                      }
+
+                                      setModalState(() {});
+                                    },
+                                  );
+                                }),
                               ),
 
-                              const SizedBox(height: 18),
+                              const SizedBox(height: 14),
 
-                              CustomTextField(
-                                controller: otpController,
-                                hintText: 'Code OTP',
-                                labelText: 'Code OTP',
-                                keyboardType: TextInputType.number,
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return 'Veuillez entrer le code OTP';
-                                  }
-                                  if (value.trim().length < 4) {
-                                    return 'Code OTP invalide';
-                                  }
-                                  return null;
-                                },
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  remainingSeconds > 0
+                                      ? 'Temps restant : ${_formatDurationShort(remainingSeconds)}'
+                                      : 'Le code OTP a expiré.',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color:
+                                        remainingSeconds > 0
+                                            ? Colors.grey.shade700
+                                            : Colors.red.shade700,
+                                  ),
+                                ),
                               ),
 
                               if (authState.errorMessage != null) ...[
-                                const SizedBox(height: 10),
+                                const SizedBox(height: 12),
                                 Container(
                                   width: double.infinity,
                                   padding: const EdgeInsets.all(12),
@@ -287,11 +275,20 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                                     remainingSeconds <= 0
                                         ? null
                                         : () async {
-                                          final isValid =
-                                              otpFormKey.currentState
-                                                  ?.validate() ??
-                                              false;
-                                          if (!isValid) return;
+                                          final code = getOtpCode();
+
+                                          if (code.length < 6) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  'Veuillez entrer les 6 chiffres du code OTP',
+                                                ),
+                                              ),
+                                            );
+                                            return;
+                                          }
 
                                           await ref
                                               .read(
@@ -300,7 +297,7 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                                               .verifyOtp(
                                                 phone: authState.pendingPhone,
                                                 email: authState.pendingEmail,
-                                                code: otpController.text.trim(),
+                                                code: code,
                                               );
 
                                           if (!mounted) return;
@@ -348,7 +345,8 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                                                   .read(authControllerProvider)
                                                   .errorMessage ==
                                               null) {
-                                            otpController.clear();
+                                            clearOtp();
+                                            otpFocusNodes.first.requestFocus();
                                             startTimer(() {
                                               if (modalContext.mounted) {
                                                 setModalState(() {});
@@ -374,7 +372,12 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
     );
 
     timer?.cancel();
-    otpController.dispose();
+    for (final controller in otpControllers) {
+      controller.dispose();
+    }
+    for (final node in otpFocusNodes) {
+      node.dispose();
+    }
   }
 
   Widget _buildHeroCard() {
@@ -492,7 +495,12 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FC),
-      appBar: AppBar(title: const Text('Commencer'), elevation: 0),
+      appBar: AppBar(
+        title: const Text('Commencer'),
+        elevation: 0,
+        backgroundColor: Colors.red,
+        foregroundColor: Colors.white,
+      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -586,6 +594,62 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _OtpPinField extends StatelessWidget {
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final bool autoFocus;
+  final ValueChanged<String> onChanged;
+
+  const _OtpPinField({
+    required this.controller,
+    required this.focusNode,
+    required this.autoFocus,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final fieldColor = Colors.white.withOpacity(0.35);
+
+    return SizedBox(
+      width: 38,
+      child: TextFormField(
+        controller: controller,
+        focusNode: focusNode,
+        autofocus: autoFocus,
+        keyboardType: TextInputType.number,
+        textAlign: TextAlign.center,
+        maxLength: 1,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+          color: Colors.black,
+        ),
+        decoration: InputDecoration(
+          counterText: '',
+          isDense: true,
+          filled: true,
+          fillColor: fieldColor,
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 8,
+            horizontal: 2,
+          ),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+              color: Colors.black.withOpacity(0.90),
+              width: 1.8,
+            ),
+          ),
+          focusedBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.black, width: 2.2),
+          ),
+        ),
+        onChanged: onChanged,
       ),
     );
   }

@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../../core/services/location_service.dart';
-import '../../profile/application/profile_controller.dart'; // ✅ AJOUT
+import '../../profile/application/profile_controller.dart';
+import '../../../app/router/route_names.dart';
+
+import '../widgets/quick_action_card.dart';
+import '../widgets/emergency_banner.dart';
+import '../widgets/blood_status_banner.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -24,36 +30,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showSetPasswordModalIfNeeded();
-      _initLocation(); // ✅ AJOUT
+      _initLocation();
     });
   }
 
-  /// ✅ NOUVELLE FONCTION LOCALISATION
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showSetPasswordModalIfNeeded();
+    });
+  }
+
   Future<void> _initLocation() async {
     try {
       final service = LocationService();
-
       final position = await service.getLocation();
 
       if (position != null) {
-        print("LAT: ${position.latitude}");
-        print("LNG: ${position.longitude}");
-
         await ref
             .read(profileControllerProvider.notifier)
             .updateLocation(position.latitude, position.longitude);
-
-        print("LOCATION SENT TO BACKEND");
-      } else {
-        print("LOCATION NOT AVAILABLE");
       }
-    } catch (e) {
-      print("LOCATION ERROR: $e");
-    }
+    } catch (_) {}
   }
 
   void _showSetPasswordModalIfNeeded() {
     if (_passwordModalShown) return;
+    if (!mounted) return;
 
     final authState = ref.read(authControllerProvider);
 
@@ -167,33 +172,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       final isValid = formKey.currentState?.validate() ?? false;
                       if (!isValid) return;
 
-                      await ref
-                          .read(authControllerProvider.notifier)
-                          .setPassword(
-                            password: passwordController.text.trim(),
-                          );
+                      final auth = ref.read(authControllerProvider.notifier);
+                      final password = passwordController.text.trim();
+
+                      await auth.setPassword(password: password);
 
                       if (!mounted) return;
 
-                      final state = ref.read(authControllerProvider);
-                      if (state.errorMessage == null) {
+                      final stateAfterSetPassword = ref.read(
+                        authControllerProvider,
+                      );
+
+                      if (stateAfterSetPassword.errorMessage == null) {
                         final identifier =
-                            state.pendingPhone ?? state.pendingEmail;
+                            stateAfterSetPassword.pendingPhone ??
+                            stateAfterSetPassword.pendingEmail;
 
                         if (identifier != null && identifier.isNotEmpty) {
-                          await ref
-                              .read(authControllerProvider.notifier)
-                              .completeRegistrationAndLogin(
-                                identifier: identifier,
-                                password: passwordController.text.trim(),
-                              );
+                          await auth.completeRegistrationAndLogin(
+                            identifier: identifier,
+                            password: password,
+                          );
                         }
 
                         if (!mounted) return;
 
                         final newState = ref.read(authControllerProvider);
-                        if (newState.isAuthenticated && dialogContext.mounted) {
-                          Navigator.of(dialogContext).pop();
+
+                        if (newState.isAuthenticated) {
+                          if (dialogContext.mounted) {
+                            Navigator.of(dialogContext).pop();
+                          }
+
+                          _passwordModalShown = false;
+
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (!mounted) return;
+
+                            final roleId = newState.currentUser?.roleId;
+
+                            if (roleId == 1) {
+                              context.go(RouteNames.adminDashboard);
+                            } else if (roleId == 3) {
+                              context.go(RouteNames.staffDashboard);
+                            } else if (roleId == 4) {
+                              context.go(RouteNames.directorDashboard);
+                            } else {
+                              context.go(RouteNames.home);
+                            }
+                          });
                         }
                       }
                     },
@@ -215,10 +242,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final authState = ref.watch(authControllerProvider);
     final user = authState.currentUser;
 
+    final bloodGroup =
+        user?.groupeSanguin?.isNotEmpty == true
+            ? user!.groupeSanguin!
+            : 'Non défini';
+
+    final bloodStatusRaw = user?.statutGroupeSanguin?.toLowerCase() ?? '';
+    final bloodStatusLabel =
+        bloodStatusRaw == 'verifie' ? 'Vérifié' : 'Non vérifié';
+    final bloodStatusColor =
+        bloodStatusRaw == 'verifie' ? Colors.green : Colors.orange;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Accueil')),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.screenPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,39 +272,57 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     : 'Utilisateur',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
-              const SizedBox(height: 24),
-
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Tableau de bord',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Cette zone accueillera prochainement les informations principales de l’utilisateur : alertes, statut de don, centres proches, notifications et historique.',
-                    ),
-                  ],
-                ),
+              const SizedBox(height: 20),
+              EmergencyBanner(
+                title: 'Urgence don de sang',
+                description:
+                    'Aidez rapidement en consultant les demandes urgentes et les centres disponibles.',
+                onTap: () => context.push(RouteNames.donations),
               ),
-
+              const SizedBox(height: 20),
+              BloodStatusBanner(
+                bloodGroup: bloodGroup,
+                status: bloodStatusLabel,
+                statusColor: bloodStatusColor,
+              ),
               const SizedBox(height: 24),
-
+              Text(
+                'Actions rapides',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 12),
+              QuickActionCard(
+                icon: Icons.favorite,
+                title: 'Mes dons',
+                subtitle: 'Consulter votre historique de dons',
+                color: Colors.red,
+                onTap: () => context.push(RouteNames.donations),
+              ),
+              const SizedBox(height: 12),
+              QuickActionCard(
+                icon: Icons.location_on,
+                title: 'Centres proches',
+                subtitle: 'Trouver les centres de don autour de vous',
+                color: Colors.blue,
+                onTap: () => context.push(RouteNames.centers),
+              ),
+              const SizedBox(height: 12),
+              QuickActionCard(
+                icon: Icons.notifications_active,
+                title: 'Notifications',
+                subtitle: 'Voir les alertes et messages importants',
+                color: Colors.orange,
+                onTap: () => context.push(RouteNames.notifications),
+              ),
+              const SizedBox(height: 24),
               CustomButton(
                 text: 'Déconnexion',
                 onPressed: () async {
                   await ref.read(authControllerProvider.notifier).logout();
+
+                  if (!context.mounted) return;
+
+                  context.go(RouteNames.loginUser);
                 },
               ),
             ],

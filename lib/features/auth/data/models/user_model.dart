@@ -1,12 +1,13 @@
+// lib/features/auth/data/models/user_model.dart
+
+import 'role_model.dart';
+
 /// Modèle utilisateur principal.
+/// Aligné avec le backend Prisma (roles + utilisateur).
 ///
-/// Ce modèle représente l'utilisateur tel qu'il vient du backend.
-/// Il est aligné avec la structure Prisma / API actuelle.
-///
-/// Important pour l'équipe :
-/// - ce modèle sert dans l'auth
-/// - il servira aussi plus tard dans le profil
-/// - il faut éviter de dupliquer un autre "UserModel" inutilement
+/// IMPORTANT :
+/// - rôle est un objet (RoleModel)
+/// - compatible auth USER / STAFF / DIRECTEUR / ADMIN
 class UserModel {
   // ==========================
   // IDENTITÉ
@@ -40,17 +41,21 @@ class UserModel {
   final DateTime? dateProchainDon;
 
   // ==========================
-  // ÉTAT DU PROFIL
+  // ÉTAT PROFIL
   // ==========================
   final bool profilComplet;
   final bool actif;
 
   // ==========================
-  // RÔLE / CENTRE
+  // RÔLE (PRISMA RELATION)
+  // ==========================
+  final int? roleId;
+  final RoleModel? role;
+
+  // ==========================
+  // CENTRE
   // ==========================
   final int? centreId;
-  final int? roleId;
-  final String? role;
 
   // ==========================
   // CONSENTEMENTS
@@ -83,9 +88,9 @@ class UserModel {
     this.dateProchainDon,
     this.profilComplet = false,
     this.actif = true,
-    this.centreId,
     this.roleId,
     this.role,
+    this.centreId,
     this.accepteConditions = false,
     this.acceptePolitiqueConfidentialite = false,
     this.dateAcceptationConditions,
@@ -93,63 +98,111 @@ class UserModel {
     this.dateMiseAJour,
   });
 
-  /// Nom complet pratique pour l'affichage UI.
+  /// Nom complet pour UI
   String get fullName {
     final first = nom ?? '';
     final last = prenom ?? '';
     return '$first $last'.trim();
   }
 
-  /// Conversion depuis JSON backend -> UserModel Flutter.
+  // ==========================
+  // JSON -> MODEL
+  // ==========================
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    final roleData = json['role'];
-    String? resolvedRole;
+    final dynamic roleData =
+        json['role'] ?? json['roles'] ?? json['role_data'] ?? json['roleInfo'];
 
-    // Selon le backend, le rôle peut arriver :
-    // - soit comme objet imbriqué
-    // - soit comme simple chaîne
+    RoleModel? parsedRole;
+
     if (roleData is Map<String, dynamic>) {
-      resolvedRole = roleData['nom_role']?.toString();
-    } else {
-      resolvedRole =
-          json['nom_role']?.toString() ??
-          json['role_name']?.toString() ??
-          json['role']?.toString();
+      parsedRole = RoleModel.fromJson(roleData);
+    } else if (roleData is String) {
+      final int parsedRoleId =
+          _toInt(json['role_id']) ??
+          _toInt(json['id_role']) ??
+          _toInt(json['roleId']) ??
+          0;
+
+      parsedRole = RoleModel(idRole: parsedRoleId, nomRole: roleData);
+    } else if (json['nom_role'] != null || json['role_name'] != null) {
+      final int parsedRoleId =
+          _toInt(json['role_id']) ??
+          _toInt(json['id_role']) ??
+          _toInt(json['roleId']) ??
+          0;
+
+      parsedRole = RoleModel(
+        idRole: parsedRoleId,
+        nomRole:
+            json['nom_role']?.toString() ?? json['role_name']?.toString() ?? '',
+      );
     }
 
+    final statutGroupe = json['statut_groupe_sanguin']?.toString();
+
+    final bool isBloodGroupVerified =
+        statutGroupe == 'verifie' || statutGroupe == 'verified';
+
     return UserModel(
-      idUtilisateur: _toInt(json['id_utilisateur']) ?? 0,
+      idUtilisateur:
+          _toInt(json['id_utilisateur']) ??
+          _toInt(json['id']) ??
+          _toInt(json['user_id']) ??
+          0,
+
       nom: json['nom']?.toString(),
       prenom: json['prenom']?.toString(),
       genre: json['genre']?.toString(),
       dateNaissance: _toDateTime(json['date_naissance']),
+
       telephone: json['telephone']?.toString(),
       email: json['email']?.toString(),
       qrCode: json['qr_code']?.toString(),
+
       ville: json['ville']?.toString(),
       quartier: json['quartier']?.toString(),
       latitude: _toDouble(json['latitude']),
       longitude: _toDouble(json['longitude']),
+
       groupeSanguin: json['groupe_sanguin']?.toString(),
-      statutGroupeSanguin: json['statut_groupe_sanguin']?.toString(),
+      statutGroupeSanguin: statutGroupe,
       dateProchainDon: _toDateTime(json['date_prochain_don']),
-      profilComplet: json['profil_complet'] == true,
+
+      // ✅ profil complet seulement si groupe sanguin vérifié
+      profilComplet: isBloodGroupVerified,
+
       actif: json['actif'] != false,
-      centreId: _toInt(json['centre_id']),
-      roleId: _toInt(json['role_id']),
-      role: resolvedRole,
+
+      roleId:
+          parsedRole?.idRole ??
+          _toInt(json['role_id']) ??
+          _toInt(json['id_role']) ??
+          _toInt(json['roleId']),
+
+      role: parsedRole,
+
+      centreId:
+          _toInt(json['centre_id']) ??
+          _toInt(json['id_centre']) ??
+          _toInt(json['centreId']),
+
       accepteConditions: json['accepte_conditions'] == true,
       acceptePolitiqueConfidentialite:
           json['accepte_politique_confidentialite'] == true,
       dateAcceptationConditions: _toDateTime(
         json['date_acceptation_conditions'],
       ),
+
       dateCreation: _toDateTime(json['date_creation']),
-      dateMiseAJour: _toDateTime(json['date_mise_a_jour']),
+      dateMiseAJour:
+          _toDateTime(json['date_mise_a_jour']) ??
+          _toDateTime(json['updated_at']),
     );
   }
 
-  /// Helpers de parsing sécurisés
+  // ==========================
+  // HELPERS
+  // ==========================
   static int? _toInt(dynamic value) {
     if (value == null) return null;
     return int.tryParse(value.toString());

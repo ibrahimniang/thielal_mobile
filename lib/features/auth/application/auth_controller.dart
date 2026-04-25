@@ -1,3 +1,4 @@
+//lib/features/auth/application/auth_controller.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
@@ -30,12 +31,24 @@ class AuthController extends StateNotifier<AuthState> {
     try {
       state = state.copyWith(isLoading: true, clearError: true);
 
-      await _repository.sendOtp(phone: phone, email: email);
+      final data = await _repository.sendOtp(phone: phone, email: email);
+
+      final bool success = data['success'] == true;
+      final String? message = data['message']?.toString();
+
+      if (!success) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: message ?? "Impossible d'envoyer le code OTP",
+        );
+        return;
+      }
 
       state = state.copyWith(
         isLoading: false,
         pendingPhone: phone,
         pendingEmail: email,
+        clearError: true,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: _mapError(e));
@@ -50,14 +63,23 @@ class AuthController extends StateNotifier<AuthState> {
     try {
       state = state.copyWith(isLoading: true, clearError: true);
 
-      /// 🔥 CORRECTION : récupérer data
       final data = await _repository.verifyOtp(
         phone: phone,
         email: email,
         code: code,
       );
 
-      /// 🔥 EXTRACTION user_id
+      final bool success = data['success'] == true;
+      final String? message = data['message']?.toString();
+
+      if (!success) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: message ?? "Code OTP invalide",
+        );
+        return;
+      }
+
       final int? userId =
           data['user_id'] ??
           data['id_utilisateur'] ??
@@ -70,8 +92,9 @@ class AuthController extends StateNotifier<AuthState> {
         isLoading: false,
         pendingPhone: phone ?? state.pendingPhone,
         pendingEmail: email ?? state.pendingEmail,
-        pendingUserId: userId, // 🔥 IMPORTANT
+        pendingUserId: userId,
         otpVerified: true,
+        clearError: true,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: _mapError(e));
@@ -128,7 +151,7 @@ class AuthController extends StateNotifier<AuthState> {
 
       await _repository.registerStep2(
         userId: userId,
-        phone: state.pendingPhone, // 🔥 AUTO
+        phone: state.pendingPhone,
         email: state.pendingEmail,
         ville: ville,
         quartier: quartier,
@@ -150,7 +173,7 @@ class AuthController extends StateNotifier<AuthState> {
     String? groupeSanguin,
     required bool accepteConditions,
     required bool acceptePolitiqueConfidentialite,
-    required bool aDonneRecemment, // 🔥 AJOUT
+    required bool aDonneRecemment,
   }) async {
     try {
       state = state.copyWith(isLoading: true, clearError: true);
@@ -165,7 +188,7 @@ class AuthController extends StateNotifier<AuthState> {
         groupeSanguin: groupeSanguin,
         accepteConditions: accepteConditions,
         acceptePolitiqueConfidentialite: acceptePolitiqueConfidentialite,
-        aDonneRecemment: aDonneRecemment, // 🔥 IMPORTANT
+        aDonneRecemment: aDonneRecemment,
       );
 
       state = state.copyWith(isLoading: false);
@@ -199,7 +222,7 @@ class AuthController extends StateNotifier<AuthState> {
   }
 
   // ==========================
-  // LOGIN (INCHANGÉ)
+  // LOGIN USER
   // ==========================
 
   Future<void> loginUser({
@@ -226,6 +249,10 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
+  // ==========================
+  // LOGIN OFFICE
+  // ==========================
+
   Future<void> loginOffice({
     required String identifier,
     required String password,
@@ -251,7 +278,45 @@ class AuthController extends StateNotifier<AuthState> {
   }
 
   // ==========================
-  // FORGOT PASSWORD (FIX TELEPHONE)
+  // LOGIN UNIFIÉ (PROPRE)
+  // ==========================
+  Future<void> login({
+    required String identifier,
+    required String password,
+  }) async {
+    try {
+      state = state.copyWith(isLoading: true, clearError: true);
+
+      final bool isEmail = identifier.contains('@');
+
+      final result =
+          isEmail
+              ? await _repository.loginOffice(
+                identifier: identifier,
+                password: password,
+              )
+              : await _repository.loginUser(
+                identifier: identifier,
+                password: password,
+              );
+
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: true,
+        currentUser: result.$1,
+        accessToken: result.$2.accessToken,
+        clearError: true,
+      );
+
+      await SecureStorageService.setHasCompletedEntryFlow(true);
+      final saved = await SecureStorageService.hasCompletedEntryFlow();
+      print('AUTH DEBUG -> hasCompletedEntryFlow saved after login: $saved');
+    } catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: _mapError(e));
+    }
+  }
+  // ==========================
+  // FORGOT PASSWORD
   // ==========================
 
   Future<void> forgotPasswordSendCode({required String telephone}) async {
@@ -312,6 +377,10 @@ class AuthController extends StateNotifier<AuthState> {
 
       final token = await _repository.getSavedAccessToken();
 
+      print(
+        'AUTH DEBUG -> saved token: ${token != null && token.isNotEmpty ? "FOUND" : "NOT FOUND"}',
+      );
+
       if (token == null || token.isEmpty) {
         state = state.copyWith(
           isLoading: false,
@@ -324,6 +393,10 @@ class AuthController extends StateNotifier<AuthState> {
 
       final user = await _repository.getCurrentUser();
 
+      print(
+        'AUTH DEBUG -> current user loaded: ${user.idUtilisateur}, roleId: ${user.roleId}',
+      );
+
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: true,
@@ -331,20 +404,38 @@ class AuthController extends StateNotifier<AuthState> {
         accessToken: token,
       );
     } catch (e) {
+      print('AUTH DEBUG -> loadCurrentUser error: $e');
+
       await logout();
-      state = state.copyWith(errorMessage: _mapError(e));
+
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: false,
+        clearUser: true,
+        clearToken: true,
+        errorMessage: _mapError(e),
+      );
     }
   }
 
+  // ==========================
+  // COMPLETE REGISTRATION + LOGIN
+  // ==========================
   Future<void> completeRegistrationAndLogin({
     required String identifier,
     required String password,
   }) async {
-    await loginUser(identifier: identifier, password: password);
+    await login(identifier: identifier, password: password);
+
+    final saved = await SecureStorageService.hasCompletedEntryFlow();
+    print(
+      'AUTH DEBUG -> hasCompletedEntryFlow after completeRegistrationAndLogin: $saved',
+    );
   }
 
   Future<void> logout() async {
-    await SecureStorageService.instance.deleteAll();
+    // ✅ On supprime seulement les tokens
+    await _repository.logout();
 
     state = state.copyWith(
       isAuthenticated: false,
@@ -377,12 +468,44 @@ class AuthController extends StateNotifier<AuthState> {
   }
 
   Future<void> checkAuth() async {
-    final token = await SecureStorageService.instance.read(key: 'token');
+    final token = await _repository.getSavedAccessToken();
 
-    if (token != null) {
+    if (token != null && token.isNotEmpty) {
       state = state.copyWith(isAuthenticated: true, accessToken: token);
     } else {
-      state = state.copyWith(isAuthenticated: false);
+      state = state.copyWith(
+        isAuthenticated: false,
+        clearUser: true,
+        clearToken: true,
+      );
     }
+  }
+
+  /// ==========================
+  /// ROLE HELPERS
+  /// ==========================
+
+  bool isAdmin() {
+    final roleId = state.currentUser?.roleId;
+    return roleId == 1;
+  }
+
+  bool isUser() {
+    final roleId = state.currentUser?.roleId;
+    return roleId == 2;
+  }
+
+  bool isStaff() {
+    final roleId = state.currentUser?.roleId;
+    return roleId == 3;
+  }
+
+  bool isDirector() {
+    final roleId = state.currentUser?.roleId;
+    return roleId == 4;
+  }
+
+  String? get roleName {
+    return state.currentUser?.role?.nomRole;
   }
 }
