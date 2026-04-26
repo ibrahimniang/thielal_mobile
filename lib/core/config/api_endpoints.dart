@@ -1,3 +1,4 @@
+//lib/core/config/api_endpoints.dart
 /// Centralisation de tous les endpoints backend.
 ///
 /// Pourquoi faire ça ?
@@ -63,13 +64,20 @@ class ApiEndpoints {
   // DONATIONS
   // ==========================
 
-  static const String scanQr = '/scan-qr';
-  static const String myDons = '/my-dons';
+  static const String scanQr = '/dons/scan-qr';
+  static const String myDons = '/dons/my-dons';
   static const String demandeSang = '/dons/demande-sang';
-  static const String demandes = '/demandes';
-  static const String generateQr = '/generate-qr';
+  static const String demandes = '/dons/demandes';
+  static const String generateQr = '/dons/generate-qr';
+
   static const String nearbyDonors = '/nearby-donors';
-  static const String donneurs = '/donneurs';
+  static const String donneurs = '/dons/donneurs';
+
+  // ==========================
+  // BLOOD BANK / STOCK
+  // ==========================
+  static const String banque = '/banque';
+  static const String banqueCentre = '/banque/centre';
 
   /// Génère dynamiquement l'URL certificat selon l'id du don.
   static String certificatByDonId(dynamic donId) => '/certificat/$donId';
@@ -81,7 +89,7 @@ class ApiEndpoints {
   /// Attention :
   /// ici la route "/" suppose que le Dio utilisé pour les notifications
   /// pointe vers le bon module backend.
-  static const String notifications = '/';
+  static const String notifications = '/notifications';
 
   static const String unreadCount = '/unread-count';
 
@@ -98,7 +106,9 @@ class ApiEndpoints {
   static const String createBackOffice = '/users/admin/create-backoffice';
   static const String createStaffByDirector = '/users/admin/create-staff';
 
-  /// Vérification du groupe sanguin d'un utilisateur par le staff
-  static String verifyBloodGroupByUserId(dynamic id) =>
-      '/$id/verify-blood-group';
+  static const String users = '/users';
+
+  static String verifyBloodGroupByUserId(int userId) {
+    return '$users/$userId/verify-blood-group';
+  }
 }

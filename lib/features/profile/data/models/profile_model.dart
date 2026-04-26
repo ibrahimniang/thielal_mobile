@@ -4,7 +4,15 @@ class ProfileModel {
   final String? prenom;
   final String? email;
   final String? telephone;
+
+  final String? ville;
+  final String? quartier;
+  final double? latitude;
+  final double? longitude;
+
   final String? groupeSanguin;
+  final String? statutGroupeSanguin;
+
   final bool profilComplet;
   final String? qrCode;
   final int? points;
@@ -15,28 +23,55 @@ class ProfileModel {
     this.prenom,
     this.email,
     this.telephone,
+    this.ville,
+    this.quartier,
+    this.latitude,
+    this.longitude,
     this.groupeSanguin,
+    this.statutGroupeSanguin,
     this.profilComplet = false,
-    this.points,
     this.qrCode,
+    this.points,
   });
 
   String get fullName => '${nom ?? ''} ${prenom ?? ''}'.trim();
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
+    final statutGroupe = json['statut_groupe_sanguin']?.toString();
+
+    final bool isBloodGroupVerified =
+        statutGroupe == 'verifie' || statutGroupe == 'verified';
+
     return ProfileModel(
-      id: int.tryParse(json['id_utilisateur'].toString()) ?? 0,
-      nom: json['nom'],
-      prenom: json['prenom'],
-      email: json['email'],
-      telephone: json['telephone'],
-      groupeSanguin: json['groupe_sanguin'],
-      profilComplet:
-          json['profil_complet'] == true ||
-          json['profil_complet'] == 1 ||
-          json['profil_complet'] == "1",
-      qrCode: json['qr_code'],
-      points: json['points'],
+      id: _toInt(json['id_utilisateur']) ?? _toInt(json['id']) ?? 0,
+      nom: json['nom']?.toString(),
+      prenom: json['prenom']?.toString(),
+      email: json['email']?.toString(),
+      telephone: json['telephone']?.toString(),
+
+      ville: json['ville']?.toString(),
+      quartier: json['quartier']?.toString(),
+      latitude: _toDouble(json['latitude']),
+      longitude: _toDouble(json['longitude']),
+
+      groupeSanguin: json['groupe_sanguin']?.toString(),
+      statutGroupeSanguin: statutGroupe,
+
+      // ✅ règle métier du projet
+      profilComplet: isBloodGroupVerified,
+
+      qrCode: json['qr_code']?.toString(),
+      points: _toInt(json['points']),
     );
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    return int.tryParse(value.toString());
+  }
+
+  static double? _toDouble(dynamic value) {
+    if (value == null) return null;
+    return double.tryParse(value.toString());
   }
 }

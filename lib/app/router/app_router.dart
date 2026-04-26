@@ -1,4 +1,3 @@
-//app/router/app_router.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,11 +5,19 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/application/auth_controller.dart';
 import '../../features/auth/presentation/screens/entry_identity_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
-import '../../features/auth/presentation/screens/login_office_screen.dart';
 import '../../features/auth/presentation/screens/login_user_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/auth/presentation/screens/set_password_screen.dart';
+
+import '../../features/staff/presentation/screens/create_staff_screen.dart';
+import '../../features/staff/presentation/screens/donors_nearby_screen.dart';
+import '../../features/staff/presentation/screens/blood_stock_screen.dart';
+import '../../features/staff/presentation/screens/scan_qr_screen.dart';
+import '../../features/staff/presentation/screens/generate_qr_screen.dart';
+import '../../features/staff/presentation/screens/staff_dashboard_screen.dart';
+import '../../features/staff/presentation/screens/blood_requests_screen.dart';
+import '../../features/staff/presentation/screens/director_dashboard_screen.dart';
 
 import '../../features/home/screens/home_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -30,69 +37,90 @@ class AppRouter {
       redirect: (context, state) {
         final authState = ref.read(authControllerProvider);
         final isAuthenticated = authState.isAuthenticated;
+        final roleId = authState.currentUser?.roleId;
         final path = state.uri.path;
 
-        final isInRegistrationFlow =
-            authState.pendingPhone != null ||
-            authState.pendingEmail != null ||
-            authState.otpVerified;
-
-        final publicRoutes = <String>[
+        final publicRoutes = <String>{
           RouteNames.splash,
+          RouteNames.loginUser,
+          RouteNames.forgotPassword,
+          RouteNames.resetPassword,
           RouteNames.onboarding,
+        };
+
+        final registrationRoutes = <String>{
           RouteNames.entryIdentity,
           RouteNames.otpVerification,
           RouteNames.register,
           RouteNames.setPassword,
-          RouteNames.loginUser,
-          RouteNames.loginOffice,
-          RouteNames.forgotPassword,
-          RouteNames.resetPassword,
-        ];
+        };
 
-        final registrationFlowRoutes = <String>[
-          RouteNames.entryIdentity,
-          RouteNames.register,
-          RouteNames.home,
-        ];
+        final isPublic = publicRoutes.contains(path);
+        final isRegistrationRoute = registrationRoutes.contains(path);
 
-        // 🔒 Non connecté
+        final isInRegistrationFlow =
+            authState.pendingPhone != null ||
+            authState.pendingEmail != null ||
+            authState.otpVerified ||
+            authState.pendingUserId != null;
+
+        // =========================
+        // 1. NON CONNECTÉ
+        // =========================
         if (!isAuthenticated) {
-          if (isInRegistrationFlow && registrationFlowRoutes.contains(path)) {
+          // ✅ entryIdentity doit toujours être accessible
+          if (path == RouteNames.entryIdentity) {
             return null;
           }
 
-          if (!publicRoutes.contains(path)) {
-            return RouteNames.loginUser;
+          // ✅ Autoriser Home temporairement uniquement
+          // si on est dans le flow d'inscription
+          // pour afficher le modal de création du mot de passe
+          if (path == RouteNames.home && isInRegistrationFlow) {
+            return null;
           }
-        }
 
-        // ✅ Connecté
-        if (isAuthenticated) {
-          if (publicRoutes.contains(path)) {
-            final role = authState.currentUser?.role?.toLowerCase();
-
-            if (role == 'admin') {
-              return RouteNames.adminDashboard;
-            }
-
-            if (role == 'staff' || role == 'directeur') {
-              return RouteNames.staffDashboard;
-            }
-
-            return RouteNames.home;
+          // ✅ Les autres routes du flow d'inscription
+          // ne sont accessibles que si le flow est déjà démarré
+          if (path == RouteNames.otpVerification ||
+              path == RouteNames.register ||
+              path == RouteNames.setPassword) {
+            return isInRegistrationFlow ? null : RouteNames.loginUser;
           }
+
+          // ✅ Autoriser les vraies routes publiques
+          if (isPublic) return null;
+
+          // 🔒 Tout le reste va vers login
+          return RouteNames.loginUser;
         }
-
-        final role = authState.currentUser?.role?.toLowerCase();
-
-        if (path.startsWith('/admin') && role != 'admin') {
+        // =========================
+        // 2. CONNECTÉ → REDIRECTION SELON RÔLE
+        // =========================
+        if (isPublic || isRegistrationRoute) {
+          if (roleId == 1) return RouteNames.adminDashboard;
+          if (roleId == 3) return RouteNames.staffDashboard;
+          if (roleId == 4) return RouteNames.directorDashboard;
           return RouteNames.home;
         }
 
-        if (path.startsWith('/staff') &&
-            role != 'staff' &&
-            role != 'directeur') {
+        // =========================
+        // 3. PROTECTION PAR RÔLE
+        // =========================
+        if (path.startsWith('/admin') && roleId != 1) {
+          if (roleId == 3) return RouteNames.staffDashboard;
+          if (roleId == 4) return RouteNames.directorDashboard;
+          return RouteNames.home;
+        }
+
+        if (path.startsWith('/staff') && roleId != 3 && roleId != 4) {
+          if (roleId == 1) return RouteNames.adminDashboard;
+          return RouteNames.home;
+        }
+
+        if (path.startsWith('/director') && roleId != 4) {
+          if (roleId == 1) return RouteNames.adminDashboard;
+          if (roleId == 3) return RouteNames.staffDashboard;
           return RouteNames.home;
         }
 
@@ -106,13 +134,21 @@ class AppRouter {
           builder: (_, __) => const SplashScreen(),
         ),
         GoRoute(
+          path: RouteNames.loginUser,
+          builder: (_, __) => const LoginUserScreen(),
+        ),
+        GoRoute(
           path: RouteNames.onboarding,
-          builder:
-              (_, __) => const _PlaceholderScreen(title: 'Onboarding Screen'),
+          builder: (_, __) => const _PlaceholderScreen(title: 'Onboarding'),
         ),
         GoRoute(
           path: RouteNames.entryIdentity,
           builder: (_, __) => const EntryIdentityScreen(),
+        ),
+        GoRoute(
+          path: RouteNames.otpVerification,
+          builder:
+              (_, __) => const _PlaceholderScreen(title: 'OTP Verification'),
         ),
         GoRoute(
           path: RouteNames.register,
@@ -123,20 +159,6 @@ class AppRouter {
           builder: (_, __) => const SetPasswordScreen(),
         ),
         GoRoute(
-          path: RouteNames.otpVerification,
-          builder:
-              (_, __) =>
-                  const _PlaceholderScreen(title: 'OTP Verification Screen'),
-        ),
-        GoRoute(
-          path: RouteNames.loginUser,
-          builder: (_, __) => const LoginUserScreen(),
-        ),
-        GoRoute(
-          path: RouteNames.loginOffice,
-          builder: (_, __) => const LoginOfficeScreen(),
-        ),
-        GoRoute(
           path: RouteNames.forgotPassword,
           builder: (_, __) => const ForgotPasswordScreen(),
         ),
@@ -144,14 +166,13 @@ class AppRouter {
           path: RouteNames.resetPassword,
           builder: (_, state) {
             final extra = state.extra as Map<String, dynamic>?;
-
             return ResetPasswordScreen(
               telephone: extra?['telephone']?.toString(),
             );
           },
         ),
 
-        // ================= APP AVEC NAVBAR =================
+        // ================= APP SHELL =================
         ShellRoute(
           builder: (context, state, child) {
             return MainNavigation(child: child);
@@ -162,10 +183,6 @@ class AppRouter {
               builder: (_, __) => const HomeScreen(),
             ),
             GoRoute(
-              path: RouteNames.map,
-              builder: (_, __) => const MapScreen(),
-            ),
-            GoRoute(
               path: RouteNames.profile,
               builder: (_, __) => const ProfileScreen(),
             ),
@@ -173,44 +190,50 @@ class AppRouter {
               path: RouteNames.settings,
               builder: (_, __) => const SettingsScreen(),
             ),
-
-            // ===== AUTRES ROUTES (inchangées) =====
             GoRoute(
-              path: RouteNames.notifications,
-              builder:
-                  (_, __) =>
-                      const _PlaceholderScreen(title: 'Notifications Screen'),
-            ),
-            GoRoute(
-              path: RouteNames.alerts,
-              builder:
-                  (_, __) => const _PlaceholderScreen(title: 'Alerts Screen'),
-            ),
-            GoRoute(
-              path: RouteNames.donations,
-              builder:
-                  (_, __) =>
-                      const _PlaceholderScreen(title: 'Donations Screen'),
-            ),
-            GoRoute(
-              path: RouteNames.centers,
-              builder:
-                  (_, __) => const _PlaceholderScreen(title: 'Centers Screen'),
-            ),
-            GoRoute(
-              path: RouteNames.donors,
-              builder:
-                  (_, __) => const _PlaceholderScreen(title: 'Donors Screen'),
+              path: RouteNames.map,
+              builder: (_, __) => const MapScreen(),
             ),
           ],
         ),
 
-        // ================= DASHBOARDS =================
+        // ================= STAFF =================
         GoRoute(
           path: RouteNames.staffDashboard,
-          builder:
-              (_, __) => const _PlaceholderScreen(title: 'Staff Dashboard'),
+          builder: (_, __) => const StaffDashboardScreen(),
         ),
+        GoRoute(
+          path: RouteNames.staffRequests,
+          builder: (_, __) => const BloodRequestsScreen(),
+        ),
+        GoRoute(
+          path: RouteNames.staffDonors,
+          builder: (_, __) => const NearbyDonorsScreen(),
+        ),
+        GoRoute(
+          path: RouteNames.bloodStock,
+          builder: (_, __) => const BloodStockScreen(),
+        ),
+        GoRoute(
+          path: RouteNames.qrScan,
+          builder: (_, __) => const QrScanScreen(),
+        ),
+        GoRoute(
+          path: RouteNames.qrGenerate,
+          builder: (_, __) => const QrGenerateScreen(),
+        ),
+
+        // ================= DIRECTOR =================
+        GoRoute(
+          path: RouteNames.directorDashboard,
+          builder: (_, __) => const DirectorDashboardScreen(),
+        ),
+        GoRoute(
+          path: RouteNames.createStaff,
+          builder: (_, __) => const CreateStaffScreen(),
+        ),
+
+        // ================= ADMIN =================
         GoRoute(
           path: RouteNames.adminDashboard,
           builder:
@@ -226,7 +249,6 @@ class AppRouter {
   }
 }
 
-// ================= PLACEHOLDER =================
 class _PlaceholderScreen extends StatelessWidget {
   final String title;
 

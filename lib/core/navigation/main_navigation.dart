@@ -26,6 +26,8 @@ class MainNavigation extends StatelessWidget {
       body: child,
 
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        unselectedItemColor: Colors.grey,
         currentIndex: currentIndex,
         onTap: (i) {
           switch (i) {
@@ -45,6 +47,7 @@ class MainNavigation extends StatelessWidget {
               context.go(RouteNames.notifications);
           }
         },
+
         selectedItemColor: Colors.blueAccent,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Accueil"),

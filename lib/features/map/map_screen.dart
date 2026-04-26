@@ -5,27 +5,26 @@ import 'package:latlong2/latlong.dart';
 class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
 
+  static const String appPackageName = 'com.example.thielal';
+
   @override
   Widget build(BuildContext context) {
     final nouakchott = LatLng(18.0735, -15.9582);
 
     return Scaffold(
+      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         title: const Text("Carte des donneurs"),
         backgroundColor: Colors.red,
+        foregroundColor: Colors.white,
       ),
-
       body: FlutterMap(
         options: MapOptions(initialCenter: nouakchott, initialZoom: 13),
-
         children: [
-          // 🗺️ Fond carte (OpenStreetMap GRATUIT)
           TileLayer(
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'com.example.app',
+            userAgentPackageName: appPackageName,
           ),
-
-          // 📍 Marker exemple (à remplacer par backend plus tard)
           MarkerLayer(
             markers: [
               Marker(
@@ -42,8 +41,6 @@ class MapScreen extends StatelessWidget {
           ),
         ],
       ),
-
-      // ➕ bouton futur (urgence / filtre)
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.red,
         onPressed: () {

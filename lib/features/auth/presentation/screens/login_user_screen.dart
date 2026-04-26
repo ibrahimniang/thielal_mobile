@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +10,7 @@ import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../application/auth_controller.dart';
+import '../../application/auth_state.dart';
 
 class LoginUserScreen extends ConsumerStatefulWidget {
   const LoginUserScreen({super.key});
@@ -18,41 +21,164 @@ class LoginUserScreen extends ConsumerStatefulWidget {
 
 class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
   final _formKey = GlobalKey<FormState>();
+
   final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
 
   bool _obscure = true;
 
+  ProviderSubscription<AuthState>? _authListener;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _authListener = ref.listenManual<AuthState>(authControllerProvider, (
+      previous,
+      next,
+    ) {
+      if (!mounted) return;
+
+      if (next.isAuthenticated && next.currentUser != null) {
+        final roleId = next.currentUser!.roleId;
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+
+          if (roleId == 1) {
+            context.go(RouteNames.adminDashboard);
+          } else if (roleId == 3) {
+            context.go(RouteNames.staffDashboard);
+          } else if (roleId == 4) {
+            context.go(RouteNames.directorDashboard);
+          } else {
+            context.go(RouteNames.home);
+          }
+        });
+      }
+    });
+  }
+
   @override
   void dispose() {
+    _authListener?.close();
     _identifierController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final authState = ref.watch(authControllerProvider);
+  Widget _buildHeader() {
+    return Column(
+      children: [
+        Container(
+          width: 92,
+          height: 92,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: [Colors.red.shade500, Colors.red.shade700],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.red.withOpacity(0.22),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.favorite_rounded,
+            color: Colors.white,
+            size: 42,
+          ),
+        ),
+        const SizedBox(height: 18),
+        const Text(
+          'LifeLink',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF1B1F24),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Connectez-vous pour accéder à votre espace donneur',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey.shade700,
+            height: 1.4,
+          ),
+        ),
+      ],
+    );
+  }
 
-    ref.listen(authControllerProvider, (previous, next) {
-      if (next.isAuthenticated) {
-        context.go(RouteNames.home);
-      }
-    });
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Connexion utilisateur')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+  Widget _buildFormCard({
+    required BuildContext context,
+    required AuthState authState,
+    required AuthController auth,
+  }) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(28),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(28),
+            gradient: LinearGradient(
+              colors: [
+                Colors.white.withOpacity(0.92),
+                Colors.red.shade50.withOpacity(0.86),
+                Colors.blue.shade50.withOpacity(0.72),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.78),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+              BoxShadow(
+                color: Colors.red.withOpacity(0.08),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
           child: Form(
             key: _formKey,
             child: Column(
               children: [
-                const SizedBox(height: 24),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Connexion',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.grey.shade900,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
                 CustomTextField(
                   controller: _identifierController,
-                  hintText: 'Téléphone ou email',
+                  hintText: 'Téléphone',
                   labelText: 'Identifiant',
                   validator:
                       (value) => Validators.requiredField(
@@ -60,7 +186,9 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
                         fieldName: 'L’identifiant',
                       ),
                 ),
+
                 const SizedBox(height: 16),
+
                 CustomTextField(
                   controller: _passwordController,
                   hintText: 'Mot de passe',
@@ -69,23 +197,36 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
                   validator: Validators.password,
                   suffixIcon: IconButton(
                     onPressed: () {
-                      setState(() {
-                        _obscure = !_obscure;
-                      });
+                      setState(() => _obscure = !_obscure);
                     },
                     icon: Icon(
                       _obscure ? Icons.visibility_off : Icons.visibility,
                     ),
                   ),
                 ),
+
                 if (authState.errorMessage != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    authState.errorMessage!,
-                    style: const TextStyle(color: Colors.red),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.red.shade100),
+                    ),
+                    child: Text(
+                      authState.errorMessage!,
+                      style: TextStyle(
+                        color: Colors.red.shade700,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
-                const SizedBox(height: 20),
+
+                const SizedBox(height: 22),
+
                 CustomButton(
                   text: 'Se connecter',
                   isLoading: authState.isLoading,
@@ -93,18 +234,66 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
                     final isValid = _formKey.currentState?.validate() ?? false;
                     if (!isValid) return;
 
-                    await ref
-                        .read(authControllerProvider.notifier)
-                        .loginUser(
-                          identifier: _identifierController.text.trim(),
-                          password: _passwordController.text.trim(),
-                        );
+                    await auth.login(
+                      identifier: _identifierController.text.trim(),
+                      password: _passwordController.text.trim(),
+                    );
                   },
                 ),
+
                 const SizedBox(height: 12),
+
                 TextButton(
                   onPressed: () => context.push(RouteNames.forgotPassword),
                   child: const Text('Mot de passe oublié ?'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final authState = ref.watch(authControllerProvider);
+    final auth = ref.read(authControllerProvider.notifier);
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF7F9FC),
+      appBar: AppBar(
+        title: const Text('Connexion'),
+        backgroundColor: Colors.red,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.white,
+              Colors.red.shade50.withOpacity(0.55),
+              Colors.green.shade50.withOpacity(0.30),
+              Colors.blue.shade50.withOpacity(0.42),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.screenPadding),
+            child: Column(
+              children: [
+                const SizedBox(height: 18),
+                _buildHeader(),
+                const SizedBox(height: 28),
+                _buildFormCard(
+                  context: context,
+                  authState: authState,
+                  auth: auth,
                 ),
               ],
             ),

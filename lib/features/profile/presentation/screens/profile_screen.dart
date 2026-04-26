@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../application/profile_controller.dart';
+import '../widgets/profile_header_card.dart';
+import '../widgets/profile_section_card.dart';
+import '../widgets/profile_badge_item.dart';
+import '../widgets/blood_compatibility_card.dart';
+import '../widgets/profile_action_button.dart';
 import 'edit_profile_screen.dart';
+import '../../../../shared/widgets/app_loading_view.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -12,262 +19,290 @@ class ProfileScreen extends ConsumerWidget {
     final state = ref.watch(profileControllerProvider);
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: const Color(0xFFF7F9FC),
       appBar: AppBar(
-        title: const Text('Carte Donneur Médicale'),
+        title: const Text('Votre Profil'),
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
-
-      body: state.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text("Erreur: $e")),
-
-        data: (user) {
-          if (user == null) {
-            return const Center(child: Text("Aucun profil"));
-          }
-
-          final compatibleGroups = _getCompatibleGroups(
-            user.groupeSanguin ?? '',
-          );
-          final points = user.points ?? 0;
-          final badge = _getBadge(points);
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // ================= CARTE DONNEUR =================
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Colors.red, Colors.blue],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.white,
+              Colors.red.shade50.withOpacity(0.55),
+              Colors.green.shade50.withOpacity(0.35),
+              Colors.blue.shade50.withOpacity(0.40),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: state.when(
+          loading:
+              () => const AppLoadingView(message: 'Chargement du profil...'),
+          error:
+              (e, _) => Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    "Erreur: $e",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w600,
                     ),
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: Column(
-                    children: [
-                      const Icon(
-                        Icons.health_and_safety,
-                        size: 45,
-                        color: Colors.white,
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      Text(
-                        user.fullName,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      const SizedBox(height: 5),
-
-                      Text(
-                        "Groupe sanguin: ${user.groupeSanguin ?? '--'}",
-                        style: const TextStyle(color: Colors.white),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      // STATUS
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color:
-                              user.profilComplet ? Colors.green : Colors.orange,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          user.profilComplet
-                              ? "Donneur vérifié"
-                              : "En attente de validation",
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      // POINTS
-                      Text(
-                        "Points: $points",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      const SizedBox(height: 5),
-
-                      Text(
-                        "Niveau: $badge",
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ],
                   ),
                 ),
+              ),
+          data: (user) {
+            if (user == null) {
+              return const Center(
+                child: Text(
+                  "Aucun profil",
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              );
+            }
 
-                const SizedBox(height: 20),
+            final compatibleGroups = _getCompatibleGroups(
+              user.groupeSanguin ?? '',
+            );
+            final points = user.points ?? 0;
+            final badge = _getBadge(points);
 
-                // ================= QR CODE =================
-                if (user.qrCode != null)
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  ProfileHeaderCard(
+                    fullName: user.fullName,
+                    bloodGroup: user.groupeSanguin ?? '--',
+                    profilComplet: user.profilComplet,
+                    points: points,
+                    badge: badge,
+                  ),
+                  const SizedBox(height: 20),
+
+                  ProfileSectionCard(
+                    title: "Carte QR Donneur",
+                    icon: Icons.qr_code_rounded,
                     child: Column(
                       children: [
-                        const Text(
-                          "Carte QR Donneur",
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                        if (user.qrCode != null &&
+                            user.qrCode!.trim().isNotEmpty) ...[
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: Colors.grey.shade300),
+                              color: Colors.white,
+                            ),
+                            child: QrImageView(
+                              data: user.qrCode!.trim(),
+                              version: QrVersions.auto,
+                              size: 130,
+                              backgroundColor: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            "QR code scannable du donneur",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ] else ...[
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: Colors.grey.shade300),
+                              color: Colors.white,
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.qr_code_2_rounded,
+                                  size: 56,
+                                  color: Colors.grey.shade400,
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  "Aucun QR code n’a encore été généré pour ce donneur.",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.grey.shade700,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  ProfileSectionCard(
+                    title: "Badges",
+                    icon: Icons.workspace_premium_rounded,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: const [
+                        ProfileBadgeItem(
+                          icon: Icons.emoji_events,
+                          label: "Bronze",
+                          color: Colors.brown,
                         ),
-
-                        const SizedBox(height: 10),
-
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
-                            border: Border.all(color: Colors.grey.shade300),
-                          ),
-                          child: Image.network(
-                            user.qrCode!,
-                            height: 150,
-                            errorBuilder:
-                                (_, __, ___) =>
-                                    const Icon(Icons.qr_code, size: 100),
-                          ),
+                        ProfileBadgeItem(
+                          icon: Icons.emoji_events,
+                          label: "Argent",
+                          color: Colors.grey,
+                        ),
+                        ProfileBadgeItem(
+                          icon: Icons.emoji_events,
+                          label: "Or",
+                          color: Colors.amber,
                         ),
                       ],
                     ),
                   ),
 
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-                // ================= BADGES =================
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _badge(Icons.emoji_events, "Bronze", Colors.brown),
-                    _badge(Icons.emoji_events, "Argent", Colors.grey),
-                    _badge(Icons.emoji_events, "Or", Colors.amber),
-                  ],
-                ),
+                  BloodCompatibilityCard(groups: compatibleGroups),
 
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-                // ================= COMPATIBILITÉ =================
-                _sectionCard(
-                  title: "Compatibilité sanguine",
-                  child: Wrap(
-                    spacing: 8,
-                    children:
-                        compatibleGroups
-                            .map(
-                              (g) => Chip(
-                                label: Text(g),
-                                backgroundColor: Colors.red.shade100,
-                              ),
-                            )
-                            .toList(),
+                  ProfileSectionCard(
+                    title: "Informations du donneur",
+                    icon: Icons.person_rounded,
+                    child: Column(
+                      children: [
+                        _infoTile(
+                          icon: Icons.badge_outlined,
+                          label: "Nom complet",
+                          value: user.fullName.isEmpty ? "--" : user.fullName,
+                        ),
+                        _infoTile(
+                          icon: Icons.phone_rounded,
+                          label: "Téléphone",
+                          value: user.telephone ?? "--",
+                        ),
+                        _infoTile(
+                          icon: Icons.email_rounded,
+                          label: "Email",
+                          value: user.email ?? "Aucun email ajouté",
+                        ),
+                        _infoTile(
+                          icon: Icons.location_on_outlined,
+                          label: "Ville / Quartier",
+                          value:
+                              "${user.ville ?? '--'} / ${user.quartier ?? '--'}",
+                        ),
+                        _infoTile(
+                          icon: Icons.bloodtype_rounded,
+                          label: "Groupe sanguin",
+                          value: user.groupeSanguin ?? "--",
+                        ),
+                        _infoTile(
+                          icon: Icons.verified_rounded,
+                          label: "Statut groupe sanguin",
+                          value: user.statutGroupeSanguin ?? "Non vérifié",
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-                // ================= HISTORIQUE DONS =================
-                _sectionCard(
-                  title: "Historique de dons",
-                  child: Column(
-                    children: const [
-                      ListTile(
-                        leading: Icon(Icons.bloodtype, color: Colors.red),
-                        title: Text("Don de sang"),
-                        subtitle: Text("12 Mars 2026"),
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.bloodtype, color: Colors.red),
-                        title: Text("Don de sang"),
-                        subtitle: Text("20 Janvier 2026"),
-                      ),
-                    ],
+                  ProfileSectionCard(
+                    title: "Historique de dons",
+                    icon: Icons.history_rounded,
+                    child: Column(
+                      children: const [
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(Icons.bloodtype, color: Colors.red),
+                          title: Text("Don de sang"),
+                          subtitle: Text("12 Mars 2026"),
+                        ),
+                        Divider(height: 8),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(Icons.bloodtype, color: Colors.red),
+                          title: Text("Don de sang"),
+                          subtitle: Text("20 Janvier 2026"),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
-                // ================= ACTION =================
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    minimumSize: const Size(double.infinity, 50),
+                  ProfileActionButton(
+                    text: "Modifier profil",
+                    icon: Icons.edit_rounded,
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const EditProfileScreen(),
+                        ),
+                      );
+                    },
                   ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const EditProfileScreen(),
-                      ),
-                    );
-                  },
-                  child: const Text("Modifier profil"),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  // ================= WIDGETS =================
-
-  Widget _badge(IconData icon, String label, Color color) {
-    return Column(
-      children: [
-        CircleAvatar(
-          backgroundColor: color,
-          child: Icon(icon, color: Colors.white),
+                ],
+              ),
+            );
+          },
         ),
-        const SizedBox(height: 5),
-        Text(label),
-      ],
-    );
-  }
-
-  Widget _sectionCard({required String title, required Widget child}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          const SizedBox(height: 10),
-          child,
-        ],
       ),
     );
   }
 
-  // ================= LOGIQUE =================
+  Widget _infoTile({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.red.shade600),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: Colors.grey.shade700,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Flexible(
+              child: Text(
+                value,
+                textAlign: TextAlign.right,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   List<String> _getCompatibleGroups(String group) {
     switch (group) {

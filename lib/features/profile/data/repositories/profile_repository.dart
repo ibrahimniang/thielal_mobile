@@ -6,11 +6,19 @@ class ProfileRepository {
 
   ProfileRepository(this._service);
 
+  // ==========================
+  // GET PROFILE
+  // ==========================
   Future<ProfileModel> getProfile() async {
     final res = await _service.getProfile();
-    return ProfileModel.fromJson(res.data['data']);
+
+    final data = _extractPayload(res.data);
+    return ProfileModel.fromJson(data);
   }
 
+  // ==========================
+  // UPDATE PROFILE
+  // ==========================
   Future<void> updateProfile({
     required String nom,
     required String prenom,
@@ -25,7 +33,9 @@ class ProfileRepository {
     );
   }
 
-  /// 🔹 Update location
+  // ==========================
+  // UPDATE LOCATION
+  // ==========================
   Future<void> updateLocation({
     required double latitude,
     required double longitude,
@@ -33,6 +43,9 @@ class ProfileRepository {
     await _service.updateLocation(latitude: latitude, longitude: longitude);
   }
 
+  // ==========================
+  // EMAIL CHANGE
+  // ==========================
   Future<void> requestEmailChange(String email) async {
     await _service.requestEmailChange(email);
   }
@@ -41,11 +54,31 @@ class ProfileRepository {
     await _service.verifyEmailChange(email: email, code: code);
   }
 
+  // ==========================
+  // PHONE CHANGE
+  // ==========================
   Future<void> requestPhoneChange(String phone) async {
     await _service.requestPhoneChange(phone);
   }
 
   Future<void> verifyPhoneChange(String phone, String code) async {
     await _service.verifyPhoneChange(phone: phone, code: code);
+  }
+
+  // ==========================
+  // HELPERS
+  // ==========================
+  Map<String, dynamic> _extractPayload(dynamic responseData) {
+    if (responseData is Map<String, dynamic>) {
+      final nested = responseData['data'];
+
+      if (nested is Map<String, dynamic>) {
+        return nested;
+      }
+
+      return responseData;
+    }
+
+    return <String, dynamic>{};
   }
 }
