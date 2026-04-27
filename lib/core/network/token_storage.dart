@@ -17,6 +17,11 @@ class TokenStorage {
 
   /// Sauvegarde de l'access token.
   static Future<void> saveAccessToken(String token) async {
+    if (token.trim().isEmpty) {
+      print('TOKEN STORAGE -> access token vide, non sauvegardé');
+      return;
+    }
+
     print('TOKEN STORAGE -> saving access token: $token');
     await SecureStorageService.instance.write(
       key: AppConstants.accessTokenKey,
@@ -26,6 +31,11 @@ class TokenStorage {
 
   /// Sauvegarde du refresh token.
   static Future<void> saveRefreshToken(String token) async {
+    if (token.trim().isEmpty) {
+      print('TOKEN STORAGE -> refresh token vide, non sauvegardé');
+      return;
+    }
+
     await SecureStorageService.instance.write(
       key: AppConstants.refreshTokenKey,
       value: token,

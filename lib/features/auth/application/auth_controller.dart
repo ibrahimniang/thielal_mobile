@@ -6,6 +6,7 @@ import '../../../../core/network/network_exceptions.dart';
 import '../data/repositories/auth_repository.dart';
 import 'auth_state.dart';
 import '../../../core/storage/secure_storage_service.dart';
+import '../../../core/storage/session_storage.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository();
@@ -230,11 +231,21 @@ class AuthController extends StateNotifier<AuthState> {
     required String password,
   }) async {
     try {
-      state = state.copyWith(isLoading: true, clearError: true);
+      state = state.copyWith(
+        isLoading: true,
+        clearError: true,
+        isAuthenticated: false,
+        clearUser: true,
+        clearToken: true,
+      );
 
       final result = await _repository.loginUser(
         identifier: identifier,
         password: password,
+      );
+
+      await SessionStorage.saveSessionExpiry(
+        DateTime.now().add(const Duration(minutes: 10)),
       );
 
       state = state.copyWith(
@@ -245,7 +256,13 @@ class AuthController extends StateNotifier<AuthState> {
         clearError: true,
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: _mapError(e));
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: false,
+        clearUser: true,
+        clearToken: true,
+        errorMessage: _mapError(e),
+      );
     }
   }
 
@@ -258,11 +275,21 @@ class AuthController extends StateNotifier<AuthState> {
     required String password,
   }) async {
     try {
-      state = state.copyWith(isLoading: true, clearError: true);
+      state = state.copyWith(
+        isLoading: true,
+        clearError: true,
+        isAuthenticated: false,
+        clearUser: true,
+        clearToken: true,
+      );
 
       final result = await _repository.loginOffice(
         identifier: identifier,
         password: password,
+      );
+
+      await SessionStorage.saveSessionExpiry(
+        DateTime.now().add(const Duration(minutes: 10)),
       );
 
       state = state.copyWith(
@@ -273,7 +300,13 @@ class AuthController extends StateNotifier<AuthState> {
         clearError: true,
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: _mapError(e));
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: false,
+        clearUser: true,
+        clearToken: true,
+        errorMessage: _mapError(e),
+      );
     }
   }
 
@@ -285,7 +318,13 @@ class AuthController extends StateNotifier<AuthState> {
     required String password,
   }) async {
     try {
-      state = state.copyWith(isLoading: true, clearError: true);
+      state = state.copyWith(
+        isLoading: true,
+        clearError: true,
+        isAuthenticated: false,
+        clearUser: true,
+        clearToken: true,
+      );
 
       final bool isEmail = identifier.contains('@');
 
@@ -300,6 +339,10 @@ class AuthController extends StateNotifier<AuthState> {
                 password: password,
               );
 
+      await SessionStorage.saveSessionExpiry(
+        DateTime.now().add(const Duration(minutes: 10)),
+      );
+
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: true,
@@ -312,7 +355,15 @@ class AuthController extends StateNotifier<AuthState> {
       final saved = await SecureStorageService.hasCompletedEntryFlow();
       print('AUTH DEBUG -> hasCompletedEntryFlow saved after login: $saved');
     } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: _mapError(e));
+      final message = _mapError(e);
+      print('LOGIN DEBUG -> error: $message');
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: false,
+        clearUser: true,
+        clearToken: true,
+        errorMessage: _mapError(e),
+      );
     }
   }
   // ==========================
@@ -382,6 +433,22 @@ class AuthController extends StateNotifier<AuthState> {
       );
 
       if (token == null || token.isEmpty) {
+        state = state.copyWith(
+          isLoading: false,
+          isAuthenticated: false,
+          clearUser: true,
+          clearToken: true,
+        );
+        return;
+      }
+
+      final isExpired = await SessionStorage.isSessionExpired();
+
+      print('AUTH DEBUG -> session expired: $isExpired');
+
+      if (isExpired) {
+        await logout();
+
         state = state.copyWith(
           isLoading: false,
           isAuthenticated: false,
@@ -463,7 +530,13 @@ class AuthController extends StateNotifier<AuthState> {
     try {
       return NetworkExceptions.getMessage(err);
     } catch (_) {
-      return 'Une erreur est survenue';
+      final message = error.toString();
+
+      if (message.startsWith('Exception: ')) {
+        return message.replaceFirst('Exception: ', '').trim();
+      }
+
+      return message.isNotEmpty ? message : 'Une erreur est survenue';
     }
   }
 

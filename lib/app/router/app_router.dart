@@ -36,7 +36,11 @@ class AppRouter {
 
       redirect: (context, state) {
         final authState = ref.read(authControllerProvider);
-        final isAuthenticated = authState.isAuthenticated;
+        final isAuthenticated =
+            authState.isAuthenticated &&
+            authState.currentUser != null &&
+            authState.accessToken != null &&
+            authState.accessToken!.isNotEmpty;
         final roleId = authState.currentUser?.roleId;
         final path = state.uri.path;
 

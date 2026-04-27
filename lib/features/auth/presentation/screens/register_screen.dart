@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_spacing.dart';
@@ -38,6 +39,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _accepteConditions = false;
   bool _acceptePolitique = false;
   bool? _aDonneRecemment;
+
+  double? _latitude;
+  double? _longitude;
+  bool _isFetchingLocation = false;
 
   static const List<String> _bloodGroups = [
     'O+',
@@ -249,6 +254,72 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         false;
   }
 
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      throw Exception('Le GPS/localisation est désactivé sur le téléphone.');
+    }
+
+    permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+
+      if (permission == LocationPermission.denied) {
+        throw Exception('Permission de localisation refusée.');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception(
+        'Permission refusée définitivement. Activez-la dans les paramètres.',
+      );
+    }
+
+    return Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+  }
+
+  Future<void> _fetchCurrentLocation() async {
+    try {
+      setState(() {
+        _isFetchingLocation = true;
+      });
+
+      final position = await _determinePosition();
+
+      if (!mounted) return;
+
+      setState(() {
+        _latitude = position.latitude;
+        _longitude = position.longitude;
+        _isFetchingLocation = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Localisation récupérée : ${position.latitude.toStringAsFixed(5)}, ${position.longitude.toStringAsFixed(5)}',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _isFetchingLocation = false;
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Localisation indisponible : $e')));
+    }
+  }
+
   Future<void> _submitStep() async {
     final authCtrl = ref.read(authControllerProvider.notifier);
 
@@ -274,6 +345,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
 
     if (_step == 2) {
+      if (_latitude == null || _longitude == null) {
+        await _fetchCurrentLocation();
+      }
+
       await authCtrl.registerStep2(
         ville:
             _villeController.text.trim().isEmpty
@@ -283,6 +358,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             _quartierController.text.trim().isEmpty
                 ? null
                 : _quartierController.text.trim(),
+        latitude: _latitude,
+        longitude: _longitude,
       );
 
       if (!mounted) return;
@@ -742,6 +819,51 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             hintText: 'Quartier',
             labelText: 'Quartier',
           ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _isFetchingLocation ? null : _fetchCurrentLocation,
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              icon:
+                  _isFetchingLocation
+                      ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2.2),
+                      )
+                      : const Icon(Icons.my_location_rounded),
+              label: Text(
+                _latitude != null && _longitude != null
+                    ? 'Localisation récupérée'
+                    : 'Utiliser ma localisation',
+              ),
+            ),
+          ),
+          if (_latitude != null && _longitude != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.green.shade100),
+              ),
+              child: Text(
+                'Latitude : ${_latitude!.toStringAsFixed(5)}\nLongitude : ${_longitude!.toStringAsFixed(5)}',
+                style: TextStyle(
+                  color: Colors.green.shade800,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

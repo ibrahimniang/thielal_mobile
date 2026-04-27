@@ -39,7 +39,14 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
     ) {
       if (!mounted) return;
 
-      if (next.isAuthenticated && next.currentUser != null) {
+      final wasAuthenticated = previous?.isAuthenticated == true;
+      final isNowAuthenticated =
+          next.isAuthenticated &&
+          next.currentUser != null &&
+          next.accessToken != null &&
+          next.accessToken!.isNotEmpty;
+
+      if (!wasAuthenticated && isNowAuthenticated) {
         final roleId = next.currentUser!.roleId;
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -232,11 +239,18 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
                   isLoading: authState.isLoading,
                   onPressed: () async {
                     final isValid = _formKey.currentState?.validate() ?? false;
+                    print('LOGIN DEBUG -> form valid: $isValid');
                     if (!isValid) return;
+                    print(
+                      'LOGIN DEBUG -> identifier: ${_identifierController.text.trim()}',
+                    );
 
                     await auth.login(
                       identifier: _identifierController.text.trim(),
                       password: _passwordController.text.trim(),
+                    );
+                    print(
+                      'LOGIN DEBUG -> errorMessage after login: ${ref.read(authControllerProvider).errorMessage}',
                     );
                   },
                 ),
