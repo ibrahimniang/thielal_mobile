@@ -14,6 +14,9 @@ import '../widgets/quick_action_card.dart';
 import '../widgets/emergency_banner.dart';
 import '../widgets/blood_status_banner.dart';
 
+// ✅ AJOUT IMPORT DEMANDE SANG
+import '../../donations/presentation/screens/demande_sang_screen.dart';
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -169,19 +172,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     text: 'Enregistrer',
                     isLoading: authState.isLoading,
                     onPressed: () async {
-                      final isValid = formKey.currentState?.validate() ?? false;
+                      final isValid =
+                          formKey.currentState?.validate() ?? false;
                       if (!isValid) return;
 
-                      final auth = ref.read(authControllerProvider.notifier);
+                      final auth =
+                          ref.read(authControllerProvider.notifier);
                       final password = passwordController.text.trim();
 
                       await auth.setPassword(password: password);
 
                       if (!mounted) return;
 
-                      final stateAfterSetPassword = ref.read(
-                        authControllerProvider,
-                      );
+                      final stateAfterSetPassword =
+                          ref.read(authControllerProvider);
 
                       if (stateAfterSetPassword.errorMessage == null) {
                         final identifier =
@@ -205,22 +209,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           }
 
                           _passwordModalShown = false;
-
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (!mounted) return;
-
-                            final roleId = newState.currentUser?.roleId;
-
-                            if (roleId == 1) {
-                              context.go(RouteNames.adminDashboard);
-                            } else if (roleId == 3) {
-                              context.go(RouteNames.staffDashboard);
-                            } else if (roleId == 4) {
-                              context.go(RouteNames.directorDashboard);
-                            } else {
-                              context.go(RouteNames.home);
-                            }
-                          });
                         }
                       }
                     },
@@ -255,6 +243,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Accueil')),
+
+      // ✅ AJOUT DU BOUTON FLOTTANT
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.red,
+        child: const Icon(Icons.add, color: Colors.white),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const DemandeSangScreen(),
+            ),
+          );
+        },
+      ),
+
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -273,24 +276,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 20),
+
               EmergencyBanner(
                 title: 'Urgence don de sang',
                 description:
                     'Aidez rapidement en consultant les demandes urgentes et les centres disponibles.',
                 onTap: () => context.push(RouteNames.donations),
               ),
+
               const SizedBox(height: 20),
+
               BloodStatusBanner(
                 bloodGroup: bloodGroup,
                 status: bloodStatusLabel,
                 statusColor: bloodStatusColor,
               ),
+
               const SizedBox(height: 24),
-              Text(
-                'Actions rapides',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 12),
+
               QuickActionCard(
                 icon: Icons.favorite,
                 title: 'Mes dons',
@@ -298,7 +301,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 color: Colors.red,
                 onTap: () => context.push(RouteNames.donations),
               ),
+
               const SizedBox(height: 12),
+
               QuickActionCard(
                 icon: Icons.location_on,
                 title: 'Centres proches',
@@ -306,7 +311,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 color: Colors.blue,
                 onTap: () => context.push(RouteNames.centers),
               ),
+
               const SizedBox(height: 12),
+
               QuickActionCard(
                 icon: Icons.notifications_active,
                 title: 'Notifications',
@@ -314,7 +321,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 color: Colors.orange,
                 onTap: () => context.push(RouteNames.notifications),
               ),
+
               const SizedBox(height: 24),
+
               CustomButton(
                 text: 'Déconnexion',
                 onPressed: () async {
@@ -332,4 +341,3 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 }
-
