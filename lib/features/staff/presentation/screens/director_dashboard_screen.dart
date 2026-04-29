@@ -94,6 +94,37 @@ class _DirectorDashboardScreenState
             },
           ),
           IconButton(icon: const Icon(Icons.refresh), onPressed: _refresh),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder:
+                    (_) => AlertDialog(
+                      title: const Text('Déconnexion'),
+                      content: const Text(
+                        'Voulez-vous vraiment vous déconnecter ?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('Annuler'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text('Déconnexion'),
+                        ),
+                      ],
+                    ),
+              );
+
+              if (confirmed == true) {
+                await ref.read(authControllerProvider.notifier).logout();
+                if (!mounted) return;
+                context.go(RouteNames.loginUser);
+              }
+            },
+          ),
         ],
       ),
       body: RefreshIndicator(

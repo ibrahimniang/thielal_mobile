@@ -112,7 +112,7 @@ class AuthRepository {
   }
 
   // ==========================
-  // LOGIN USER (INCHANGÉ)
+  // LOGIN USER
   // ==========================
 
   Future<(UserModel user, AuthTokensModel tokens)> loginUser({
@@ -124,18 +124,37 @@ class AuthRepository {
       password: password,
     );
 
+    final raw = response.data;
+
+    if (raw is Map<String, dynamic>) {
+      final bool success = raw['success'] == true;
+      final String message =
+          raw['message']?.toString() ?? 'Connexion impossible';
+
+      if (!success) {
+        throw Exception(message);
+      }
+    }
+
     final data = _extractPayload(response.data);
     final user = _extractUser(data);
     final tokens = _extractTokens(data);
 
+    if (tokens.accessToken.trim().isEmpty) {
+      throw Exception("Token d'accès manquant");
+    }
+
     await TokenStorage.saveAccessToken(tokens.accessToken);
-    await TokenStorage.saveRefreshToken(tokens.refreshToken);
+
+    if (tokens.refreshToken.trim().isNotEmpty) {
+      await TokenStorage.saveRefreshToken(tokens.refreshToken);
+    }
 
     return (user, tokens);
   }
 
   // ==========================
-  // LOGIN OFFICE (INCHANGÉ)
+  // LOGIN OFFICE
   // ==========================
 
   Future<(UserModel user, AuthTokensModel tokens)> loginOffice({
@@ -147,16 +166,34 @@ class AuthRepository {
       password: password,
     );
 
+    final raw = response.data;
+
+    if (raw is Map<String, dynamic>) {
+      final bool success = raw['success'] == true;
+      final String message =
+          raw['message']?.toString() ?? 'Connexion impossible';
+
+      if (!success) {
+        throw Exception(message);
+      }
+    }
+
     final data = _extractPayload(response.data);
     final user = _extractUser(data);
     final tokens = _extractTokens(data);
 
+    if (tokens.accessToken.trim().isEmpty) {
+      throw Exception("Token d'accès manquant");
+    }
+
     await TokenStorage.saveAccessToken(tokens.accessToken);
-    await TokenStorage.saveRefreshToken(tokens.refreshToken);
+
+    if (tokens.refreshToken.trim().isNotEmpty) {
+      await TokenStorage.saveRefreshToken(tokens.refreshToken);
+    }
 
     return (user, tokens);
   }
-
   // ==========================
   // FORGOT PASSWORD (FIX TELEPHONE)
   // ==========================
