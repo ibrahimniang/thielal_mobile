@@ -29,6 +29,8 @@ import '../../features/splash/presentation/splash_screen.dart';
 import '../../core/navigation/main_navigation.dart';
 import 'route_names.dart';
 
+import '../../features/notifications/presentation/screens/notifications_list_screen.dart';
+
 class AppRouter {
   static GoRouter router(WidgetRef ref) {
     return GoRouter(
@@ -197,6 +199,10 @@ class AppRouter {
             GoRoute(
               path: RouteNames.map,
               builder: (_, __) => const MapScreen(),
+            ),
+            GoRoute(
+              path: '/notifications',
+              builder: (_, __) => const NotificationsListScreen(),
             ),
           ],
         ),
