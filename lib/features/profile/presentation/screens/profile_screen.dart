@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:intl/intl.dart';
 
 import '../../application/profile_controller.dart';
+import 'package:thielal/features/donations/application/donation_controller.dart';
+
 import '../widgets/profile_header_card.dart';
 import '../widgets/profile_section_card.dart';
 import '../widgets/profile_badge_item.dart';
 import '../widgets/blood_compatibility_card.dart';
 import '../widgets/profile_action_button.dart';
+
 import 'edit_profile_screen.dart';
+
 import '../../../../shared/widgets/app_loading_view.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -17,6 +22,9 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(profileControllerProvider);
+
+    // AJOUT : récupération des vrais dons
+    final donsAsync = ref.watch(myDonationsProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FC),
@@ -40,22 +48,23 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
         child: state.when(
-          loading:
-              () => const AppLoadingView(message: 'Chargement du profil...'),
-          error:
-              (e, _) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    "Erreur: $e",
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+          loading: () =>
+              const AppLoadingView(message: 'Chargement du profil...'),
+
+          error: (e, _) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                "Erreur: $e",
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
+            ),
+          ),
+
           data: (user) {
             if (user == null) {
               return const Center(
@@ -66,9 +75,9 @@ class ProfileScreen extends ConsumerWidget {
               );
             }
 
-            final compatibleGroups = _getCompatibleGroups(
-              user.groupeSanguin ?? '',
-            );
+            final compatibleGroups =
+                _getCompatibleGroups(user.groupeSanguin ?? '');
+
             final points = user.points ?? 0;
             final badge = _getBadge(points);
 
@@ -83,8 +92,10 @@ class ProfileScreen extends ConsumerWidget {
                     points: points,
                     badge: badge,
                   ),
+
                   const SizedBox(height: 20),
 
+                  /// QR CODE
                   ProfileSectionCard(
                     title: "Carte QR Donneur",
                     icon: Icons.qr_code_rounded,
@@ -96,7 +107,8 @@ class ProfileScreen extends ConsumerWidget {
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: Colors.grey.shade300),
+                              border:
+                                  Border.all(color: Colors.grey.shade300),
                               color: Colors.white,
                             ),
                             child: QrImageView(
@@ -110,7 +122,8 @@ class ProfileScreen extends ConsumerWidget {
                           const Text(
                             "QR code scannable du donneur",
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontWeight: FontWeight.w600),
+                            style:
+                                TextStyle(fontWeight: FontWeight.w600),
                           ),
                         ] else ...[
                           Container(
@@ -118,7 +131,8 @@ class ProfileScreen extends ConsumerWidget {
                             padding: const EdgeInsets.all(18),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: Colors.grey.shade300),
+                              border:
+                                  Border.all(color: Colors.grey.shade300),
                               color: Colors.white,
                             ),
                             child: Column(
@@ -144,13 +158,16 @@ class ProfileScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
+
                   const SizedBox(height: 20),
 
+                  /// BADGES
                   ProfileSectionCard(
                     title: "Badges",
                     icon: Icons.workspace_premium_rounded,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      mainAxisAlignment:
+                          MainAxisAlignment.spaceEvenly,
                       children: const [
                         ProfileBadgeItem(
                           icon: Icons.emoji_events,
@@ -177,6 +194,7 @@ class ProfileScreen extends ConsumerWidget {
 
                   const SizedBox(height: 20),
 
+                  /// INFOS DONNEUR
                   ProfileSectionCard(
                     title: "Informations du donneur",
                     icon: Icons.person_rounded,
@@ -185,7 +203,9 @@ class ProfileScreen extends ConsumerWidget {
                         _infoTile(
                           icon: Icons.badge_outlined,
                           label: "Nom complet",
-                          value: user.fullName.isEmpty ? "--" : user.fullName,
+                          value: user.fullName.isEmpty
+                              ? "--"
+                              : user.fullName,
                         ),
                         _infoTile(
                           icon: Icons.phone_rounded,
@@ -195,7 +215,8 @@ class ProfileScreen extends ConsumerWidget {
                         _infoTile(
                           icon: Icons.email_rounded,
                           label: "Email",
-                          value: user.email ?? "Aucun email ajouté",
+                          value:
+                              user.email ?? "Aucun email ajouté",
                         ),
                         _infoTile(
                           icon: Icons.location_on_outlined,
@@ -206,12 +227,15 @@ class ProfileScreen extends ConsumerWidget {
                         _infoTile(
                           icon: Icons.bloodtype_rounded,
                           label: "Groupe sanguin",
-                          value: user.groupeSanguin ?? "--",
+                          value:
+                              user.groupeSanguin ?? "--",
                         ),
                         _infoTile(
                           icon: Icons.verified_rounded,
                           label: "Statut groupe sanguin",
-                          value: user.statutGroupeSanguin ?? "Non vérifié",
+                          value:
+                              user.statutGroupeSanguin ??
+                                  "Non vérifié",
                         ),
                       ],
                     ),
@@ -219,25 +243,128 @@ class ProfileScreen extends ConsumerWidget {
 
                   const SizedBox(height: 20),
 
+                  /// HISTORIQUE RÉEL DES DONS
                   ProfileSectionCard(
                     title: "Historique de dons",
                     icon: Icons.history_rounded,
-                    child: Column(
-                      children: const [
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: Icon(Icons.bloodtype, color: Colors.red),
-                          title: Text("Don de sang"),
-                          subtitle: Text("12 Mars 2026"),
+                    child: donsAsync.when(
+                      loading: () => const Padding(
+                        padding: EdgeInsets.all(20),
+                        child: CircularProgressIndicator(
+                          color: Colors.red,
                         ),
-                        Divider(height: 8),
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: Icon(Icons.bloodtype, color: Colors.red),
-                          title: Text("Don de sang"),
-                          subtitle: Text("20 Janvier 2026"),
+                      ),
+
+                      error: (e, _) => Text(
+                        "Erreur historique: $e",
+                        style: const TextStyle(
+                          color: Colors.red,
                         ),
-                      ],
+                      ),
+
+                      data: (dons) {
+                        if (dons.isEmpty) {
+                          return const Text(
+                            "Aucun don enregistré",
+                          );
+                        }
+
+                        return Column(
+                          children: dons.map((don) {
+                            final hasCertificat =
+                                don.certificat != null;
+
+                            return Container(
+                              margin: const EdgeInsets.only(
+                                  bottom: 12),
+                              padding:
+                                  const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius:
+                                    BorderRadius.circular(16),
+                                border: Border.all(
+                                  color:
+                                      Colors.grey.shade200,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.bloodtype,
+                                        color: Colors.red,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          "Don de sang (${don.groupeSanguin})",
+                                          style:
+                                              const TextStyle(
+                                            fontWeight:
+                                                FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: 8),
+
+                                  Text(
+                                    "Date : ${DateFormat('dd MMM yyyy').format(don.dateDon)}",
+                                  ),
+
+                                  Text(
+                                    "Centre : ${don.centre?.nom ?? "Centre inconnu"}",
+                                  ),
+
+                                  Text(
+                                    "Ville : ${don.centre?.ville ?? "Ville inconnue"}",
+                                  ),
+
+                                  const SizedBox(height: 8),
+
+                                  if (hasCertificat)
+                                    Align(
+                                      alignment:
+                                          Alignment.centerRight,
+                                      child: TextButton.icon(
+                                        onPressed: () {
+                                          debugPrint(
+                                            "Certificat: ${don.certificat!.urlCertificat}",
+                                          );
+                                        },
+                                        icon: const Icon(
+                                          Icons.description,
+                                          color:
+                                              Colors.deepPurple,
+                                        ),
+                                        label: const Text(
+                                          "Voir certificat",
+                                          style: TextStyle(
+                                            color: Colors
+                                                .deepPurple,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    const Text(
+                                      "Certificat non disponible",
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        );
+                      },
                     ),
                   ),
 
@@ -250,7 +377,8 @@ class ProfileScreen extends ConsumerWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const EditProfileScreen(),
+                          builder: (_) =>
+                              const EditProfileScreen(),
                         ),
                       );
                     },
@@ -272,11 +400,16 @@ class ProfileScreen extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 14,
+        ),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(
+            color: Colors.grey.shade200,
+          ),
         ),
         child: Row(
           children: [
@@ -295,7 +428,9 @@ class ProfileScreen extends ConsumerWidget {
               child: Text(
                 value,
                 textAlign: TextAlign.right,
-                style: const TextStyle(fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ],

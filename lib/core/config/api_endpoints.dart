@@ -63,11 +63,13 @@ class ApiEndpoints {
   // ==========================
   // DONATIONS
   // ==========================
+
   static const String scanQr = '/dons/scan-qr';
   static const String myDons = '/dons/my-dons';
   static const String demandeSang = '/dons/demande-sang';
   static const String demandes = '/dons/demandes';
   static const String generateQr = '/dons/generate-qr';
+
   static const String nearbyDonors = '/nearby-donors';
   static const String donneurs = '/dons/donneurs';
 

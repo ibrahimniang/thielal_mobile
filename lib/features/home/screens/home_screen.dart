@@ -1,18 +1,20 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../shared/widgets/custom_button.dart';
-import '../../../../shared/widgets/custom_text_field.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../../core/services/location_service.dart';
-import '../../profile/application/profile_controller.dart';
 import '../../../app/router/route_names.dart';
 
-import '../widgets/quick_action_card.dart';
 import '../widgets/emergency_banner.dart';
 import '../widgets/blood_status_banner.dart';
+
+import '../../donations/presentation/screens/demande_sang_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -22,219 +24,71 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  bool _passwordModalShown = false;
+  final TextEditingController searchController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
+  Timer? _debounce;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showSetPasswordModalIfNeeded();
-      _initLocation();
+  List<dynamic> donors = [];
+  bool isSearching = false;
+
+  final String baseUrl =
+      "https://lifelink-backend-3bgr.onrender.com/api/dons/donneurs";
+
+  void _onSearchChanged(String value) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+    _debounce = Timer(const Duration(milliseconds: 400), () {
+      _searchDonors(value);
     });
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  Future<void> _searchDonors(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        donors = [];
+        isSearching = false;
+      });
+      return;
+    }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showSetPasswordModalIfNeeded();
-    });
-  }
+    setState(() => isSearching = true);
 
-  Future<void> _initLocation() async {
     try {
-      final service = LocationService();
-      final position = await service.getLocation();
+      final user = ref.read(authControllerProvider).currentUser;
 
-      if (position != null) {
-        await ref
-            .read(profileControllerProvider.notifier)
-            .updateLocation(position.latitude, position.longitude);
+      final uri = Uri.parse(baseUrl).replace(queryParameters: {
+        "ville": user?.ville ?? "",
+        "groupe_sanguin": query,
+      });
+
+      final res = await http.get(uri);
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+
+        setState(() {
+          donors = data["data"] ?? [];
+          isSearching = false;
+        });
+      } else {
+        setState(() {
+          donors = [];
+          isSearching = false;
+        });
       }
-    } catch (_) {}
+    } catch (_) {
+      setState(() {
+        donors = [];
+        isSearching = false;
+      });
+    }
   }
 
-  void _showSetPasswordModalIfNeeded() {
-    if (_passwordModalShown) return;
-    if (!mounted) return;
-
-    final authState = ref.read(authControllerProvider);
-
-    final shouldAskForPassword =
-        !authState.isAuthenticated &&
-        (authState.pendingPhone != null || authState.pendingEmail != null);
-
-    if (!shouldAskForPassword) return;
-
-    _passwordModalShown = true;
-    _openSetPasswordModal();
-  }
-
-  Future<void> _openSetPasswordModal() async {
-    final formKey = GlobalKey<FormState>();
-    final passwordController = TextEditingController();
-    final confirmController = TextEditingController();
-
-    bool obscure1 = true;
-    bool obscure2 = true;
-
-    await showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            final authState = ref.watch(authControllerProvider);
-
-            return AlertDialog(
-              title: const Text('Créer votre mot de passe'),
-              content: Form(
-                key: formKey,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'Pour finaliser votre compte, veuillez définir un mot de passe.',
-                      ),
-                      const SizedBox(height: 20),
-                      CustomTextField(
-                        controller: passwordController,
-                        hintText: 'Mot de passe',
-                        labelText: 'Mot de passe',
-                        obscureText: obscure1,
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Le mot de passe est obligatoire';
-                          }
-                          if (value.trim().length < 6) {
-                            return 'Le mot de passe doit contenir au moins 6 caractères';
-                          }
-                          return null;
-                        },
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setModalState(() {
-                              obscure1 = !obscure1;
-                            });
-                          },
-                          icon: Icon(
-                            obscure1 ? Icons.visibility_off : Icons.visibility,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      CustomTextField(
-                        controller: confirmController,
-                        hintText: 'Confirmer le mot de passe',
-                        labelText: 'Confirmation',
-                        obscureText: obscure2,
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Veuillez confirmer le mot de passe';
-                          }
-                          if (value.trim() != passwordController.text.trim()) {
-                            return 'Les mots de passe ne correspondent pas';
-                          }
-                          return null;
-                        },
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setModalState(() {
-                              obscure2 = !obscure2;
-                            });
-                          },
-                          icon: Icon(
-                            obscure2 ? Icons.visibility_off : Icons.visibility,
-                          ),
-                        ),
-                      ),
-                      if (authState.errorMessage != null) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          authState.errorMessage!,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                SizedBox(
-                  width: double.infinity,
-                  child: CustomButton(
-                    text: 'Enregistrer',
-                    isLoading: authState.isLoading,
-                    onPressed: () async {
-                      final isValid = formKey.currentState?.validate() ?? false;
-                      if (!isValid) return;
-
-                      final auth = ref.read(authControllerProvider.notifier);
-                      final password = passwordController.text.trim();
-
-                      await auth.setPassword(password: password);
-
-                      if (!mounted) return;
-
-                      final stateAfterSetPassword = ref.read(
-                        authControllerProvider,
-                      );
-
-                      if (stateAfterSetPassword.errorMessage == null) {
-                        final identifier =
-                            stateAfterSetPassword.pendingPhone ??
-                            stateAfterSetPassword.pendingEmail;
-
-                        if (identifier != null && identifier.isNotEmpty) {
-                          await auth.completeRegistrationAndLogin(
-                            identifier: identifier,
-                            password: password,
-                          );
-                        }
-
-                        if (!mounted) return;
-
-                        final newState = ref.read(authControllerProvider);
-
-                        if (newState.isAuthenticated) {
-                          if (dialogContext.mounted) {
-                            Navigator.of(dialogContext).pop();
-                          }
-
-                          _passwordModalShown = false;
-
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (!mounted) return;
-
-                            final roleId = newState.currentUser?.roleId;
-
-                            if (roleId == 1) {
-                              context.go(RouteNames.adminDashboard);
-                            } else if (roleId == 3) {
-                              context.go(RouteNames.staffDashboard);
-                            } else if (roleId == 4) {
-                              context.go(RouteNames.directorDashboard);
-                            } else {
-                              context.go(RouteNames.home);
-                            }
-                          });
-                        }
-                      }
-                    },
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-
-    passwordController.dispose();
-    confirmController.dispose();
+  @override
+  void dispose() {
+    searchController.dispose();
+    _debounce?.cancel();
+    super.dispose();
   }
 
   @override
@@ -242,91 +96,245 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final authState = ref.watch(authControllerProvider);
     final user = authState.currentUser;
 
-    final bloodGroup =
-        user?.groupeSanguin?.isNotEmpty == true
-            ? user!.groupeSanguin!
-            : 'Non défini';
-
-    final bloodStatusRaw = user?.statutGroupeSanguin?.toLowerCase() ?? '';
-    final bloodStatusLabel =
-        bloodStatusRaw == 'verifie' ? 'Vérifié' : 'Non vérifié';
-    final bloodStatusColor =
-        bloodStatusRaw == 'verifie' ? Colors.green : Colors.orange;
+    final isSearchingMode = searchController.text.isNotEmpty;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Accueil')),
+      appBar: AppBar(
+        backgroundColor: Colors.red,
+        title: Row(
+          children: [
+
+            /// 👤 PROFILE
+            GestureDetector(
+              onTap: () => context.push(RouteNames.profile),
+              child: const CircleAvatar(
+                radius: 18,
+                backgroundColor: Colors.white,
+                child: Icon(Icons.person, color: Colors.red),
+              ),
+            ),
+
+            const SizedBox(width: 10),
+
+            /// 🔎 SEARCH BAR
+            Expanded(
+              child: Container(
+                height: 38,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: TextField(
+                  controller: searchController,
+                  onChanged: _onSearchChanged,
+                  decoration: const InputDecoration(
+                    hintText: "Rechercher donneur (O+, A+, ville...)",
+                    border: InputBorder.none,
+                    icon: Icon(Icons.search, color: Colors.red),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline),
+            onPressed: () => context.push('/chatbot'),
+          ),
+        ],
+      ),
+
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.red,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const DemandeSangScreen(),
+            ),
+          );
+        },
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
+
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: Padding(
           padding: const EdgeInsets.all(AppSpacing.screenPadding),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Bienvenue',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                user?.fullName.isNotEmpty == true
-                    ? user!.fullName
-                    : 'Utilisateur',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 20),
-              EmergencyBanner(
-                title: 'Urgence don de sang',
-                description:
-                    'Aidez rapidement en consultant les demandes urgentes et les centres disponibles.',
-                onTap: () => context.push(RouteNames.donations),
-              ),
-              const SizedBox(height: 20),
-              BloodStatusBanner(
-                bloodGroup: bloodGroup,
-                status: bloodStatusLabel,
-                statusColor: bloodStatusColor,
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Actions rapides',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 12),
-              QuickActionCard(
-                icon: Icons.favorite,
-                title: 'Mes dons',
-                subtitle: 'Consulter votre historique de dons',
-                color: Colors.red,
-                onTap: () => context.push(RouteNames.donations),
-              ),
-              const SizedBox(height: 12),
-              QuickActionCard(
-                icon: Icons.location_on,
-                title: 'Centres proches',
-                subtitle: 'Trouver les centres de don autour de vous',
-                color: Colors.blue,
-                onTap: () => context.push(RouteNames.centers),
-              ),
-              const SizedBox(height: 12),
-              QuickActionCard(
-                icon: Icons.notifications_active,
-                title: 'Notifications',
-                subtitle: 'Voir les alertes et messages importants',
-                color: Colors.orange,
-                onTap: () => context.push(RouteNames.notifications),
-              ),
-              const SizedBox(height: 24),
-              CustomButton(
-                text: 'Déconnexion',
-                onPressed: () async {
-                  await ref.read(authControllerProvider.notifier).logout();
 
-                  if (!context.mounted) return;
+              /// ================= SEARCH RESULTS =================
+              if (isSearchingMode)
+                Expanded(
+                  child: isSearching
+                      ? const Center(child: CircularProgressIndicator())
+                      : donors.isEmpty
+                          ? const Center(
+                              child: Text("Aucun donneur trouvé"),
+                            )
+                          : ListView.builder(
+                              itemCount: donors.length,
+                              itemBuilder: (context, index) {
+                                final d = donors[index];
 
-                  context.go(RouteNames.loginUser);
-                },
-              ),
+                                return Card(
+                                  child: ListTile(
+                                    leading: const Icon(
+                                      Icons.bloodtype,
+                                      color: Colors.red,
+                                    ),
+                                    title: Text(
+                                      "${d['nom']} ${d['prenom']}",
+                                    ),
+                                    subtitle: Text(
+                                      "Groupe: ${d['groupe_sanguin']}",
+                                    ),
+                                    trailing: const Icon(Icons.chat),
+                                    onTap: () {
+                                      context.push(
+                                        '/chat/${d['id_utilisateur']}',
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                )
+
+              /// ================= NORMAL HOME =================
+              else
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+
+                        Text(
+                          'Bienvenue',
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        Text(
+                          user?.fullName ?? 'Utilisateur',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        EmergencyBanner(
+                          title: 'Urgence don de sang',
+                          description:
+                              'Aidez rapidement en consultant les demandes urgentes.',
+                          onTap: () =>
+                              context.push(RouteNames.donations),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        BloodStatusBanner(
+                          bloodGroup:
+                              user?.groupeSanguin ?? 'Non défini',
+                          status: user?.statutGroupeSanguin == 'verifie'
+                              ? 'Vérifié'
+                              : 'Non vérifié',
+                          statusColor:
+                              user?.statutGroupeSanguin == 'verifie'
+                                  ? Colors.green
+                                  : Colors.orange,
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        /// 🔥 TES GRIDS RESTENT ICI (NON TOUCHÉ)
+                        GridView.count(
+                          crossAxisCount: 2,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 1.1,
+                          children: [
+
+                            _gridItem(
+                              icon: Icons.favorite,
+                              title: "Mes dons",
+                              color: Colors.red,
+                              onTap: () =>
+                                  context.push(RouteNames.donations),
+                            ),
+
+                            _gridItem(
+                              icon: Icons.workspace_premium,
+                              title: "Certificats",
+                              color: Colors.deepPurple,
+                              onTap: () => context.push('/certificats'),
+                            ),
+
+                            _gridItem(
+                              icon: Icons.location_on,
+                              title: "Centres",
+                              color: Colors.blue,
+                              onTap: () =>
+                                  context.push(RouteNames.centers),
+                            ),
+
+                            _gridItem(
+                              icon: Icons.notifications,
+                              title: "Notifications",
+                              color: Colors.orange,
+                              onTap: () => context.push(
+                                  RouteNames.notifications),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _gridItem({
+    required IconData icon,
+    required String title,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          gradient: LinearGradient(
+            colors: [
+              color.withOpacity(0.9),
+              color.withOpacity(0.6),
+            ],
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.white, size: 34),
+            const SizedBox(height: 10),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
     );

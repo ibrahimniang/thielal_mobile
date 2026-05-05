@@ -26,6 +26,9 @@ import '../../features/map/map_screen.dart';
 
 import '../../features/splash/presentation/splash_screen.dart';
 
+// ✅ AJOUT IMPORTANT
+import '../../features/donations/presentation/screens/donation_history_screen.dart';
+
 import '../../core/navigation/main_navigation.dart';
 import 'route_names.dart';
 
@@ -43,6 +46,7 @@ class AppRouter {
             authState.currentUser != null &&
             authState.accessToken != null &&
             authState.accessToken!.isNotEmpty;
+
         final roleId = authState.currentUser?.roleId;
         final path = state.uri.path;
 
@@ -74,34 +78,23 @@ class AppRouter {
         // 1. NON CONNECTÉ
         // =========================
         if (!isAuthenticated) {
-          // ✅ entryIdentity doit toujours être accessible
-          if (path == RouteNames.entryIdentity) {
-            return null;
-          }
+          if (path == RouteNames.entryIdentity) return null;
 
-          // ✅ Autoriser Home temporairement uniquement
-          // si on est dans le flow d'inscription
-          // pour afficher le modal de création du mot de passe
-          if (path == RouteNames.home && isInRegistrationFlow) {
-            return null;
-          }
+          if (path == RouteNames.home && isInRegistrationFlow) return null;
 
-          // ✅ Les autres routes du flow d'inscription
-          // ne sont accessibles que si le flow est déjà démarré
           if (path == RouteNames.otpVerification ||
               path == RouteNames.register ||
               path == RouteNames.setPassword) {
             return isInRegistrationFlow ? null : RouteNames.loginUser;
           }
 
-          // ✅ Autoriser les vraies routes publiques
           if (isPublic) return null;
 
-          // 🔒 Tout le reste va vers login
           return RouteNames.loginUser;
         }
+
         // =========================
-        // 2. CONNECTÉ → REDIRECTION SELON RÔLE
+        // 2. CONNECTÉ
         // =========================
         if (isPublic || isRegistrationRoute) {
           if (roleId == 1) return RouteNames.adminDashboard;
@@ -200,9 +193,16 @@ class AppRouter {
               path: RouteNames.map,
               builder: (_, __) => const MapScreen(),
             ),
+
             GoRoute(
               path: '/notifications',
               builder: (_, __) => const NotificationsListScreen(),
+            ),
+
+            // ✅ AJOUT ICI (IMPORTANT)
+            GoRoute(
+              path: RouteNames.donations,
+              builder: (_, __) => const DonationHistoryScreen(),
             ),
           ],
         ),
