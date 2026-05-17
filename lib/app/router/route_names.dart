@@ -45,6 +45,7 @@ class RouteNames {
   static const String donations = '/donations';
   static const String centers = '/centers';
   static const String donors = '/donors';
+  static const String demandeSang = '/demandeSang';
 
   // ==========================
   // CHAT

@@ -8,6 +8,7 @@ import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../application/auth_controller.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class SetPasswordScreen extends ConsumerStatefulWidget {
   const SetPasswordScreen({super.key});
@@ -33,10 +34,11 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Définir le mot de passe')),
+      appBar: AppBar(title: Text(l10n.setPassword)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -47,8 +49,8 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
                 const SizedBox(height: 24),
                 CustomTextField(
                   controller: _passwordController,
-                  hintText: 'Mot de passe',
-                  labelText: 'Mot de passe',
+                  hintText: l10n.password,
+                  labelText: l10n.password,
                   obscureText: _obscure1,
                   validator: Validators.password,
                   suffixIcon: IconButton(
@@ -61,15 +63,15 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
                 const SizedBox(height: 16),
                 CustomTextField(
                   controller: _confirmController,
-                  hintText: 'Confirmer le mot de passe',
-                  labelText: 'Confirmation',
+                  hintText: l10n.confirmPassword,
+                  labelText: l10n.confirmation,
                   obscureText: _obscure2,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Veuillez confirmer le mot de passe';
+                      return l10n.confirmPasswordMessage;
                     }
                     if (value.trim() != _passwordController.text.trim()) {
-                      return 'Les mots de passe ne correspondent pas';
+                      return l10n.passwordsDoNotMatch;
                     }
                     return null;
                   },
@@ -89,7 +91,7 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
                 ],
                 const SizedBox(height: 20),
                 CustomButton(
-                  text: 'Enregistrer',
+                  text: l10n.save,
                   isLoading: authState.isLoading,
                   onPressed: () async {
                     final isValid = _formKey.currentState?.validate() ?? false;

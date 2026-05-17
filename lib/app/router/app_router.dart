@@ -30,8 +30,10 @@ import '../../features/home/screens/home_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/public_user_profile_screen.dart';
 import '../../features/settings/settings_screen.dart';
-import '../../features/map/map_screen.dart';
+import '../../features/centers/presentation/screens/centers_map_screen.dart';
 import '../../features/donations/presentation/screens/donation_history_screen.dart';
+import '../../features/donations/presentation/screens/demande_sang_screen.dart';
+import '../../features/notifications/presentation/screens/notifications_list_screen.dart';
 
 // SPLASH
 import '../../features/splash/presentation/splash_screen.dart';
@@ -118,7 +120,6 @@ class AppRouter {
       },
 
       routes: [
-
         // ================= SPLASH =================
         GoRoute(
           path: RouteNames.splash,
@@ -190,26 +191,36 @@ class AppRouter {
               builder: (_, __) => const ProfileScreen(),
             ),
 
-           GoRoute(
-                path: '${RouteNames.publicProfile}/:id',
-                builder: (context, state) {
-                  final userId = int.parse(state.pathParameters['id']!);
+            GoRoute(
+              path: '${RouteNames.publicProfile}/:id',
+              builder: (context, state) {
+                final userId =
+                    int.parse(state.pathParameters['id']!);
 
-                  return PublicUserProfileScreen(
-                    userId: userId,
-                  );
-                },
-              ),
+                return PublicUserProfileScreen(
+                  userId: userId,
+                );
+              },
+            ),
 
             GoRoute(
               path: RouteNames.settings,
               builder: (_, __) => const SettingsScreen(),
             ),
 
-
             GoRoute(
               path: RouteNames.map,
-              builder: (_, __) => const MapScreen(),
+              builder: (context, state) {
+                return CentersMapScreen(
+                  initialSearch: state.extra as String?,
+                );
+              },
+            ),
+
+            GoRoute(
+              path: '/notifications',
+              builder: (_, __) =>
+                  const NotificationsListScreen(),
             ),
 
             GoRoute(
@@ -217,37 +228,42 @@ class AppRouter {
               builder: (_, __) =>
                   const DonationHistoryScreen(),
             ),
+
+            GoRoute(
+              path: RouteNames.demandeSang,
+              builder: (_, __) =>
+                  const DemandeSangScreen(),
+            ),
           ],
         ),
 
         // ================= CHAT =================
+        GoRoute(
+          path: RouteNames.conversations,
+          builder: (_, __) =>
+              const ConversationsScreen(),
+        ),
 
-            /// Liste des conversations
-            GoRoute(
-              path: RouteNames.conversations,
-              builder: (_, __) => const ConversationsScreen(),
-            ),
+        GoRoute(
+          path: '/chat/:conversationId',
+          builder: (context, state) {
+            final conversationId = int.parse(
+              state.pathParameters['conversationId']!,
+            );
 
-            /// Chat privé (CORRIGÉ)
-            GoRoute(
-              path: '/chat/:conversationId',
-              builder: (context, state) {
-                final conversationId = int.parse(
-                  state.pathParameters['conversationId']!,
-                );
+            final extra =
+                state.extra as Map<String, dynamic>?;
 
-                final extra =
-                    state.extra as Map<String, dynamic>?;
+            return ChatScreen(
+              conversationId: conversationId,
+              fullName:
+                  extra?["fullName"] ?? "Discussion",
+              otherUserId:
+                  extra?["otherUserId"],
+            );
+          },
+        ),
 
-                return ChatScreen(
-                  conversationId: conversationId,
-                  fullName:
-                      extra?["fullName"] ?? "Discussion",
-                  otherUserId:
-                      extra?["otherUserId"],
-                );
-              },
-            ),
         // ================= STAFF =================
         GoRoute(
           path: RouteNames.staffDashboard,

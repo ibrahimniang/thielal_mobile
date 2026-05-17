@@ -1,5 +1,7 @@
+//1
 import 'package:flutter/material.dart';
 import 'profile_section_card.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class BloodCompatibilityCard extends StatelessWidget {
   final List<String> groups;
@@ -8,12 +10,13 @@ class BloodCompatibilityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ProfileSectionCard(
-      title: 'Compatibilité sanguine',
+      title: l10n.bloodCompatibility,
       icon: Icons.bloodtype_rounded,
       child:
           groups.isEmpty
-              ? const Text('Aucune donnée disponible')
+              ? Text(l10n.noDataAvailable)
               : Wrap(
                 spacing: 8,
                 runSpacing: 8,

@@ -126,19 +126,21 @@ class ApiEndpoints {
     return '$users/$userId/verify-blood-group';
   }
 
-  
   // ==========================
   // CHAT
   // ==========================
 
   /// créer ou récupérer conversation
-  static const String createConversation = '/chat/conversation';
+  static const String createConversation =
+      '/chat/conversation';
 
-  /// envoyer message (OK backend)
-  static const String sendMessage = '/chat/message';
+  /// envoyer message
+  static const String sendMessage =
+      '/chat/message';
 
   /// liste conversations utilisateur
-  static const String conversations = '/chat/conversations';
+  static const String conversations =
+      '/chat/conversations';
 
   /// messages d'une conversation
   static String messages(int conversationId) =>
@@ -149,5 +151,24 @@ class ApiEndpoints {
       '/chat/read/$conversationId';
 
   /// compteur non lus
-  static const String unreadMessages = '/chat/unread-count';
+  static const String unreadMessages =
+      '/chat/unread-count';
+
+  // ==========================
+  // ALERTES
+  // ==========================
+
+  static const String alerts = '/alerts';
+
+  // ==========================
+  // CENTRES
+  // ==========================
+
+  static const String centres = '/centres';
+
+  // ==========================
+  // COLLECTES
+  // ==========================
+
+  static const String collectes = '/collectes';
 }

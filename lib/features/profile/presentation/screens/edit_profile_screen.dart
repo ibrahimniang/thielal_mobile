@@ -7,6 +7,7 @@ import '../widgets/profile_section_card.dart';
 import '../widgets/profile_action_button.dart';
 import '../widgets/contact_change_dialog.dart';
 import '../../../../shared/widgets/app_loading_view.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -47,6 +48,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Future<void> _saveProfile() async {
+    final l10n = AppLocalizations.of(context)!;
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
 
@@ -71,8 +73,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profil mis à jour avec succès'),
+        SnackBar(
+          content: Text(l10n.profileUpdatedSuccessfully),
           backgroundColor: Colors.green,
         ),
       );
@@ -82,8 +84,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Erreur lors de la mise à jour du profil'),
+        SnackBar(
+          content: Text(l10n.profileUpdateError),
           backgroundColor: Colors.red,
         ),
       );
@@ -95,12 +97,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   void _openEmailDialog() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder:
           (_) => ContactChangeDialog(
-            title: 'Changer / Ajouter un email',
-            valueLabel: 'Email',
+            title: l10n.changeAddEmail,
+            valueLabel: l10n.email,
             keyboardType: TextInputType.emailAddress,
             onRequestCode: (ref, value) async {
               await ref
@@ -109,8 +112,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
               if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Code envoyé par email'),
+                SnackBar(
+                  content: Text(l10n.codeSentByEmail),
                   backgroundColor: Colors.blue,
                 ),
               );
@@ -122,8 +125,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
               if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Email mis à jour avec succès'),
+                SnackBar(
+                  content: Text(l10n.emailUpdatedSuccessfully),
                   backgroundColor: Colors.green,
                 ),
               );
@@ -133,12 +136,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   void _openPhoneDialog() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder:
           (_) => ContactChangeDialog(
-            title: 'Changer le téléphone',
-            valueLabel: 'Téléphone',
+            title: l10n.changePhone,
+            valueLabel: l10n.phone,
             keyboardType: TextInputType.phone,
             onRequestCode: (ref, value) async {
               await ref
@@ -147,8 +151,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
               if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Code envoyé par SMS'),
+                SnackBar(
+                  content: Text(l10n.codeSentBySms),
                   backgroundColor: Colors.blue,
                 ),
               );
@@ -160,8 +164,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
               if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Téléphone mis à jour avec succès'),
+                SnackBar(
+                  content: Text(l10n.phoneUpdatedSuccessfully),
                   backgroundColor: Colors.green,
                 ),
               );
@@ -172,12 +176,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(profileControllerProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FC),
       appBar: AppBar(
-        title: const Text("Modifier Profil"),
+        title: Text(l10n.editProfile),
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,
       ),
@@ -195,14 +200,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           ),
         ),
         child: state.when(
-          loading:
-              () => const AppLoadingView(message: 'Chargement du profil...'),
+          loading: () => AppLoadingView(message: l10n.loadingProfile),
           error:
               (e, _) => Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: Text(
-                    "Erreur: $e",
+                    "${l10n.error}: $e",
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.red,
@@ -222,14 +226,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   child: Column(
                     children: [
                       ProfileSectionCard(
-                        title: "Informations personnelles",
+                        title: l10n.personalInformation,
                         icon: Icons.person_rounded,
                         child: Column(
                           children: [
                             TextFormField(
                               controller: _nomController,
                               decoration: InputDecoration(
-                                labelText: "Nom",
+                                labelText: l10n.lastName,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
@@ -238,7 +242,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
-                                  return 'Le nom est obligatoire';
+                                  return l10n.lastNameRequired;
                                 }
                                 return null;
                               },
@@ -247,7 +251,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             TextFormField(
                               controller: _prenomController,
                               decoration: InputDecoration(
-                                labelText: "Prénom",
+                                labelText: l10n.firstName,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
@@ -256,7 +260,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
-                                  return 'Le prénom est obligatoire';
+                                  return l10n.firstNameRequired;
                                 }
                                 return null;
                               },
@@ -265,7 +269,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             TextFormField(
                               controller: _villeController,
                               decoration: InputDecoration(
-                                labelText: "Ville",
+                                labelText: l10n.city,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
@@ -277,7 +281,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             TextFormField(
                               controller: _quartierController,
                               decoration: InputDecoration(
-                                labelText: "Quartier",
+                                labelText: l10n.district,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
@@ -292,19 +296,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       const SizedBox(height: 20),
 
                       ProfileSectionCard(
-                        title: "Coordonnées",
+                        title: l10n.contactDetails,
                         icon: Icons.contact_phone_rounded,
                         child: Column(
                           children: [
                             _contactTile(
                               icon: Icons.email_rounded,
-                              title: "Email actuel",
-                              value: user?.email ?? "Aucun email ajouté",
+                              title: l10n.currentEmail,
+                              value: user?.email ?? l10n.noEmailAdded,
                             ),
                             const SizedBox(height: 12),
                             _contactTile(
                               icon: Icons.phone_rounded,
-                              title: "Téléphone actuel",
+                             title: l10n.currentPhone,
                               value: user?.telephone ?? "--",
                             ),
                           ],
@@ -314,19 +318,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       const SizedBox(height: 20),
 
                       ProfileSectionCard(
-                        title: "Actions de sécurité",
+                        title: l10n.securityActions,
                         icon: Icons.verified_user_rounded,
                         child: Column(
                           children: [
                             ProfileActionButton(
-                              text: "Changer / Ajouter un email",
+                              text: l10n.changeAddEmail,
                               icon: Icons.mark_email_read_rounded,
                               color: Colors.blue,
                               onPressed: _openEmailDialog,
                             ),
                             const SizedBox(height: 12),
                             ProfileActionButton(
-                              text: "Changer le téléphone",
+                              text: l10n.changePhone,
                               icon: Icons.phone_android_rounded,
                               color: Colors.green,
                               onPressed: _openPhoneDialog,
@@ -338,7 +342,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       const SizedBox(height: 24),
 
                       ProfileActionButton(
-                        text: "Enregistrer les modifications",
+                        text: l10n.saveChanges,
                         icon: Icons.save_rounded,
                         onPressed: _saving ? () {} : _saveProfile,
                       ),

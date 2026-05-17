@@ -10,6 +10,7 @@ import '../../../../app/theme/app_spacing.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../application/auth_controller.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class EntryIdentityScreen extends ConsumerStatefulWidget {
   const EntryIdentityScreen({super.key});
@@ -40,6 +41,7 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
   }
 
   Future<void> _openOtpModal() async {
+    final l10n = AppLocalizations.of(context)!;
     final otpFormKey = GlobalKey<FormState>();
 
     final otpControllers = List.generate(6, (_) => TextEditingController());
@@ -179,8 +181,8 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
 
                               const SizedBox(height: 18),
 
-                              const Text(
-                                'Vérification OTP',
+                               Text(
+                                l10n.otpVerification,
                                 style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w800,
@@ -190,7 +192,7 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                               const SizedBox(height: 8),
 
                               Text(
-                                'Entrez le code reçu pour continuer votre inscription.',
+                                l10n.enterOtpDescription,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 14,
@@ -231,8 +233,8 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                                 alignment: Alignment.centerLeft,
                                 child: Text(
                                   remainingSeconds > 0
-                                      ? 'Temps restant : ${_formatDurationShort(remainingSeconds)}'
-                                      : 'Le code OTP a expiré.',
+                                      ? '${l10n.remainingTime} : ${_formatDurationShort(remainingSeconds)}'
+                                      : l10n.otpExpired,
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
@@ -269,7 +271,7 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                               const SizedBox(height: 20),
 
                               CustomButton(
-                                text: 'Vérifier',
+                               text: l10n.verify,
                                 isLoading: authState.isLoading,
                                 onPressed:
                                     remainingSeconds <= 0
@@ -281,9 +283,9 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                                             ScaffoldMessenger.of(
                                               context,
                                             ).showSnackBar(
-                                              const SnackBar(
+                                               SnackBar(
                                                 content: Text(
-                                                  'Veuillez entrer les 6 chiffres du code OTP',
+                                                  l10n.enterOtpCode
                                                 ),
                                               ),
                                             );
@@ -355,7 +357,7 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                                             setModalState(() {});
                                           }
                                         },
-                                child: const Text('Renvoyer le code'),
+                                child: Text(l10n.resendCode),
                               ),
                             ],
                           ),
@@ -380,8 +382,10 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
     }
   }
 
-  Widget _buildHeroCard() {
+  Widget _buildHeroCard(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ClipRRect(
+      
       borderRadius: BorderRadius.circular(30),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
@@ -442,13 +446,13 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                 ),
               ),
               const SizedBox(height: 18),
-              const Text(
-                'Recevoir un code OTP',
+              Text(
+                l10n.receiveOtp,
                 style: TextStyle(fontSize: 23, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 8),
               Text(
-                'Entrez votre numéro de téléphone ou votre email pour recevoir un code sécurisé et commencer votre inscription.',
+                l10n.receiveOtpDescription,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.grey.shade700,
@@ -491,12 +495,13 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authControllerProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FC),
       appBar: AppBar(
-        title: const Text('Commencer'),
+        title: Text(l10n.start),
         elevation: 0,
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,
@@ -523,18 +528,18 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 8),
-                    _buildHeroCard(),
+                    _buildHeroCard(context),
                     const SizedBox(height: 22),
                     _buildInputCard(
                       Column(
                         children: [
                           CustomTextField(
                             controller: _identityController,
-                            hintText: 'Téléphone ou email',
-                            labelText: 'Téléphone ou email',
+                            hintText: l10n.phoneOrEmail,
+                            labelText: l10n.phoneOrEmail,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'Ce champ est obligatoire';
+                                return l10n.requiredField;
                               }
                               return null;
                             },
@@ -560,7 +565,7 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                           ],
                           const SizedBox(height: 20),
                           CustomButton(
-                            text: 'Recevoir le code',
+                            text: l10n.receiveCode,
                             isLoading: authState.isLoading,
                             onPressed: () async {
                               final isValid =

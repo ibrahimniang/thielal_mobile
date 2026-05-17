@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../application/donation_controller.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class DonationHistoryScreen extends ConsumerWidget {
   const DonationHistoryScreen({super.key});
@@ -10,17 +11,18 @@ class DonationHistoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final donsAsync = ref.watch(myDonationsProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Mes dons"),
+        title: Text(l10n.myDonations),
         backgroundColor: Colors.red,
       ),
       body: donsAsync.when(
         data: (dons) {
           if (dons.isEmpty) {
-            return const Center(
-              child: Text("Aucun don enregistré"),
+            return  Center(
+              child: Text(l10n.noDonationRecorded),
             );
           }
 
@@ -33,7 +35,7 @@ class DonationHistoryScreen extends ConsumerWidget {
               final date = DateTime.tryParse(don.dateDon.toString());
               final formattedDate = date != null
                   ? DateFormat('dd MMM yyyy').format(date)
-                  : "Date inconnue";
+                  : l10n.unknownDate;
 
               final centre = don.centre;
               final certificat = don.certificat;
@@ -72,8 +74,8 @@ class DonationHistoryScreen extends ConsumerWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                "Don de sang",
+                               Text(
+                               l10n.bloodDonation,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
@@ -83,7 +85,7 @@ class DonationHistoryScreen extends ConsumerWidget {
                               const SizedBox(height: 4),
 
                               Text(
-                                "Groupe : ${don.groupeSanguin}",
+                                "${l10n.bloodGroup} : ${don.groupeSanguin}",
                                 style: TextStyle(
                                   color: Colors.grey.shade700,
                                 ),
@@ -105,7 +107,7 @@ class DonationHistoryScreen extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            hasCertificat ? "Validé" : "En attente",
+                            hasCertificat ? l10n.validated: l10n.pending,
                             style: TextStyle(
                               color: hasCertificat ? Colors.green : Colors.orange,
                               fontWeight: FontWeight.bold,
@@ -127,7 +129,7 @@ class DonationHistoryScreen extends ConsumerWidget {
                         const SizedBox(width: 6),
 
                         Text(
-                          centre?.nom ?? "Centre inconnu",
+                          centre?.nom ?? l10n.unknownCenter,
                           style: TextStyle(
                             color: Colors.grey.shade700,
                           ),
@@ -145,7 +147,7 @@ class DonationHistoryScreen extends ConsumerWidget {
                         const SizedBox(width: 6),
 
                         Text(
-                          centre?.ville ?? "Ville inconnue",
+                          centre?.ville ?? l10n.unknownCity,
                           style: TextStyle(
                             color: Colors.grey.shade600,
                           ),
@@ -157,7 +159,7 @@ class DonationHistoryScreen extends ConsumerWidget {
 
                     // ================= DATE =================
                     Text(
-                      "Date : $formattedDate",
+                      "${l10n.date} : $formattedDate",
                       style: TextStyle(
                         color: Colors.grey.shade600,
                       ),
@@ -174,21 +176,21 @@ class DonationHistoryScreen extends ConsumerWidget {
                             final url = certificat!.urlCertificat;
 
                             // TODO: ouvrir PDF / webview
-                            debugPrint("Ouvrir certificat: $url");
+                            debugPrint("${l10n.openCertificate} : $url");
                           },
                           icon: const Icon(Icons.description,
                               color: Colors.deepPurple),
-                          label: const Text(
-                            "Voir certificat",
+                          label:  Text(
+                            l10n.viewCertificate,
                             style: TextStyle(color: Colors.deepPurple),
                           ),
                         ),
                       )
                     else
-                      const Align(
+                       Align(
                         alignment: Alignment.centerRight,
                         child: Text(
-                          "Certificat non disponible",
+                          l10n.certificateUnavailable,
                           style: TextStyle(
                             color: Colors.grey,
                             fontSize: 12,
@@ -207,7 +209,7 @@ class DonationHistoryScreen extends ConsumerWidget {
         ),
 
         error: (e, _) => Center(
-          child: Text("Erreur: $e"),
+          child: Text("${l10n.error} : $e"),
         ),
       ),
     );
