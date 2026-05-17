@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+
 import '../../../app/router/route_names.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
@@ -39,14 +40,36 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   // final TextEditingController _searchController = TextEditingController();
+  int unreadCount = 0;
+
+@override
+void initState() {
+  super.initState();
+  loadUnreadCount();
+}
+
+Future<void> loadUnreadCount() async {
+  try {
+    setState(() {
+      unreadCount = 0;
+    });
+
+    debugPrint('💬 unreadCount => $unreadCount');
+  } catch (e) {
+    debugPrint('❌ loadUnreadCount error => $e');
+  }
+}
 
   String selectedGroup = 'Tous';
+
 
   final List<String> bloodFilters = ['Tous', 'O+', 'O-', 'A+', 'B+', 'AB+'];
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   final searchController = TextEditingController();
   String searchQuery = '';
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -216,10 +239,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Scaffold.of(context).openDrawer();
                       },
 
-                      /// 🔥 CHAT
-                      onChatTap: () {
-                        context.push(RouteNames.notifications);
-                      },
+                      
+                      onChatTap: () async {
+                          await context.push('/conversations');
+
+                          if (mounted) {
+                            loadUnreadCount();
+                          }
+                        },
 
                       /// 🔥 PROFILE
                       onProfileTap: () {
@@ -982,3 +1009,4 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 }
+
