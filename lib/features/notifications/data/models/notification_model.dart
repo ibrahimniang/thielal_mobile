@@ -20,7 +20,9 @@ class NotificationModel {
       utilisateurId: int.tryParse(json['utilisateur_id'].toString()) ?? 0,
       message: json['message']?.toString() ?? '',
       lu: json['lu'] == true || json['lu'] == 1 || json['lu'] == "1",
-      dateCreation: DateTime.parse(json['date_creation']),
+      dateCreation: json['date_creation'] != null
+        ? DateTime.tryParse(json['date_creation'].toString()) ?? DateTime.now()
+        : DateTime.now(),
     );
   }
 }

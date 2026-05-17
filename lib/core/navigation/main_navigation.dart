@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:thielal/features/notifications/presentation/controllers/notification_controller.dart';
 
 import '../../app/router/route_names.dart';
 
@@ -49,21 +51,59 @@ class MainNavigation extends StatelessWidget {
         },
 
         selectedItemColor: Colors.blueAccent,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Accueil"),
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(icon: Icon(Icons.home), label: "Accueil"),
+          const BottomNavigationBarItem(
             icon: Icon(Icons.location_on),
             label: "Carte",
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
+          const BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: "Paramètres",
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: "notifications",
-          ),
+         BottomNavigationBarItem(
+  icon: Consumer(
+    builder: (context, ref, _) {
+      final count = ref.watch(unreadNotificationCountProvider);
+
+      return count.when(
+        data: (value) {
+          return Stack(
+            children: [
+              const Icon(Icons.notifications),
+
+              if (value > 0)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      value.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
+
+        loading: () => const Icon(Icons.notifications),
+
+        error: (_, __) => const Icon(Icons.notifications),
+      );
+    },
+  ),
+  label: "notifications",
+),
         ],
       ),
     );

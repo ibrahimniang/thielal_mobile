@@ -91,10 +91,11 @@ class ApiEndpoints {
   /// pointe vers le bon module backend.
   static const String notifications = '/notifications';
 
-  static const String unreadCount = '/unread-count';
+  static const unreadCount = "/notifications/unread-count";
 
   /// Marquer notification comme lue
-  static String markAsRead(dynamic id) => '/$id/read';
+ /// static String markAsRead(dynamic id) => '/$id/read';
+  static String markAsRead(int id) => "/notifications/$id/read";
 
   /// Enregistrement du device token
   static const String registerDevice = '/register-device';
