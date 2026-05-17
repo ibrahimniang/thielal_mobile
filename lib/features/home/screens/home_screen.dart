@@ -1,20 +1,34 @@
-import 'dart:async';
-import 'dart:convert';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
 
-import '../../../../app/theme/app_spacing.dart';
-import '../../../../shared/widgets/custom_button.dart';
-import '../../auth/application/auth_controller.dart';
-import '../../../core/services/location_service.dart';
 import '../../../app/router/route_names.dart';
+import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_spacing.dart';
 
-import '../widgets/emergency_banner.dart';
-import '../widgets/blood_status_banner.dart';
+import '../../auth/application/auth_controller.dart';
+
+import '../../alerts/presentation/providers/alerts_provider.dart';
+import '../../collectes/presentation/providers/collectes_provider.dart';
+import '../../centers/application/centers_provider.dart';
+import '../../donations/application/donation_controller.dart';
+import '../../donors/presentation/providers/nearby_donors_provider.dart';
 
 import '../../donations/presentation/screens/demande_sang_screen.dart';
+import '../../donations/presentation/screens/donation_details_screen.dart';
+import '../../../l10n/app_localizations.dart';
+
+import '../widgets/home_drawer.dart';
+import '../widgets/home_header.dart';
+import '../widgets/live_map_section.dart';
+import '../widgets/national_impact_section.dart';
+import '../widgets/next_collection_section.dart';
+import '../widgets/urgent_request_card.dart';
+import '../widgets/information_ticker.dart';
+
+// import '../widgets/nearby_donor_card.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -24,317 +38,945 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  final TextEditingController searchController = TextEditingController();
+  // final TextEditingController _searchController = TextEditingController();
 
-  Timer? _debounce;
+  String selectedGroup = 'Tous';
 
-  List<dynamic> donors = [];
-  bool isSearching = false;
+  final List<String> bloodFilters = ['Tous', 'O+', 'O-', 'A+', 'B+', 'AB+'];
+  final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final String baseUrl =
-      "https://lifelink-backend-3bgr.onrender.com/api/dons/donneurs";
-
-  void _onSearchChanged(String value) {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-
-    _debounce = Timer(const Duration(milliseconds: 400), () {
-      _searchDonors(value);
-    });
-  }
-
-  Future<void> _searchDonors(String query) async {
-    if (query.isEmpty) {
-      setState(() {
-        donors = [];
-        isSearching = false;
-      });
-      return;
-    }
-
-    setState(() => isSearching = true);
-
-    try {
-      final user = ref.read(authControllerProvider).currentUser;
-
-      final uri = Uri.parse(baseUrl).replace(queryParameters: {
-        "ville": user?.ville ?? "",
-        "groupe_sanguin": query,
-      });
-
-      final res = await http.get(uri);
-
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body);
-
-        setState(() {
-          donors = data["data"] ?? [];
-          isSearching = false;
-        });
-      } else {
-        setState(() {
-          donors = [];
-          isSearching = false;
-        });
-      }
-    } catch (_) {
-      setState(() {
-        donors = [];
-        isSearching = false;
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    searchController.dispose();
-    _debounce?.cancel();
-    super.dispose();
-  }
+  final searchController = TextEditingController();
+  String searchQuery = '';
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authControllerProvider);
+
     final user = authState.currentUser;
 
-    final isSearchingMode = searchController.text.isNotEmpty;
+    final alertsAsync = ref.watch(alertsProvider);
+
+    final collectesAsync = ref.watch(collectesProvider);
+
+    final centersAsync = ref.watch(centersProvider);
+
+    final myDonationsAsync = ref.watch(myDonationsProvider);
+
+    /// ======================================
+    /// NEARBY DONORS
+    /// ======================================
+
+    final nearbyDonorsAsync =
+        searchQuery.trim().isEmpty
+            ? null
+            : ref.watch(
+              nearbyDonorsProvider((
+                ville: user?.ville ?? '',
+
+                groupe: searchQuery.trim().toUpperCase(),
+
+                latitude: user?.latitude ?? 0.0,
+
+                longitude: user?.longitude ?? 0.0,
+                utilisateurId: user?.idUtilisateur ?? 0,
+              )),
+            );
+
+    /// DEBUG
+    debugPrint('👤 USER CITY => ${user?.ville}');
+
+    debugPrint('👤 USER LAT => ${user?.latitude}');
+
+    debugPrint('👤 USER LNG => ${user?.longitude}');
+
+    debugPrint('🩸 SEARCH QUERY => $searchQuery');
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.red,
-        title: Row(
-          children: [
+      backgroundColor: const Color(0xFFF5F7FB),
 
-            /// 👤 PROFILE
-            GestureDetector(
-              onTap: () => context.push(RouteNames.profile),
-              child: const CircleAvatar(
-                radius: 18,
-                backgroundColor: Colors.white,
-                child: Icon(Icons.person, color: Colors.red),
-              ),
-            ),
-
-            const SizedBox(width: 10),
-
-            /// 🔎 SEARCH BAR
-            Expanded(
-              child: Container(
-                height: 38,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: TextField(
-                  controller: searchController,
-                  onChanged: _onSearchChanged,
-                  decoration: const InputDecoration(
-                    hintText: "Rechercher donneur (O+, A+, ville...)",
-                    border: InputBorder.none,
-                    icon: Icon(Icons.search, color: Colors.red),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.chat_bubble_outline),
-            onPressed: () => context.push('/chatbot'),
-          ),
-        ],
-      ),
-
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.red,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const DemandeSangScreen(),
-            ),
-          );
-        },
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+      drawer: HomeDrawer(firstName: user?.nom),
 
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 120),
+
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+
             children: [
+              const SizedBox(height: 12),
 
-              /// ================= SEARCH RESULTS =================
-              if (isSearchingMode)
-                Expanded(
-                  child: isSearching
-                      ? const Center(child: CircularProgressIndicator())
-                      : donors.isEmpty
-                          ? const Center(
-                              child: Text("Aucun donneur trouvé"),
-                            )
-                          : ListView.builder(
-                              itemCount: donors.length,
-                              itemBuilder: (context, index) {
-                                final d = donors[index];
+              /// =====================================================
+              /// HEADER
+              /// =====================================================
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.screenPadding,
+                ),
 
-                                return Card(
-                                  child: ListTile(
-                                    leading: const Icon(
-                                      Icons.bloodtype,
-                                      color: Colors.red,
-                                    ),
-                                    title: Text(
-                                      "${d['nom']} ${d['prenom']}",
-                                    ),
-                                    subtitle: Text(
-                                      "Groupe: ${d['groupe_sanguin']}",
-                                    ),
-                                    trailing: const Icon(Icons.chat),
-                                    onTap: () {
-                                      context.push(
-                                        '/chat/${d['id_utilisateur']}',
-                                      );
-                                    },
-                                  ),
-                                );
-                              },
-                            ),
-                )
+                child: Builder(
+                  builder: (context) {
+                    return HomeHeader(
+                      controller: searchController,
 
-              /// ================= NORMAL HOME =================
-              else
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      /// 🔥 prénom utilisateur
+                      firstName: user?.nom,
+
+                      /// 🔥 suggestions live
+                      suggestions:
+                          <String>[
+                                /// ======================================
+                                /// DONNEURS PROCHES
+                                /// ======================================
+                                ...nearbyDonorsAsync?.maybeWhen(
+                                      data: (donors) {
+                                        return donors
+                                            .map(
+                                              (d) =>
+                                                  '🩸 ${d.prenom} ${d.nom} • ${d.groupeSanguin} • ${d.distance} km',
+                                            )
+                                            .cast<String>()
+                                            .toList();
+                                      },
+
+                                      orElse: () => <String>[],
+                                    ) ??
+                                    [],
+
+                                /// ======================================
+                                /// CENTRES
+                                /// ======================================
+                                ...centersAsync.maybeWhen(
+                                  data: (centers) {
+                                    return centers
+                                        .map<String>((c) => c.nom)
+                                        .toList();
+                                  },
+
+                                  orElse: () => <String>[],
+                                ),
+
+                                /// ======================================
+                                /// ALERTES
+                                /// ======================================
+                                ...alertsAsync.maybeWhen(
+                                  data: (alerts) {
+                                    return alerts
+                                        .map<String>(
+                                          (a) =>
+                                              '${a.center?.name ?? a.city} - ${a.bloodGroup}',
+                                        )
+                                        .toList();
+                                  },
+
+                                  orElse: () => <String>[],
+                                ),
+
+                                /// ======================================
+                                /// COLLECTES
+                                /// ======================================
+                                ...collectesAsync.maybeWhen(
+                                  data: (collectes) {
+                                    return collectes
+                                        .map<String>((c) => c.title)
+                                        .toList();
+                                  },
+
+                                  orElse: () => <String>[],
+                                ),
+                              ]
+                              .where(
+                                (item) =>
+                                    item.toLowerCase().contains(searchQuery),
+                              )
+                              .toSet()
+                              .toList(),
+
+                      /// 🔥 SEARCH
+                      onChanged: (value) {
+                        debugPrint('🔍 SEARCH => $value');
+
+                        setState(() {
+                          searchQuery = value.toLowerCase();
+                        });
+
+                        debugPrint('🩸 CURRENT QUERY => $searchQuery');
+                      },
+
+                      /// 🔥 CLICK SUGGESTION
+                      onSuggestionTap: (value) {
+                        // debugPrint('✅ SUGGESTION => $value');
+
+                        context.push(RouteNames.map, extra: value);
+                      },
+
+                      /// 🔥 MENU
+                      onMenuTap: () {
+                        Scaffold.of(context).openDrawer();
+                      },
+
+                      /// 🔥 CHAT
+                      onChatTap: () {
+                        context.push(RouteNames.notifications);
+                      },
+
+                      /// 🔥 PROFILE
+                      onProfileTap: () {
+                        context.push(RouteNames.profile);
+                      },
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              /// =====================================================
+              /// LIVE MAP
+              /// =====================================================
+              centersAsync.when(
+                data: (centers) {
+                  /// ==========================================
+                  /// CENTRES DISPONIBLES
+                  /// ==========================================
+
+                  final displayCenters = centers;
+
+                  /// ==========================================
+                  /// PREMIER CENTRE
+                  /// ==========================================
+
+                  // final firstCenter =
+                  //     displayCenters.isNotEmpty ? displayCenters.first : null;
+
+                  return alertsAsync.when(
+                    data: (alerts) {
+                      return LiveMapSection(
+                        /// 🔥 liste réelle centres backend
+                        centers: displayCenters,
+
+                        /// 🔥 urgences backend
+                        urgentRequests: alerts.length,
+
+                        /// 🔥 ville utilisateur
+                        city:
+                            (user?.ville != null &&
+                                    user!.ville!.trim().isNotEmpty)
+                                ? user.ville!
+                                : 'Nouakchott',
+
+                        /// 🔥 ouvrir grande map
+                        onTap: () {
+                          context.push(RouteNames.map);
+                        },
+                      );
+                    },
+
+                    loading:
+                        () => const Center(child: CircularProgressIndicator()),
+
+                    error: (e, _) {
+                      return Center(child: Text(e.toString()));
+                    },
+                  );
+                },
+
+                loading: () => const Center(child: CircularProgressIndicator()),
+
+                error: (e, _) {
+                  return Center(child: Text(e.toString()));
+                },
+              ),
+
+              const SizedBox(height: 24),
+
+              /// =====================================================
+              /// MAIN ACTION
+              /// =====================================================
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.screenPadding,
+                ),
+
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+
+                      MaterialPageRoute(
+                        builder: (_) => const DemandeSangScreen(),
+                      ),
+                    );
+                  },
+
+                  child: Container(
+                    width: double.infinity,
+
+                    padding: const EdgeInsets.all(22),
+
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFE53946), Color(0xFFC1121F)],
+                      ),
+
+                      borderRadius: BorderRadius.circular(28),
+
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.red.withOpacity(0.22),
+
+                          blurRadius: 28,
+
+                          offset: const Offset(0, 14),
+                        ),
+                      ],
+                    ),
+
+                    child: Row(
                       children: [
+                        Container(
+                          height: 64,
+                          width: 64,
 
-                        Text(
-                          'Bienvenue',
-                          style: Theme.of(context).textTheme.headlineMedium,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.14),
+
+                            shape: BoxShape.circle,
+                          ),
+
+                          child: const Icon(
+                            Icons.bloodtype_rounded,
+
+                            color: Colors.white,
+
+                            size: 34,
+                          ),
                         ),
 
-                        const SizedBox(height: 8),
+                        const SizedBox(width: 18),
 
-                        Text(
-                          user?.fullName ?? 'Utilisateur',
-                          style: Theme.of(context).textTheme.titleLarge,
+                         Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+
+                            children: [
+                              Text(
+                                '',
+
+                                style: TextStyle(
+                                  color: Colors.white70,
+
+                                  fontWeight: FontWeight.w700,
+
+                                  letterSpacing: 1,
+                                ),
+                              ),
+
+                              SizedBox(height: 8),
+
+                              Text(
+                                l10n.iNeedBlood,
+
+                                style: TextStyle(
+                                  color: Colors.white,
+
+                                  fontSize: 22,
+
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
 
-                        const SizedBox(height: 20),
+                        const Icon(
+                          Icons.arrow_forward_ios_rounded,
 
-                        EmergencyBanner(
-                          title: 'Urgence don de sang',
-                          description:
-                              'Aidez rapidement en consultant les demandes urgentes.',
-                          onTap: () =>
-                              context.push(RouteNames.donations),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        BloodStatusBanner(
-                          bloodGroup:
-                              user?.groupeSanguin ?? 'Non défini',
-                          status: user?.statutGroupeSanguin == 'verifie'
-                              ? 'Vérifié'
-                              : 'Non vérifié',
-                          statusColor:
-                              user?.statutGroupeSanguin == 'verifie'
-                                  ? Colors.green
-                                  : Colors.orange,
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        /// 🔥 TES GRIDS RESTENT ICI (NON TOUCHÉ)
-                        GridView.count(
-                          crossAxisCount: 2,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 1.1,
-                          children: [
-
-                            _gridItem(
-                              icon: Icons.favorite,
-                              title: "Mes dons",
-                              color: Colors.red,
-                              onTap: () =>
-                                  context.push(RouteNames.donations),
-                            ),
-
-                            _gridItem(
-                              icon: Icons.workspace_premium,
-                              title: "Certificats",
-                              color: Colors.deepPurple,
-                              onTap: () => context.push('/certificats'),
-                            ),
-
-                            _gridItem(
-                              icon: Icons.location_on,
-                              title: "Centres",
-                              color: Colors.blue,
-                              onTap: () =>
-                                  context.push(RouteNames.centers),
-                            ),
-
-                            _gridItem(
-                              icon: Icons.notifications,
-                              title: "Notifications",
-                              color: Colors.orange,
-                              onTap: () => context.push(
-                                  RouteNames.notifications),
-                            ),
-                          ],
+                          color: Colors.white,
                         ),
                       ],
                     ),
                   ),
                 ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _gridItem({
-    required IconData icon,
-    required String title,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          gradient: LinearGradient(
-            colors: [
-              color.withOpacity(0.9),
-              color.withOpacity(0.6),
-            ],
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: Colors.white, size: 34),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
               ),
-            ),
-          ],
+
+              const SizedBox(height: 26),
+
+              /// =====================================================
+              /// IMPACT NATIONAL
+              /// =====================================================
+              myDonationsAsync.when(
+                data: (donations) {
+                  return NationalImpactSection(
+                    donations: donations.length,
+
+                    livesSaved: donations.length * 3,
+
+                    averageDelay: 38,
+
+                    latestDonation:
+                        donations.isNotEmpty ? donations.first : null,
+                  );
+                },
+
+                loading: () => const Center(child: CircularProgressIndicator()),
+
+                error: (e, _) {
+                  return Center(child: Text(e.toString()));
+                },
+              ),
+
+              /// =====================================================
+              /// ALERTES + INFORMATIONS
+              /// =====================================================
+              alertsAsync.when(
+                data: (alerts) {
+                  return Column(
+                    children: [
+                      /// ======================================
+                      /// HEADER
+                      /// ======================================
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.screenPadding,
+                        ),
+
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                          children: [
+                             Text(
+                              l10n.urgentRequests,
+
+                              style: TextStyle(
+                                fontSize: 22,
+
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+
+                            TextButton(
+                              onPressed: () {
+                                context.push(RouteNames.alerts);
+                              },
+
+                              child:  Text(l10n.seeAll),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 18),
+                    ],
+                  );
+                },
+
+                loading: () => const SizedBox(),
+
+                error: (_, __) => const SizedBox(),
+              ),
+
+              /// =====================================================
+              /// FILTERS
+              /// =====================================================
+              SizedBox(
+                height: 42,
+
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screenPadding,
+                  ),
+
+                  scrollDirection: Axis.horizontal,
+
+                  itemBuilder: (_, index) {
+                    final filter = bloodFilters[index];
+
+                    final selected = selectedGroup == filter;
+
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          selectedGroup = filter;
+                        });
+                      },
+
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 240),
+
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 10,
+                        ),
+
+                        decoration: BoxDecoration(
+                          color: selected ? AppColors.primaryRed : Colors.white,
+
+                          borderRadius: BorderRadius.circular(30),
+
+                          border: Border.all(
+                            color:
+                                selected
+                                    ? AppColors.primaryRed
+                                    : Colors.grey.withOpacity(0.15),
+                          ),
+                        ),
+
+                        child: Text(
+                          filter,
+
+                          style: TextStyle(
+                            color: selected ? Colors.white : Colors.black87,
+
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+
+                  separatorBuilder: (_, __) => const SizedBox(width: 10),
+
+                  itemCount: bloodFilters.length,
+                ),
+              ),
+
+              const SizedBox(height: 22),
+
+              /// =====================================================
+              /// ALERTS LIST
+              /// =====================================================
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.screenPadding,
+                ),
+
+                child: alertsAsync.when(
+                  data: (alerts) {
+                    final infoAlerts =
+                        alerts.where((a) {
+                          final type = a.type.trim().toLowerCase();
+
+                          return type == 'info' || type == 'information';
+                        }).toList();
+
+                    /// ==========================================
+                    /// FILTRAGE GROUPES
+                    /// ==========================================
+
+                    final userCity = user?.ville?.trim().toLowerCase() ?? '';
+
+                    /// ==========================================
+                    /// ALERTES DE LA VILLE UTILISATEUR
+                    /// ==========================================
+
+                    final cityAlerts =
+                        alerts.where((a) {
+                          final type = a.type.trim().toLowerCase();
+
+                          final isInfo =
+                              type == 'info' || type == 'information';
+
+                          if (isInfo) return false;
+
+                          final alertCity = a.city.trim().toLowerCase();
+
+                          final matchGroup =
+                              selectedGroup == 'Tous'
+                                  ? true
+                                  : a.bloodGroup.trim().toUpperCase() ==
+                                      selectedGroup.trim().toUpperCase();
+
+                          final pending =
+                              a.status.trim().toLowerCase() == 'en attente';
+
+                          return alertCity == userCity && matchGroup && pending;
+                        }).toList();
+
+                    /// ==========================================
+                    /// FALLBACK NATIONAL
+                    /// ==========================================
+
+                    final filteredAlerts =
+                        cityAlerts.isNotEmpty
+                            ? cityAlerts
+                            : alerts.where((a) {
+                              final type = a.type.trim().toLowerCase();
+
+                              final isInfo =
+                                  type == 'info' || type == 'information';
+
+                              if (isInfo) return false;
+
+                              final matchGroup =
+                                  selectedGroup == 'Tous'
+                                      ? true
+                                      : a.bloodGroup.trim().toUpperCase() ==
+                                          selectedGroup.trim().toUpperCase();
+
+                              final pending =
+                                  a.status.trim().toLowerCase() == 'en attente';
+
+                              return pending && matchGroup;
+                            }).toList();
+
+                    /// ==========================================
+                    /// AUCUNE ALERTE
+                    /// ==========================================
+
+                    if (filteredAlerts.isEmpty) {
+                      return  Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(20),
+
+                          child: Text(l10n.noUrgencyAvailable),
+                        ),
+                      );
+                    }
+
+                    /// ==========================================
+                    /// ALERTES BACKEND
+                    /// ==========================================
+
+                    return Column(
+                      children:
+                          filteredAlerts
+                              .take(3)
+                              .map(
+                                (alert) => UrgentRequestCard(
+                                  /// 🔥 BACKEND
+                                  hospital: alert.center?.name ?? alert.city,
+
+                                  bloodGroup: alert.bloodGroup,
+
+                                  urgency:
+                                      alert.type.toLowerCase() == 'urgent'
+                                          ? 'Urgent'
+                                          : 'Normal',
+
+                                  quantity: '${alert.quantity ?? 1} poche(s)',
+
+                                  distance:
+                                      '${alert.city} • ${alert.quantity ?? 1} poche(s)',
+
+                                  critical:
+                                      alert.type.toLowerCase() == 'urgent',
+
+                                  /// 🔥 ACTION
+                                  onTap: () {
+                                    /// ==========================================
+                                    /// MESSAGE INDISPONIBILITÉ
+                                    /// ==========================================
+
+                                    if (user?.dateProchainDon != null) {
+                                      final unavailable = DateTime.now()
+                                          .isBefore(user!.dateProchainDon!);
+
+                                      if (unavailable) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            behavior: SnackBarBehavior.floating,
+
+                                            backgroundColor: Colors.orange,
+
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                            ),
+
+                                            content: Text(
+                                              'Vous êtes actuellement en période de récupération ❤️\n\nProchain don possible : ${user.dateProchainDon!.day}/${user.dateProchainDon!.month}/${user.dateProchainDon!.year}',
+                                            ),
+
+                                            duration: const Duration(
+                                              seconds: 4,
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    }
+
+                                    /// ==========================================
+                                    /// OUVERTURE ÉCRAN DÉTAIL
+                                    /// ==========================================
+
+                                    Navigator.push(
+                                      context,
+
+                                      MaterialPageRoute(
+                                        builder:
+                                            (_) => DonationDetailsScreen(
+                                              alert: alert,
+
+                                              user: user,
+                                            ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              )
+                              .toList(),
+                    );
+                  },
+
+                  loading:
+                      () => const Center(child: CircularProgressIndicator()),
+
+                  error: (e, _) {
+                    return Center(child: Text(e.toString()));
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 34),
+
+              /// =====================================================
+              /// COLLECTION
+              /// =====================================================
+              collectesAsync.when(
+                data: (collectes) {
+                  /// ==========================================
+                  /// DEBUG USER
+                  /// ==========================================
+
+                  // debugPrint('👤 USER CITY => ${user?.ville}');
+
+                  // debugPrint('📦 COLLECTES COUNT => ${collectes.length}');
+
+                  /// ==========================================
+                  /// VILLE UTILISATEUR
+                  /// ==========================================
+
+                  final userCity = user?.ville?.toLowerCase().trim() ?? '';
+
+                  /// ==========================================
+                  /// DEBUG COLLECTES
+                  /// ==========================================
+
+                  for (final c in collectes) {
+                    // debugPrint('🩸 COLLECTE => ${c.title}');
+
+                    // debugPrint('🏙️ CITY => ${c.city}');
+
+                    // debugPrint('📍 STATUS => ${c.status}');
+                  }
+
+                  /// ==========================================
+                  /// COLLECTES ACTIVES
+                  /// ==========================================
+
+                  /// ==========================================
+                  /// COLLECTES VILLE UTILISATEUR
+                  /// ==========================================
+
+                  final cityCollectes =
+                      collectes.where((c) {
+                        final city = c.city.toLowerCase().trim();
+
+                        final status = c.status.toLowerCase().trim();
+
+                        final active = status == 'active';
+
+                        return active && city.contains(userCity);
+                      }).toList();
+
+                  /// ==========================================
+                  /// FALLBACK NATIONAL
+                  /// ==========================================
+
+                  final activeCollectes =
+                      cityCollectes.isNotEmpty
+                          ? cityCollectes
+                          : collectes.where((c) {
+                            final status = c.status.toLowerCase().trim();
+
+                            return status == 'active';
+                          }).toList();
+
+                  /// ==========================================
+                  /// DEBUG RESULT
+                  /// ==========================================
+
+                  debugPrint(
+                    '🔥 ACTIVE COLLECTES => ${activeCollectes.length}',
+                  );
+
+                  /// ==========================================
+                  /// AUCUNE COLLECTE
+                  /// ==========================================
+
+                  if (activeCollectes.isEmpty) {
+                    debugPrint('❌ AUCUNE COLLECTE TROUVÉE');
+
+                    return const SizedBox();
+                  }
+
+                  /// ==========================================
+                  /// COLLECTE UTILISATEUR
+                  /// ==========================================
+
+                  final collecte = activeCollectes.first;
+
+                  debugPrint('🚑 COLLECTE CHOISIE => ${collecte.title}');
+
+                  /// ==========================================
+                  /// UTILISATEUR DÉJÀ INSCRIT
+                  /// ==========================================
+
+                  final alreadyRegistered = collecte.inscriptions.any(
+                    (i) => i['utilisateur_id'] == user?.idUtilisateur,
+                  );
+
+                  debugPrint('🩸 ALREADY REGISTERED => $alreadyRegistered');
+
+                  return PremiumCollectionSection(
+                    /// 🔥 BACKEND
+                    title: collecte.title,
+
+                    location: '${collecte.location}, ${collecte.city}',
+
+                    date: collecte.date,
+
+                    participants: collecte.participants,
+
+                    maxPlaces: collecte.maxPlaces ?? 0,
+
+                    /// 🔥 INSCRIPTION
+                    alreadyRegistered: alreadyRegistered,
+
+                    /// 🔥 ACTION
+                    onTap: () async {
+                      try {
+                        debugPrint('🚀 PARTICIPATION START');
+
+                        /// ======================================
+                        /// API PARTICIPATION
+                        /// ======================================
+
+                        await ref
+                            .read(collectesRepositoryProvider)
+                            .participer(
+                              collecteId: collecte.id,
+
+                              utilisateurId: user!.idUtilisateur,
+                            );
+
+                        debugPrint('✅ PARTICIPATION SUCCESS');
+
+                        if (!context.mounted) {
+                          return;
+                        }
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            behavior: SnackBarBehavior.floating,
+
+                            backgroundColor: Colors.green,
+
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+
+                            content: Text(
+                              'Inscription à "${collecte.title}" réussie 🚑',
+                            ),
+                          ),
+                        );
+
+                        /// ======================================
+                        /// REFRESH
+                        /// ======================================
+
+                        // ref.refresh(collectesProvider);
+                      } catch (e) {
+                        debugPrint('❌ PARTICIPATION ERROR => $e');
+
+                        if (!context.mounted) {
+                          return;
+                        }
+
+                        /// ======================================
+                        /// DÉJÀ INSCRIT
+                        /// ======================================
+
+                        final message = e.toString();
+
+                        final already = message.contains('Déjà inscrit');
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            behavior: SnackBarBehavior.floating,
+
+                            backgroundColor:
+                                already ? Colors.orange : Colors.red,
+
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+
+                            content: Text(
+                              already
+                                  ? 'Vous êtes déjà inscrit à cette collecte 🚑'
+                                  : 'Erreur lors de l’inscription',
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  );
+                },
+
+                loading: () => const Center(child: CircularProgressIndicator()),
+
+                error: (e, _) {
+                  debugPrint('❌ COLLECTES ERROR => $e');
+
+                  return Center(child: Text(e.toString()));
+                },
+              ),
+
+              
+              /// =====================================================
+              /// INFORMATIONS
+              /// =====================================================
+              alertsAsync.when(
+                data: (alerts) {
+                  final infoAlerts =
+                      alerts.where((a) {
+                        final type = a.type.trim().toLowerCase();
+
+                        return type == 'info' || type == 'information';
+                      }).toList();
+
+                  /// AUCUNE INFO
+                  if (infoAlerts.isEmpty) {
+                    return const SizedBox();
+                  }
+
+                  /// PREMIÈRE INFO
+                  final info = infoAlerts.first;
+
+                  debugPrint('📢 INFO ALERT => ${info.message}');
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+
+                    child: InformationTicker(text: info.message),
+                  );
+                },
+
+                loading: () => const SizedBox(),
+
+                error: (_, __) => const SizedBox(),
+              ),
+
+              const SizedBox(height: 21),
+            ],
+            
+          ),
         ),
       ),
     );

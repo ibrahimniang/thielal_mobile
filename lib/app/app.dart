@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+import '../l10n/app_localizations.dart';
+
+import 'services/locale_service.dart';
 
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
@@ -34,11 +39,29 @@ class _ThielalAppState extends ConsumerState<ThielalApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      title: 'Thielal / LifeLink',
-      theme: AppTheme.lightTheme,
-      routerConfig: _router,
+    return ValueListenableBuilder(
+      valueListenable: localeNotifier,
+
+      builder: (context, locale, _) {
+        return MaterialApp.router(
+          debugShowCheckedModeBanner: false,
+
+          title: 'Thielal / LifeLink',
+
+          theme: AppTheme.lightTheme,
+
+          routerConfig: _router,
+
+          /// =========================
+          /// LOCALIZATION
+          /// =========================
+          locale: locale,
+
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+
+          supportedLocales: AppLocalizations.supportedLocales,
+        );
+      },
     );
   }
 }

@@ -8,6 +8,7 @@ import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../application/auth_controller.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -32,12 +33,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   }
 
   String? _validateTelephone(String? value) {
+    final l10n = AppLocalizations.of(context)!;
     if (value == null || value.trim().isEmpty) {
-      return 'Veuillez entrer votre numéro de téléphone';
+      return l10n.enterPhoneNumber;
     }
 
     if (value.trim().length < 8) {
-      return 'Numéro de téléphone invalide';
+      return l10n.invalidPhoneNumber;
     }
 
     return null;
@@ -45,10 +47,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mot de passe oublié')),
+      appBar: AppBar(title: Text(l10n.forgotPassword)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -59,8 +62,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 const SizedBox(height: 24),
                 CustomTextField(
                   controller: _telephoneController,
-                  hintText: 'Téléphone',
-                  labelText: 'Téléphone',
+                  hintText: l10n.phone,
+                  labelText: l10n.phone,
                   keyboardType: TextInputType.phone,
                   validator: _validateTelephone,
                 ),
@@ -68,8 +71,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   const SizedBox(height: 16),
                   CustomTextField(
                     controller: _codeController,
-                    hintText: 'Code reçu',
-                    labelText: 'Code OTP',
+                    hintText: l10n.receivedCode,
+                    labelText: l10n.otpCode,
                     validator: Validators.otp,
                   ),
                 ],
@@ -82,7 +85,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 ],
                 const SizedBox(height: 20),
                 CustomButton(
-                  text: _codeSent ? 'Vérifier le code' : 'Envoyer le code',
+                  text: _codeSent ? l10n.verifyCode : l10n.sendCode,
                   isLoading: authState.isLoading,
                   onPressed: () async {
                     final isValid = _formKey.currentState?.validate() ?? false;

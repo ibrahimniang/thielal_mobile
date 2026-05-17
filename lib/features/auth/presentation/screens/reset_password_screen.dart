@@ -6,6 +6,7 @@ import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../application/auth_controller.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class ResetPasswordScreen extends ConsumerStatefulWidget {
   final String? telephone;
@@ -34,10 +35,11 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Réinitialiser le mot de passe')),
+      appBar: AppBar(title: Text(l10n.resetPassword)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -48,8 +50,8 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                 const SizedBox(height: 24),
                 CustomTextField(
                   controller: _passwordController,
-                  hintText: 'Nouveau mot de passe',
-                  labelText: 'Nouveau mot de passe',
+                  hintText: l10n.newPassword,
+                  labelText: l10n.newPassword,
                   obscureText: _obscure1,
                   validator: Validators.password,
                   suffixIcon: IconButton(
@@ -62,15 +64,15 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                 const SizedBox(height: 16),
                 CustomTextField(
                   controller: _confirmController,
-                  hintText: 'Confirmer le mot de passe',
-                  labelText: 'Confirmation',
+                  hintText: l10n.confirmPassword,
+                  labelText: l10n.confirmation,
                   obscureText: _obscure2,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Veuillez confirmer le mot de passe';
+                      return l10n.confirmPasswordMessage;
                     }
                     if (value.trim() != _passwordController.text.trim()) {
-                      return 'Les mots de passe ne correspondent pas';
+                      return l10n.passwordsDoNotMatch;
                     }
                     return null;
                   },
@@ -90,7 +92,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                 ],
                 const SizedBox(height: 20),
                 CustomButton(
-                  text: 'Mettre à jour',
+                  text: l10n.update,
                   isLoading: authState.isLoading,
                   onPressed: () async {
                     final isValid = _formKey.currentState?.validate() ?? false;
@@ -99,7 +101,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                     if (widget.telephone == null ||
                         widget.telephone!.trim().isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Téléphone introuvable')),
+                        SnackBar(content: Text(l10n.phoneNotFound)),
                       );
                       return;
                     }

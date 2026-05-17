@@ -111,4 +111,21 @@ class ApiEndpoints {
   static String verifyBloodGroupByUserId(int userId) {
     return '$users/$userId/verify-blood-group';
   }
+  // ==========================
+  // ALERTES
+  // ==========================
+
+  static const String alerts = '/alerts';
+
+  // ==========================
+  // CENTRES
+  // ==========================
+
+  static const String centres = '/centres';
+
+  // ==========================
+  // COLLECTES
+  // ==========================
+
+  static const String collectes = '/collectes';
 }

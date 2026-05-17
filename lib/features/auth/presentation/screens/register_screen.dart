@@ -11,6 +11,7 @@ import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../application/auth_controller.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -78,32 +79,35 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   String _stepTitle() {
+    final l10n = AppLocalizations.of(context)!;
     switch (_step) {
       case 1:
-        return 'Informations personnelles';
+        return l10n.personalInformation;
       case 2:
-        return 'Adresse et contact';
+        return l10n.addressContact;
       case 3:
-        return 'Santé et consentement';
+        return l10n.healthConsent;
       default:
         return '';
     }
   }
 
   String _stepSubtitle() {
+    final l10n = AppLocalizations.of(context)!;
     switch (_step) {
       case 1:
-        return 'Renseignez votre identité de base pour commencer.';
+        return l10n.personalInformationDescription;
       case 2:
-        return 'Ajoutez votre localisation et vérifiez vos coordonnées.';
+        return l10n.addressContactDescription;
       case 3:
-        return 'Complétez vos informations médicales et validez les conditions.';
+        return l10n.healthConsentDescription;
       default:
         return '';
     }
   }
 
   Future<void> _pickBirthDate() async {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final initialDate = DateTime(now.year - 18, 1, 1);
 
@@ -112,9 +116,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       initialDate: initialDate,
       firstDate: DateTime(1940),
       lastDate: now,
-      helpText: 'Choisir la date de naissance',
-      cancelText: 'Annuler',
-      confirmText: 'Valider',
+      helpText: l10n.chooseBirthDate,
+      cancelText: l10n.cancel,
+      confirmText: l10n.validate,
     );
 
     if (picked != null) {
@@ -130,6 +134,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _selectBloodGroup() async {
+    final l10n = AppLocalizations.of(context)!;
     final selected = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -159,8 +164,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: 18),
-              const Text(
-                'Choisissez votre groupe sanguin',
+              Text(
+                l10n.chooseBloodGroup,
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 18),
@@ -226,26 +231,27 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<bool> _confirmBloodGroup() async {
+    final l10n = AppLocalizations.of(context)!;
     final group = _groupeSanguinController.text.trim();
 
     return await showDialog<bool>(
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: const Text('Confirmation'),
+              title: Text(l10n.confirmation),
               content: Text(
                 group.isEmpty
-                    ? 'Confirmez-vous continuer sans groupe sanguin ?'
-                    : 'Confirmez-vous votre groupe sanguin : $group ?',
+                    ? l10n.confirmWithoutBloodGroup
+                    : '${l10n.confirmBloodGroup} : $group ?',
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Annuler'),
+                  child: Text(l10n.cancel),
                 ),
                 ElevatedButton(
                   onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Confirmer'),
+                  child: Text(l10n.confirm),
                 ),
               ],
             );
@@ -255,12 +261,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<Position> _determinePosition() async {
+    final l10n = AppLocalizations.of(context)!;
     bool serviceEnabled;
     LocationPermission permission;
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      throw Exception('Le GPS/localisation est désactivé sur le téléphone.');
+      throw Exception(l10n.gpsDisabled);
     }
 
     permission = await Geolocator.checkPermission();
@@ -269,14 +276,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       permission = await Geolocator.requestPermission();
 
       if (permission == LocationPermission.denied) {
-        throw Exception('Permission de localisation refusée.');
+        throw Exception(l10n.locationDenied);
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      throw Exception(
-        'Permission refusée définitivement. Activez-la dans les paramètres.',
-      );
+      throw Exception(l10n.locationDeniedForever);
     }
 
     return Geolocator.getCurrentPosition(
@@ -285,6 +290,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _fetchCurrentLocation() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       setState(() {
         _isFetchingLocation = true;
@@ -303,7 +309,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Localisation récupérée : ${position.latitude.toStringAsFixed(5)}, ${position.longitude.toStringAsFixed(5)}',
+            '${l10n.locationRetrieved} : ${position.latitude.toStringAsFixed(5)}, ${position.longitude.toStringAsFixed(5)}',
           ),
         ),
       );
@@ -314,13 +320,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         _isFetchingLocation = false;
       });
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Localisation indisponible : $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${l10n.locationUnavailable} : $e')),
+      );
     }
   }
 
   Future<void> _submitStep() async {
+    final l10n = AppLocalizations.of(context)!;
     final authCtrl = ref.read(authControllerProvider.notifier);
 
     if (_step == 1) {
@@ -372,22 +379,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (_step == 3) {
       if (_aDonneRecemment == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Veuillez indiquer si vous avez donné du sang durant les 4 derniers mois.',
-            ),
-          ),
+           SnackBar(content: Text(l10n.recentDonationQuestionError)),
         );
         return;
       }
 
       if (!_accepteConditions || !_acceptePolitique) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Veuillez accepter les conditions et la politique de confidentialité.',
-            ),
-          ),
+           SnackBar(content: Text(l10n.acceptConditionsError)),
         );
         return;
       }
@@ -708,30 +707,32 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Widget _buildStep1() {
+    final l10n = AppLocalizations.of(context)!;
     return _buildSectionCard(
       child: Column(
         children: [
           CustomTextField(
             controller: _nomController,
-            hintText: 'Nom',
-            labelText: 'Nom',
+            hintText: l10n.lastName,
+            labelText: l10n.lastName,
             validator:
-                (value) => Validators.requiredField(value, fieldName: 'Le nom'),
+                (value) =>
+                    Validators.requiredField(value, fieldName: l10n.lastName),
           ),
           const SizedBox(height: 16),
           CustomTextField(
             controller: _prenomController,
-            hintText: 'Prénom',
-            labelText: 'Prénom',
+            hintText: l10n.firstName,
+            labelText: l10n.firstName,
             validator:
                 (value) =>
-                    Validators.requiredField(value, fieldName: 'Le prénom'),
+                    Validators.requiredField(value, fieldName: l10n.firstName),
           ),
           const SizedBox(height: 18),
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              'Genre',
+              l10n.gender,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
@@ -743,17 +744,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           Row(
             children: [
               _buildChoiceChip(
-                label: 'Masculin',
-                selected: _genreUiValue == 'Masculin',
-                onTap: () => setState(() => _genreUiValue = 'Masculin'),
+                label: l10n.male,
+                selected: _genreUiValue == l10n.male,
+                onTap: () => setState(() => _genreUiValue = l10n.male),
                 colors: [Colors.blue.shade500, Colors.blue.shade700],
                 icon: Icons.male_rounded,
               ),
               const SizedBox(width: 12),
               _buildChoiceChip(
-                label: 'Féminin',
-                selected: _genreUiValue == 'Féminin',
-                onTap: () => setState(() => _genreUiValue = 'Féminin'),
+                label: l10n.female,
+                selected: _genreUiValue == l10n.female,
+                onTap: () => setState(() => _genreUiValue = l10n.female),
                 colors: [Colors.red.shade400, Colors.red.shade600],
                 icon: Icons.female_rounded,
               ),
@@ -765,8 +766,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             child: AbsorbPointer(
               child: CustomTextField(
                 controller: _dateNaissanceController,
-                hintText: 'Choisir une date',
-                labelText: 'Date de naissance',
+                hintText: l10n.chooseDate,
+                labelText: l10n.birthDate,
                 suffixIcon: const Icon(Icons.calendar_month_rounded),
               ),
             ),
@@ -777,6 +778,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Widget _buildStep2() {
+    final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authControllerProvider);
 
     return _buildSectionCard(
@@ -797,7 +799,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   child: Text(
                     authState.pendingPhone?.isNotEmpty == true
                         ? authState.pendingPhone!
-                        : 'Numéro récupéré depuis l’OTP',
+                        : l10n.phoneRecoveredOtp,
                     style: TextStyle(
                       color: Colors.blue.shade900,
                       fontWeight: FontWeight.w700,
@@ -810,14 +812,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           const SizedBox(height: 16),
           CustomTextField(
             controller: _villeController,
-            hintText: 'Ville',
-            labelText: 'Ville',
+            hintText: l10n.city,
+            labelText: l10n.city,
           ),
           const SizedBox(height: 16),
           CustomTextField(
             controller: _quartierController,
-            hintText: 'Quartier',
-            labelText: 'Quartier',
+            hintText: l10n.district,
+            labelText: l10n.district,
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -840,8 +842,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       : const Icon(Icons.my_location_rounded),
               label: Text(
                 _latitude != null && _longitude != null
-                    ? 'Localisation récupérée'
-                    : 'Utiliser ma localisation',
+                    ? l10n.locationRetrieved
+                    : l10n.useMyLocation,
               ),
             ),
           ),
@@ -856,7 +858,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 border: Border.all(color: Colors.green.shade100),
               ),
               child: Text(
-                'Latitude : ${_latitude!.toStringAsFixed(5)}\nLongitude : ${_longitude!.toStringAsFixed(5)}',
+                '${l10n.latitude} : ${_latitude!.toStringAsFixed(5)}'
+                '${l10n.longitude} : ${_longitude!.toStringAsFixed(5)}',
                 style: TextStyle(
                   color: Colors.green.shade800,
                   fontWeight: FontWeight.w600,
@@ -870,13 +873,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Widget _buildBloodGroupSelector() {
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: _selectBloodGroup,
       child: AbsorbPointer(
         child: CustomTextField(
           controller: _groupeSanguinController,
-          hintText: 'Choisir votre groupe sanguin',
-          labelText: 'Groupe sanguin',
+          hintText: l10n.chooseBloodGroupHint,
+          labelText: l10n.bloodGroup,
           suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded),
         ),
       ),
@@ -884,6 +888,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Widget _buildStep3() {
+    final l10n = AppLocalizations.of(context)!;
     return _buildSectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -891,7 +896,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           _buildBloodGroupSelector(),
           const SizedBox(height: 22),
           Text(
-            'Avez-vous donné du sang durant les 4 derniers mois ?',
+            l10n.recentDonationQuestion,
             style: TextStyle(
               fontWeight: FontWeight.w800,
               fontSize: 14,
@@ -902,7 +907,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           Row(
             children: [
               _buildChoiceChip(
-                label: 'Oui',
+                label: l10n.yes,
                 selected: _aDonneRecemment == true,
                 onTap: () => setState(() => _aDonneRecemment = true),
                 colors: [Colors.green.shade500, Colors.green.shade700],
@@ -910,7 +915,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               const SizedBox(width: 12),
               _buildChoiceChip(
-                label: 'Non',
+                label: l10n.no,
                 selected: _aDonneRecemment == false,
                 onTap: () => setState(() => _aDonneRecemment = false),
                 colors: [Colors.red.shade400, Colors.red.shade600],
@@ -924,7 +929,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             onChanged: (value) {
               setState(() => _accepteConditions = value ?? false);
             },
-            title: 'J’accepte les conditions',
+            title: l10n.acceptConditions,
             accent: Colors.red.shade600,
           ),
           _buildConsentTile(
@@ -932,7 +937,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             onChanged: (value) {
               setState(() => _acceptePolitique = value ?? false);
             },
-            title: 'J’accepte la politique de confidentialité',
+            title: l10n.acceptPrivacy,
             accent: Colors.blue.shade600,
           ),
         ],
@@ -941,6 +946,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Widget _buildActionButtons(bool isLoading) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         if (_step > 1)
@@ -955,14 +961,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              child: const Text('Retour'),
+              child: Text(l10n.back),
             ),
           ),
         if (_step > 1) const SizedBox(width: 12),
         Expanded(
           flex: 2,
           child: CustomButton(
-            text: _step == 3 ? 'Terminer' : 'Continuer',
+            text: _step == 3 ? l10n.finish : l10n.continueText,
             isLoading: isLoading,
             onPressed: _submitStep,
           ),
@@ -974,11 +980,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FC),
       appBar: AppBar(
-        title: const Text('Inscription'),
+        title: Text(l10n.register),
         elevation: 0,
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,

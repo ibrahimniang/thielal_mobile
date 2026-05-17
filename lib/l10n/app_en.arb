@@ -1,0 +1,519 @@
+{
+  "@@locale": "en",
+
+  "appName": "LifeLink",
+  "home": "Home",
+
+"centers": "Centers",
+
+"request": "Request",
+
+  "login": "Login",
+
+  "register": "Register",
+
+  "logout": "Logout",
+
+  "email": "Email",
+
+  "password": "Password",
+
+  "confirmPassword": "Confirm password",
+
+  "phone": "Phone",
+
+  "loginSubtitle": "Sign in to access your donor space",
+
+  "identifier": "Identifier",
+  "start": "Start",
+"receiveOtp": "Receive OTP code",
+"receiveOtpDescription": "Enter your phone number or email to receive a secure code and start your registration.",
+"phoneOrEmail": "Phone or email",
+"requiredField": "This field is required",
+"receiveCode": "Receive code",
+"otpVerification": "OTP Verification",
+"enterOtpDescription": "Enter the received code to continue your registration.",
+"remainingTime": "Remaining time",
+"otpExpired": "OTP code expired.",
+"verify": "Verify",
+"enterOtpCode": "Please enter the 6-digit OTP code",
+"resendCode": "Resend code",
+"personalInformation": "Personal information",
+"addressContact": "Address and contact",
+"healthConsent": "Health and consent",
+
+"personalInformationDescription": "Enter your basic identity information to begin.",
+"addressContactDescription": "Add your location and verify your contact details.",
+"healthConsentDescription": "Complete your medical information and validate the conditions.",
+
+"chooseBirthDate": "Choose birth date",
+"validate": "Validate",
+"estimatedDistance": "Estimated distance",
+
+"call": "Call",
+
+"route": "Directions",
+"availableCenters": "Available centers",
+
+"activeCentersIn": "active centers in",
+"searchCenter": "Search for a center...",
+"profileNotFound": "Profile not found",
+"unableToLoadUserData": "Unable to load user data.",
+
+"badgesRewards": "Badges & rewards",
+"donorProgress": "Your donor progress",
+
+"bronze": "Bronze",
+"silver": "Silver",
+"gold": "Gold",
+"elite": "Elite",
+
+"firstDonorLevel": "First donor level",
+"regularDonor": "Regular donor",
+"exemplaryDonor": "Exemplary donor",
+"lifelinkHero": "LifeLink Hero",
+
+"historyError": "History error",
+
+"noDonationRecorded": "No donation recorded",
+
+"donationHistoryWillAppear":
+    "Your donation history will appear here.",
+
+"lifelinkDonor": "LifeLink Donor",
+
+"qrUnavailable": "QR Code unavailable",
+
+"qrGeneratedAutomatically":
+    "Your donor QR code will be generated automatically.",
+
+"personalInformation":
+    "Personal information",
+
+"medicalInformationContacts":
+    "Your medical information and contact details",
+
+"fullName": "Full name",
+
+"city": "City",
+
+"district": "District",
+
+"bloodGroup": "Blood group",
+
+"medicalStatus": "Medical status",
+
+"verified": "Verified",
+
+"notVerified": "Not verified",
+"profileUpdatedSuccessfully":
+    "Profile updated successfully",
+
+"profileUpdateError":
+    "Error while updating profile",
+
+"changeAddEmail":
+    "Change / Add email",
+
+"codeSentByEmail":
+    "Code sent by email",
+
+"emailUpdatedSuccessfully":
+    "Email updated successfully",
+
+"changePhone":
+    "Change phone number",
+
+"codeSentBySms":
+    "Code sent by SMS",
+
+"phoneUpdatedSuccessfully":
+    "Phone updated successfully",
+
+"loadingProfile":
+    "Loading profile...",
+
+"error": "Error",
+
+"contactDetails":
+    "Contact details",
+
+"securityActions":
+    "Security actions",
+
+"lastName":
+    "Last name",
+
+"firstName":
+    "First name",
+
+"lastNameRequired":
+    "Last name is required",
+
+"firstNameRequired":
+    "First name is required",
+
+"currentEmail":
+    "Current email",
+
+"noEmailAdded":
+    "No email added",
+
+"currentPhone":
+    "Current phone",
+
+"saveChanges":
+    "Save changes",
+
+"chooseBloodGroup": "Choose your blood group",
+"chooseBloodGroupHint": "Choose your blood group",
+
+"confirmation": "Confirmation",
+"confirmWithoutBloodGroup": "Do you confirm continuing without a blood group?",
+"confirmBloodGroup": "Do you confirm your blood group",
+
+"confirm": "Confirm",
+
+"gpsDisabled": "GPS/location is disabled on the phone.",
+"locationDenied": "Location permission denied.",
+"locationDeniedForever": "Permission permanently denied. Enable it in settings.",
+
+"locationRetrieved": "Location retrieved",
+"locationUnavailable": "Location unavailable",
+
+"recentDonationQuestionError": "Please indicate whether you donated blood during the last 4 months.",
+
+"acceptConditionsError": "Please accept the terms and privacy policy.",
+
+"lastName": "Last name",
+"firstName": "First name",
+
+"gender": "Gender",
+
+"male": "Male",
+"female": "Female",
+
+"chooseDate": "Choose a date",
+"birthDate": "Birth date",
+
+"phoneRecoveredOtp": "Phone number recovered from OTP",
+
+"city": "City",
+"district": "District",
+
+"useMyLocation": "Use my location",
+
+"latitude": "Latitude",
+"longitude": "Longitude",
+
+"bloodGroup": "Blood group",
+
+"recentDonationQuestion": "Have you donated blood during the last 4 months?",
+
+"yes": "Yes",
+"no": "No",
+
+"acceptConditions": "I accept the terms",
+
+"acceptPrivacy": "I accept the privacy policy",
+
+"back": "Back",
+
+"finish": "Finish",
+"enterPhoneNumber": "Please enter your phone number",
+"invalidPhoneNumber": "Invalid phone number",
+"receivedCode": "Received code",
+"otpCode": "OTP code",
+"verifyCode": "Verify code",
+"sendCode": "Send code",
+"resetPassword": "Reset password",
+"newPassword": "New password",
+"confirmPasswordMessage": "Please confirm the password",
+"passwordsDoNotMatch": "Passwords do not match",
+"update": "Update",
+"phoneNotFound": "Phone not found",
+"setPassword": "Set password",
+"address": "Address",
+"notAvailable": "Not available",
+"gpsCoordinates": "GPS coordinates",
+"call": "Call",
+"directions": "Directions",
+"activeCenter": "Active center",
+"centerAvailableDescription": "This center is currently available for blood donations and requests.",
+"kilometers": "km",
+"error": "Error",
+"nouakchott": "Nouakchott",
+"fillAllFields": "Please fill all fields",
+"sessionExpired": "Session expired",
+
+"requestSent": "Request sent",
+
+"nearbyDonorsAlerted": "Nearby donors will immediately receive your request.",
+
+"ok": "OK",
+
+"urgentRequest": "Urgent request",
+
+"urgentNeed": "URGENT NEED",
+
+"sendBloodRequest": "Send a blood request",
+
+"donorsReceiveAlert": "Nearby donors will immediately receive an alert.",
+
+"enterYourCity": "Enter your city",
+
+"requestedQuantity": "Requested quantity",
+
+"bags": "bag",
+"urgentDetails": "Urgency details",
+
+"medicalCenter": "Medical center",
+
+"urgent": "Urgent",
+"normal": "Normal",
+
+"recoveryPeriod": "You are currently in recovery period.",
+
+"nextDonationDate": "Next possible donation",
+
+"centerInformation": "Center information",
+
+"addressUnavailable": "Address unavailable",
+
+"phoneUnavailable": "Phone unavailable",
+
+"viewDirections": "View directions",
+
+"respondUrgency": "Respond to urgency",
+
+"phoneCopied": "Phone copied",
+"myDonations": "My donations",
+
+"noDonationRecorded": "No donation recorded",
+
+"unknownDate": "Unknown date",
+
+"bloodDonation": "Blood donation",
+
+"validated": "Validated",
+
+"pending": "Pending",
+
+"unknownCenter": "Unknown center",
+
+"unknownCity": "Unknown city",
+
+"date": "Date",
+
+"viewCertificate": "View certificate",
+
+"openCertificate": "Open certificate",
+
+"certificateUnavailable": "Certificate unavailable",
+"all": "All",
+
+"iNeedBlood": "I need blood",
+
+"urgentRequests": "Urgent requests",
+
+"seeAll": "See all",
+
+"noUrgencyAvailable": "No urgency available",
+
+"registrationSuccess": "Registration for",
+
+"alreadyRegisteredCollection": "You are already registered for this collection ",
+
+"registrationError": "Registration error",
+"activeCollection": "ACTIVE COLLECTION",
+
+"registered": "Registered",
+
+"registerAction": "Register",
+
+"registeredPlural": "registered",
+
+"daysShort": "D",
+"hoursShort": "H",
+"minutesShort": "M",
+"secondsShort": "S",
+"imGoing": "I'm going",
+"nationalImpact": "NATIONAL IMPACT",
+
+"live": "Live",
+
+"lastValidatedDonation": "Last validated donation",
+
+"totalValidated": "Validated total",
+
+"savedLives": "Saved lives",
+
+"realImpact": "Real impact",
+
+"delay": "Delay",
+
+"minutes": "min",
+
+"averageTime": "Average time",
+"realTimeSituation": "REAL-TIME SITUATION",
+
+"viewMap": "View map",
+
+"nearbyCenters": "nearby centers",
+
+"urgencies": "urgencies",
+"activeCenters": "Active centers",
+"smartDonationAndEmergencies": "Smart donation & emergencies",
+"livesSavedToday": "lives saved today",
+
+"activeDonorsInYourArea": "active donors in your area",
+"sendUrgentBloodRequest": "Quickly send an urgent blood request.",
+"sendNow": "Send now",
+
+  "profile": "Profile",
+
+  "settings": "Settings",
+
+  "notifications": "Notifications",
+
+  "language": "Language",
+
+  "donations": "Donations",
+
+  "donationHistory": "Donation history",
+
+  "nearbyDonors": "Nearby donors",
+
+  "urgentAlerts": "Urgent alerts",
+
+  "healthCenters": "Health centers",
+
+  "search": "Search",
+
+  "save": "Save",
+
+  "cancel": "Cancel",
+
+  "editProfile": "Edit profile",
+
+  "myProfile": "My profile",
+
+  "welcome": "Welcome",
+
+  "next": "Next",
+
+  "continueText": "Continue",
+
+  "forgotPassword": "Forgot password?",
+
+  "changeLanguage": "Change language",
+
+  "french": "French",
+
+  "english": "English",
+
+  "arabic": "Arabic",
+  "unlocked": "Unlocked",
+
+"locked": "Locked",
+"bloodCompatibility": "Blood compatibility",
+
+"noDataAvailable": "No data available",
+"lifelinkDonationCertificate":
+    "LifeLink Donation Certificate",
+
+"donor":
+    "Donor",
+
+"center":
+    "Center",
+
+"date":
+    "Date",
+
+"lifelinkCertificate":
+    "LifeLink Certificate",
+
+"officialBloodDonationCertificate":
+    "Official blood donation certificate",
+
+"donationCertificate":
+    "Donation Certificate",
+
+"verifiedCertificate":
+    "Verified certificate",
+
+"thankYouBloodDonation":
+    "Thank you for your contribution to blood donation.",
+
+"download":
+    "Download",
+
+"share":
+    "Share",
+"lives": "lives",
+
+"viewCertificateShare":
+    "View certificate & share",
+"level": "Level",
+
+"donorPoints": "donor points",
+
+"donorProgression": "donor progression" ,
+"nextDonationPossible":
+    "Next possible donation",
+
+"noDateAvailable":
+    "No date available",
+
+"newDonationAvailableDate":
+    "You will be able to donate again on this date.",
+
+"nextDonationDateSoon":
+    "Your next donation date will be available soon.",
+
+"receiveReminder":
+    "Receive reminder",
+"anErrorOccurred":
+    "An error occurred",
+
+"retry":
+    "Retry",
+"bloodGroupVerified":
+    "Blood group verified",
+
+"pendingVerification":
+    "Pending verification",
+
+"user":
+    "User",
+
+"points":
+    "Points",
+"medicalProfileVerified":
+    "Medical profile verified",
+
+"verificationRequired":
+    "Verification required",
+
+"yourBloodGroup":
+    "Your blood group",
+
+"hasBeenValidated":
+    "has been validated.",
+
+"pleaseCompleteMedicalVerification":
+    "Please complete a medical verification.",
+"overview": "Overview",
+
+"history": "History",
+
+"qr": "QR",
+
+"info": "Info",
+"presentQrAtDonationCenters":
+    "Present this QR code at donation centers",
+
+"secureDonationQrInfo":
+    "This QR contains your secured donation information"                       
+}
