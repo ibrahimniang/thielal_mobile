@@ -251,10 +251,20 @@ class AuthController extends StateNotifier<AuthState> {
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: true,
+
+        /// 🔥 user temporaire
         currentUser: result.$1,
+
         accessToken: result.$2.accessToken,
+
         clearError: true,
       );
+
+      /// ======================================
+      /// LOAD VRAI PROFIL COMPLET
+      /// ======================================
+
+      await loadCurrentUser();
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -295,10 +305,20 @@ class AuthController extends StateNotifier<AuthState> {
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: true,
+
+        /// 🔥 user temporaire
         currentUser: result.$1,
+
         accessToken: result.$2.accessToken,
+
         clearError: true,
       );
+
+      /// ======================================
+      /// LOAD VRAI PROFIL COMPLET
+      /// ======================================
+
+      await loadCurrentUser();
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -346,10 +366,20 @@ class AuthController extends StateNotifier<AuthState> {
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: true,
+
+        /// 🔥 user temporaire
         currentUser: result.$1,
+
         accessToken: result.$2.accessToken,
+
         clearError: true,
       );
+
+      /// ======================================
+      /// LOAD VRAI PROFIL COMPLET
+      /// ======================================
+
+      await loadCurrentUser();
 
       await SecureStorageService.setHasCompletedEntryFlow(true);
       final saved = await SecureStorageService.hasCompletedEntryFlow();

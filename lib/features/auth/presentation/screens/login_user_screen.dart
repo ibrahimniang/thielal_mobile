@@ -9,6 +9,8 @@ import '../../../../app/theme/app_spacing.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
+import '../../../../l10n/app_localizations.dart';
+
 import '../../application/auth_controller.dart';
 import '../../application/auth_state.dart';
 
@@ -74,7 +76,9 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
     super.dispose();
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Column(
       children: [
         Container(
@@ -102,8 +106,8 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
           ),
         ),
         const SizedBox(height: 18),
-        const Text(
-          'LifeLink',
+        Text(
+          l10n.appName,
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 24,
@@ -113,7 +117,7 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Connectez-vous pour accéder à votre espace donneur',
+          l10n.loginSubtitle,
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 14,
@@ -130,6 +134,8 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
     required AuthState authState,
     required AuthController auth,
   }) {
+    final l10n = AppLocalizations.of(context)!;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(28),
       child: BackdropFilter(
@@ -172,7 +178,7 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Connexion',
+                    l10n.login,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
@@ -185,12 +191,12 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
 
                 CustomTextField(
                   controller: _identifierController,
-                  hintText: 'Téléphone',
-                  labelText: 'Identifiant',
+                  hintText: l10n.phone,
+                  labelText: l10n.identifier,
                   validator:
                       (value) => Validators.requiredField(
                         value,
-                        fieldName: 'L’identifiant',
+                        fieldName: l10n.identifier,
                       ),
                 ),
 
@@ -198,8 +204,8 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
 
                 CustomTextField(
                   controller: _passwordController,
-                  hintText: 'Mot de passe',
-                  labelText: 'Mot de passe',
+                  hintText: l10n.password,
+                  labelText: l10n.password,
                   obscureText: _obscure,
                   validator: Validators.password,
                   suffixIcon: IconButton(
@@ -235,22 +241,16 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
                 const SizedBox(height: 22),
 
                 CustomButton(
-                  text: 'Se connecter',
+                  text: l10n.login,
                   isLoading: authState.isLoading,
                   onPressed: () async {
                     final isValid = _formKey.currentState?.validate() ?? false;
                     print('LOGIN DEBUG -> form valid: $isValid');
                     if (!isValid) return;
-                    print(
-                      'LOGIN DEBUG -> identifier: ${_identifierController.text.trim()}',
-                    );
 
                     await auth.login(
                       identifier: _identifierController.text.trim(),
                       password: _passwordController.text.trim(),
-                    );
-                    print(
-                      'LOGIN DEBUG -> errorMessage after login: ${ref.read(authControllerProvider).errorMessage}',
                     );
                   },
                 ),
@@ -259,7 +259,7 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
 
                 TextButton(
                   onPressed: () => context.push(RouteNames.forgotPassword),
-                  child: const Text('Mot de passe oublié ?'),
+                  child: Text(l10n.forgotPassword),
                 ),
               ],
             ),
@@ -271,13 +271,15 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     final authState = ref.watch(authControllerProvider);
     final auth = ref.read(authControllerProvider.notifier);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FC),
       appBar: AppBar(
-        title: const Text('Connexion'),
+        title: Text(l10n.login),
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -302,7 +304,7 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 18),
-                _buildHeader(),
+                _buildHeader(context),
                 const SizedBox(height: 28),
                 _buildFormCard(
                   context: context,

@@ -1,5 +1,7 @@
+//2
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class ContactChangeDialog extends ConsumerStatefulWidget {
   final String title;
@@ -39,6 +41,7 @@ class _ContactChangeDialogState extends ConsumerState<ContactChangeDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
       title: Text(widget.title),
       content: Column(
@@ -52,7 +55,7 @@ class _ContactChangeDialogState extends ConsumerState<ContactChangeDialog> {
           const SizedBox(height: 12),
           TextField(
             controller: _codeController,
-            decoration: const InputDecoration(labelText: 'Code OTP'),
+            decoration: InputDecoration(labelText: l10n.otpCode),
           ),
         ],
       ),
@@ -81,7 +84,7 @@ class _ContactChangeDialogState extends ConsumerState<ContactChangeDialog> {
                     height: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                  : const Text('Envoyer code'),
+                  : Text(l10n.sendCode),
         ),
         ElevatedButton(
           onPressed:
@@ -109,7 +112,7 @@ class _ContactChangeDialogState extends ConsumerState<ContactChangeDialog> {
                     height: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                  : const Text('Valider'),
+                  : Text(l10n.validate),
         ),
       ],
     );

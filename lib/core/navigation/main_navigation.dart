@@ -1,9 +1,10 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:thielal/features/notifications/presentation/controllers/notification_controller.dart';
 
 import '../../app/router/route_names.dart';
+import '../../l10n/app_localizations.dart';
 
 class MainNavigation extends StatelessWidget {
   final Widget child;
@@ -11,100 +12,277 @@ class MainNavigation extends StatelessWidget {
   const MainNavigation({super.key, required this.child});
 
   int _index(String location) {
-    if (location.startsWith(RouteNames.home)) return 0;
-    if (location.startsWith(RouteNames.map)) return 1;
-    if (location.startsWith(RouteNames.profile)) return 2;
-    if (location.startsWith(RouteNames.settings)) return 3;
-    if (location.startsWith(RouteNames.notifications)) return 4;
+    if (location.startsWith(RouteNames.home)) {
+      return 0;
+    }
+
+    if (location.startsWith(RouteNames.map)) {
+      return 1;
+    }
+
+    if (location.startsWith(RouteNames.donations)) {
+      return 2;
+    }
+
+    if (location.startsWith(RouteNames.settings)) {
+      return 3;
+    }
+
+    if (location.startsWith(RouteNames.notifications)) {
+      return 4;
+    }
+
     return 0;
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final location = GoRouterState.of(context).uri.toString();
+
     final currentIndex = _index(location);
 
+    final items = [
+      {'icon': Icons.home_rounded, 'label': l10n.home},
+
+      {'icon': Icons.location_on_rounded, 'label': l10n.centers},
+
+      {'icon': Icons.bloodtype_rounded, 'label': l10n.request},
+
+      {'icon': Icons.settings_rounded, 'label': l10n.settings},
+
+      {'icon': Icons.notifications_rounded, 'label': l10n.notifications},
+    ];
+
     return Scaffold(
+      extendBody: true,
+
       body: child,
 
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        unselectedItemColor: Colors.grey,
-        currentIndex: currentIndex,
-        onTap: (i) {
-          switch (i) {
-            case 0:
-              context.go(RouteNames.home);
-              break;
-            case 1:
-              context.go(RouteNames.map);
-              break;
-            case 2:
-              context.go(RouteNames.profile);
-              break;
-            case 3:
-              context.go(RouteNames.settings);
-              break;
-            case 4:
-              context.go(RouteNames.notifications);
-          }
-        },
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
 
-        selectedItemColor: Colors.blueAccent,
-        items: [
-          const BottomNavigationBarItem(icon: Icon(Icons.home), label: "Accueil"),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.location_on),
-            label: "Carte",
-          ),
-          const BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: "Paramètres",
-          ),
-         BottomNavigationBarItem(
-  icon: Consumer(
-    builder: (context, ref, _) {
-      final count = ref.watch(unreadNotificationCountProvider);
+        child: SizedBox(
+          height: 95,
 
-      return count.when(
-        data: (value) {
-          return Stack(
+          child: Stack(
+            clipBehavior: Clip.none,
+
+            alignment: Alignment.bottomCenter,
+
             children: [
-              const Icon(Icons.notifications),
+              /// ==========================================
+              /// NAVBAR BACKGROUND
+              /// ==========================================
+              Positioned(
+                bottom: 0,
 
-              if (value > 0)
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      value.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
+                left: 0,
+                right: 0,
+
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(32),
+
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+
+                    child: Container(
+                      height: 78,
+
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.92),
+
+                        borderRadius: BorderRadius.circular(32),
+
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.4),
+                        ),
+
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+
+                            blurRadius: 24,
+
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+
+                      child: Row(
+                        children: List.generate(items.length, (index) {
+                          final item = items[index];
+
+                          final isSelected = currentIndex == index;
+
+                          final isCenter = index == 2;
+
+                          /// ==========================================
+                          /// CENTER BUTTON
+                          /// ==========================================
+
+                          if (isCenter) {
+                            return Expanded(child: const SizedBox());
+                          }
+
+                          return Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                switch (index) {
+                                  case 0:
+                                    context.go(RouteNames.home);
+                                    break;
+
+                                  case 1:
+                                    context.go(RouteNames.map);
+                                    break;
+
+                                  case 3:
+                                    context.go(RouteNames.settings);
+                                    break;
+
+                                  case 4:
+                                    context.go(RouteNames.notifications);
+                                    break;
+                                }
+                              },
+
+                              behavior: HitTestBehavior.opaque,
+
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+
+                                children: [
+                                  AnimatedContainer(
+                                    duration: const Duration(milliseconds: 250),
+
+                                    height: 44,
+                                    width: 44,
+
+                                    decoration: BoxDecoration(
+                                      gradient:
+                                          isSelected
+                                              ? const LinearGradient(
+                                                colors: [
+                                                  Color(0xFFE53946),
+                                                  Color(0xFFC1121F),
+                                                ],
+                                              )
+                                              : null,
+
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+
+                                    child: Icon(
+                                      item['icon'] as IconData,
+
+                                      color:
+                                          isSelected
+                                              ? Colors.white
+                                              : Colors.grey.shade500,
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 4),
+
+                                  Text(
+                                    item['label'] as String,
+
+                                    style: TextStyle(
+                                      color:
+                                          isSelected
+                                              ? const Color(0xFFE53946)
+                                              : Colors.grey.shade500,
+
+                                      fontSize: 11,
+
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
                       ),
                     ),
                   ),
                 ),
+              ),
+
+              /// ==========================================
+              /// CENTER FLOATING BUTTON
+              /// ==========================================
+              Positioned(
+                top: -8,
+
+                child: GestureDetector(
+                  onTap: () {
+                    /// 🔥 ROUTE DEMANDE SANG
+                    context.go(RouteNames.demandeSang);
+                  },
+
+                  child: Column(
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+
+                        height: 76,
+                        width: 76,
+
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+
+                            end: Alignment.bottomRight,
+
+                            colors: [Color(0xFFE53946), Color(0xFFC1121F)],
+                          ),
+
+                          shape: BoxShape.circle,
+
+                          border: Border.all(color: Colors.white, width: 6),
+
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFE53946).withOpacity(0.40),
+
+                              blurRadius: 24,
+
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+
+                        child: const Icon(
+                          Icons.bloodtype_rounded,
+
+                          color: Colors.white,
+
+                          size: 34,
+                        ),
+                      ),
+
+                      const SizedBox(height: 4),
+
+                      Text(
+                        l10n.request,
+
+                        style: TextStyle(
+                          color: Color(0xFFE53946),
+
+                          fontWeight: FontWeight.w800,
+
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
-          );
-        },
-
-        loading: () => const Icon(Icons.notifications),
-
-        error: (_, __) => const Icon(Icons.notifications),
-      );
-    },
-  ),
-  label: "notifications",
-),
-        ],
+          ),
+        ),
       ),
     );
   }

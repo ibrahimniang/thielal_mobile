@@ -22,12 +22,13 @@ import '../../features/staff/presentation/screens/director_dashboard_screen.dart
 import '../../features/home/screens/home_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/settings/settings_screen.dart';
-import '../../features/map/map_screen.dart';
+import '../../features/centers/presentation/screens/centers_map_screen.dart';
+import '../../features/donations/presentation/screens/donation_history_screen.dart';
 
 import '../../features/splash/presentation/splash_screen.dart';
 
 // ✅ AJOUT IMPORTANT
-import '../../features/donations/presentation/screens/donation_history_screen.dart';
+import '../../features/donations/presentation/screens/demande_sang_screen.dart';
 
 import '../../core/navigation/main_navigation.dart';
 import 'route_names.dart';
@@ -191,7 +192,10 @@ class AppRouter {
             ),
             GoRoute(
               path: RouteNames.map,
-              builder: (_, __) => const MapScreen(),
+
+              builder: (context, state) {
+                return CentersMapScreen(initialSearch: state.extra as String?);
+              },
             ),
 
             GoRoute(
@@ -203,6 +207,10 @@ class AppRouter {
             GoRoute(
               path: RouteNames.donations,
               builder: (_, __) => const DonationHistoryScreen(),
+            ),
+            GoRoute(
+              path: RouteNames.demandeSang,
+              builder: (_, __) => const DemandeSangScreen(),
             ),
           ],
         ),

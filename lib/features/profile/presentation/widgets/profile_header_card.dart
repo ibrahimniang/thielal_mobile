@@ -1,4 +1,6 @@
+//5
 import 'package:flutter/material.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class ProfileHeaderCard extends StatelessWidget {
   final String fullName;
@@ -18,9 +20,10 @@ class ProfileHeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final statusColor = profilComplet ? Colors.green : Colors.orange;
     final statusText =
-        profilComplet ? 'Groupe sanguin vérifié' : 'En attente de vérification';
+        profilComplet ? l10n.bloodGroupVerified : l10n.pendingVerification;
 
     return Container(
       width: double.infinity,
@@ -62,7 +65,7 @@ class ProfileHeaderCard extends StatelessWidget {
           const SizedBox(height: 14),
 
           Text(
-            fullName.isEmpty ? 'Utilisateur' : fullName,
+            fullName.isEmpty ? l10n.user : fullName,
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: Colors.white,
@@ -74,7 +77,7 @@ class ProfileHeaderCard extends StatelessWidget {
           const SizedBox(height: 6),
 
           Text(
-            'Groupe sanguin : $bloodGroup',
+           '${l10n.bloodGroup} : $bloodGroup',
             style: const TextStyle(color: Colors.white, fontSize: 14),
           ),
 
@@ -98,7 +101,7 @@ class ProfileHeaderCard extends StatelessWidget {
           const SizedBox(height: 14),
 
           Text(
-            'Points : $points',
+            '${l10n.points} : $points',
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w700,
@@ -107,7 +110,7 @@ class ProfileHeaderCard extends StatelessWidget {
 
           const SizedBox(height: 4),
 
-          Text('Niveau : $badge', style: const TextStyle(color: Colors.white)),
+          Text('${l10n.level} : $badge', style: const TextStyle(color: Colors.white)),
         ],
       ),
     );

@@ -1,0 +1,530 @@
+{
+  "@@locale": "ar",
+
+  "appName": "لايف لينك",
+  "home": "الرئيسية",
+
+"centers": "المراكز",
+
+"request": "طلب",
+
+  "login": "تسجيل الدخول",
+
+  "register": "إنشاء حساب",
+
+  "logout": "تسجيل الخروج",
+
+  "email": "البريد الإلكتروني",
+
+  "password": "كلمة المرور",
+
+  "confirmPassword": "تأكيد كلمة المرور",
+
+  "phone": "رقم الهاتف",
+
+  "loginSubtitle": "قم بتسجيل الدخول للوصول إلى مساحة المتبرع الخاصة بك",
+
+  "identifier": "المعرف",
+  "start": "ابدأ",
+"receiveOtp": "استلام رمز OTP",
+"receiveOtpDescription": "أدخل رقم هاتفك أو بريدك الإلكتروني لتلقي رمز آمن وبدء التسجيل.",
+"phoneOrEmail": "الهاتف أو البريد الإلكتروني",
+"requiredField": "هذا الحقل مطلوب",
+"receiveCode": "استلام الرمز",
+"otpVerification": "التحقق من OTP",
+"enterOtpDescription": "أدخل الرمز المستلم لمتابعة التسجيل.",
+"remainingTime": "الوقت المتبقي",
+"otpExpired": "انتهت صلاحية رمز OTP.",
+"verify": "تحقق",
+"enterOtpCode": "يرجى إدخال رمز OTP المكون من 6 أرقام",
+"resendCode": "إعادة إرسال الرمز",
+"personalInformation": "المعلومات الشخصية",
+"addressContact": "العنوان وبيانات الاتصال",
+"healthConsent": "الصحة والموافقة",
+
+"personalInformationDescription": "أدخل معلومات هويتك الأساسية للبدء.",
+"addressContactDescription": "أضف موقعك وتحقق من معلومات الاتصال الخاصة بك.",
+"healthConsentDescription": "أكمل معلوماتك الطبية ووافق على الشروط.",
+
+"chooseBirthDate": "اختر تاريخ الميلاد",
+"validate": "تأكيد",
+"estimatedDistance": "المسافة المقدرة",
+
+"call": "اتصال",
+
+"route": "الاتجاه",
+"availableCenters": "المراكز المتاحة",
+
+"activeCentersIn": "مراكز نشطة في",
+"searchCenter": "ابحث عن مركز...",
+"profileNotFound": "الملف الشخصي غير موجود",
+
+"unableToLoadUserData":
+    "تعذر تحميل بيانات المستخدم.",
+
+"badgesRewards": "الشارات والمكافآت",
+
+"donorProgress": "تقدمك كمتبرع",
+
+"bronze": "برونزي",
+
+"silver": "فضي",
+
+"gold": "ذهبي",
+
+"elite": "النخبة",
+
+"firstDonorLevel": "أول مستوى للمتبرع",
+
+"regularDonor": "متبرع منتظم",
+
+"exemplaryDonor": "متبرع مثالي",
+
+"lifelinkHero": "بطل لايف لينك",
+
+"historyError": "خطأ في السجل",
+
+"noDonationRecorded": "لا توجد تبرعات مسجلة",
+
+"donationHistoryWillAppear":
+    "سيظهر سجل تبرعاتك هنا.",
+
+"lifelinkDonor": "متبرع لايف لينك",
+
+"qrUnavailable": "رمز QR غير متوفر",
+
+"qrGeneratedAutomatically":
+    "سيتم إنشاء رمز QR الخاص بك تلقائيًا.",
+
+"personalInformation":
+    "المعلومات الشخصية",
+
+"medicalInformationContacts":
+    "معلوماتك الطبية وبيانات الاتصال",
+
+"fullName": "الاسم الكامل",
+
+"city": "المدينة",
+
+"district": "الحي",
+
+"bloodGroup": "فصيلة الدم",
+
+"medicalStatus": "الحالة الطبية",
+
+"verified": "تم التحقق",
+
+"notVerified": "غير متحقق",
+"profileUpdatedSuccessfully":
+    "تم تحديث الملف الشخصي بنجاح",
+
+"profileUpdateError":
+    "حدث خطأ أثناء تحديث الملف الشخصي",
+
+"changeAddEmail":
+    "تغيير / إضافة بريد إلكتروني",
+
+"codeSentByEmail":
+    "تم إرسال الرمز عبر البريد الإلكتروني",
+
+"emailUpdatedSuccessfully":
+    "تم تحديث البريد الإلكتروني بنجاح",
+
+"changePhone":
+    "تغيير رقم الهاتف",
+
+"codeSentBySms":
+    "تم إرسال الرمز عبر الرسائل القصيرة",
+
+"phoneUpdatedSuccessfully":
+    "تم تحديث رقم الهاتف بنجاح",
+
+"loadingProfile":
+    "جارٍ تحميل الملف الشخصي...",
+
+"error": "خطأ",
+
+"contactDetails":
+    "معلومات الاتصال",
+
+"securityActions":
+    "إجراءات الأمان",
+
+"lastName":
+    "الاسم العائلي",
+
+"firstName":
+    "الاسم الشخصي",
+
+"lastNameRequired":
+    "الاسم العائلي مطلوب",
+
+"firstNameRequired":
+    "الاسم الشخصي مطلوب",
+
+"currentEmail":
+    "البريد الإلكتروني الحالي",
+
+"noEmailAdded":
+    "لم يتم إضافة بريد إلكتروني",
+
+"currentPhone":
+    "رقم الهاتف الحالي",
+
+"saveChanges":
+    "حفظ التعديلات",
+
+"chooseBloodGroup": "اختر فصيلة دمك",
+"chooseBloodGroupHint": "اختر فصيلة دمك",
+
+"confirmation": "تأكيد",
+"confirmWithoutBloodGroup": "هل تؤكد المتابعة بدون فصيلة دم؟",
+"confirmBloodGroup": "هل تؤكد فصيلة دمك",
+
+"confirm": "تأكيد",
+
+"gpsDisabled": "خدمة GPS/الموقع معطلة على الهاتف.",
+"locationDenied": "تم رفض إذن الموقع.",
+"locationDeniedForever": "تم رفض الإذن نهائيًا. قم بتفعيله من الإعدادات.",
+
+"locationRetrieved": "تم استرجاع الموقع",
+"locationUnavailable": "الموقع غير متاح",
+
+"recentDonationQuestionError": "يرجى تحديد ما إذا كنت قد تبرعت بالدم خلال الأشهر الأربعة الماضية.",
+
+"acceptConditionsError": "يرجى قبول الشروط وسياسة الخصوصية.",
+
+"lastName": "الاسم العائلي",
+"firstName": "الاسم الشخصي",
+
+"gender": "الجنس",
+
+"male": "ذكر",
+"female": "أنثى",
+
+"chooseDate": "اختر تاريخًا",
+"birthDate": "تاريخ الميلاد",
+
+"phoneRecoveredOtp": "تم استرجاع رقم الهاتف من OTP",
+
+"city": "المدينة",
+"district": "الحي",
+
+"useMyLocation": "استخدام موقعي",
+
+"latitude": "خط العرض",
+"longitude": "خط الطول",
+
+"bloodGroup": "فصيلة الدم",
+
+"recentDonationQuestion": "هل تبرعت بالدم خلال الأشهر الأربعة الماضية؟",
+
+"yes": "نعم",
+"no": "لا",
+
+"acceptConditions": "أوافق على الشروط",
+
+"acceptPrivacy": "أوافق على سياسة الخصوصية",
+
+"back": "رجوع",
+
+"finish": "إنهاء",
+"enterPhoneNumber": "يرجى إدخال رقم الهاتف",
+"invalidPhoneNumber": "رقم هاتف غير صالح",
+"receivedCode": "الرمز المستلم",
+"otpCode": "رمز OTP",
+"verifyCode": "التحقق من الرمز",
+"sendCode": "إرسال الرمز",
+"resetPassword": "إعادة تعيين كلمة المرور",
+"newPassword": "كلمة مرور جديدة",
+"confirmPasswordMessage": "يرجى تأكيد كلمة المرور",
+"passwordsDoNotMatch": "كلمتا المرور غير متطابقتين",
+"update": "تحديث",
+"phoneNotFound": "رقم الهاتف غير موجود",
+"setPassword": "تعيين كلمة المرور",
+"address": "العنوان",
+"notAvailable": "غير متوفر",
+"gpsCoordinates": "إحداثيات GPS",
+"call": "اتصال",
+"directions": "الاتجاهات",
+"activeCenter": "مركز نشط",
+"centerAvailableDescription": "هذا المركز متاح حاليًا للتبرعات وطلبات الدم.",
+"kilometers": "كم",
+"error": "خطأ",
+"nouakchott": "نواكشوط",
+"fillAllFields": "يرجى ملء جميع الحقول",
+"sessionExpired": "انتهت الجلسة",
+
+"requestSent": "تم إرسال الطلب",
+
+"nearbyDonorsAlerted": "سيتلقى المتبرعون القريبون طلبك فورًا.",
+
+"ok": "حسنًا",
+
+"urgentRequest": "طلب عاجل",
+
+"urgentNeed": "حاجة عاجلة",
+
+"sendBloodRequest": "إرسال طلب دم",
+
+"donorsReceiveAlert": "سيتلقى المتبرعون القريبون تنبيهًا فورًا.",
+
+"enterYourCity": "أدخل مدينتك",
+
+"requestedQuantity": "الكمية المطلوبة",
+
+"bags": "كيس",
+
+"sendNow": "إرسال الآن",
+"urgentDetails": "تفاصيل الحالة الطارئة",
+
+"medicalCenter": "مركز طبي",
+
+"urgent": "عاجل",
+"normal": "عادي",
+
+"recoveryPeriod": "أنت حاليًا في فترة تعافٍ.",
+
+"nextDonationDate": "التبرع القادم الممكن",
+
+"centerInformation": "معلومات المركز",
+
+"addressUnavailable": "العنوان غير متوفر",
+
+"phoneUnavailable": "رقم الهاتف غير متوفر",
+
+"viewDirections": "عرض الاتجاهات",
+
+"respondUrgency": "الاستجابة للحالة الطارئة",
+
+"phoneCopied": "تم نسخ رقم الهاتف",
+"myDonations": "تبرعاتي",
+
+"noDonationRecorded": "لا توجد تبرعات مسجلة",
+
+"unknownDate": "تاريخ غير معروف",
+
+"bloodDonation": "التبرع بالدم",
+
+"validated": "تم التحقق",
+
+"pending": "قيد الانتظار",
+
+"unknownCenter": "مركز غير معروف",
+
+"unknownCity": "مدينة غير معروفة",
+
+"date": "التاريخ",
+
+"viewCertificate": "عرض الشهادة",
+
+"openCertificate": "فتح الشهادة",
+
+"certificateUnavailable": "الشهادة غير متوفرة",
+"all": "الكل",
+
+"iNeedBlood": "أحتاج إلى الدم",
+
+"urgentRequests": "الطلبات العاجلة",
+
+"seeAll": "عرض الكل",
+
+"noUrgencyAvailable": "لا توجد حالات طارئة متاحة",
+
+"registrationSuccess": "تم التسجيل في",
+
+"alreadyRegisteredCollection": "أنت مسجل بالفعل في هذه الحملة ",
+
+"registrationError": "حدث خطأ أثناء التسجيل",
+"activeCollection": "حملة نشطة",
+
+"registered": "مسجل",
+
+"registerAction": "التسجيل",
+
+"registeredPlural": "مسجل",
+
+"daysShort": "ي",
+"hoursShort": "س",
+"minutesShort": "د",
+"secondsShort": "ث",
+"imGoing": "أنا ذاهب",
+"nationalImpact": "التأثير الوطني",
+
+"live": "مباشر",
+
+"lastValidatedDonation": "آخر تبرع تم التحقق منه",
+
+"totalValidated": "إجمالي التبرعات المعتمدة",
+
+"savedLives": "الأرواح المنقذة",
+
+"realImpact": "تأثير حقيقي",
+
+"delay": "المدة",
+
+"minutes": "د",
+
+"averageTime": "متوسط الوقت",
+"realTimeSituation": "الوضع المباشر",
+
+"viewMap": "عرض الخريطة",
+
+"nearbyCenters": "مراكز قريبة",
+
+"urgencies": "حالات طارئة",
+"activeCenters": "المراكز النشطة",
+"smartDonationAndEmergencies": "التبرع الذكي والحالات الطارئة",
+"livesSavedToday": "حياة تم إنقاذها اليوم",
+
+"activeDonorsInYourArea": "متبرعون نشطون في منطقتك",
+"sendUrgentBloodRequest": "إرسال طلب دم عاجل بسرعة.",
+
+  "profile": "الملف الشخصي",
+
+  "settings": "الإعدادات",
+
+  "notifications": "الإشعارات",
+
+  "language": "اللغة",
+
+  "donations": "التبرعات",
+
+  "donationHistory": "سجل التبرعات",
+
+  "nearbyDonors": "المتبرعون القريبون",
+
+  "urgentAlerts": "تنبيهات عاجلة",
+
+  "healthCenters": "المراكز الصحية",
+
+  "search": "بحث",
+
+  "save": "حفظ",
+
+  "cancel": "إلغاء",
+
+  "editProfile": "تعديل الملف الشخصي",
+
+  "myProfile": "ملفي الشخصي",
+
+  "welcome": "مرحبًا",
+
+  "next": "التالي",
+
+  "continueText": "متابعة",
+
+  "forgotPassword": "نسيت كلمة المرور؟",
+
+  "changeLanguage": "تغيير اللغة",
+
+  "french": "الفرنسية",
+
+  "english": "الإنجليزية",
+
+  "arabic": "العربية",
+  "unlocked": "مفتوح",
+
+"locked": "مغلق",
+"bloodCompatibility": "توافق فصائل الدم",
+
+"noDataAvailable": "لا توجد بيانات متاحة",
+"lifelinkDonationCertificate":
+    "شهادة تبرع لايف لينك",
+
+"donor":
+    "المتبرع",
+
+"center":
+    "المركز",
+
+"date":
+    "التاريخ",
+
+"lifelinkCertificate":
+    "شهادة لايف لينك",
+
+"officialBloodDonationCertificate":
+    "شهادة رسمية للتبرع بالدم",
+
+"donationCertificate":
+    "شهادة التبرع",
+
+"verifiedCertificate":
+    "شهادة موثقة",
+
+"thankYouBloodDonation":
+    "شكراً لمساهمتك في التبرع بالدم.",
+
+"download":
+    "تحميل",
+
+"share":
+    "مشاركة",
+
+"lives": "حياة",
+
+"viewCertificateShare":
+    "عرض الشهادة ومشاركتها",
+"level": "المستوى",
+
+"donorPoints": "نقاط المتبرع",
+
+"donorProgression": "تقدم المتبرع",
+"nextDonationPossible":
+    "التبرع القادم الممكن",
+
+"noDateAvailable":
+    "لا يوجد تاريخ متاح",
+
+"newDonationAvailableDate":
+    "يمكنك التبرع مرة أخرى في هذا التاريخ.",
+
+"nextDonationDateSoon":
+    "سيصبح تاريخ التبرع القادم متاحًا قريبًا.",
+
+"receiveReminder":
+    "تلقي تذكير",
+"anErrorOccurred":
+    "حدث خطأ",
+
+"retry":
+    "إعادة المحاولة",
+"bloodGroupVerified":
+    "تم التحقق من فصيلة الدم",
+
+"pendingVerification":
+    "في انتظار التحقق",
+
+"user":
+    "مستخدم",
+
+"points":
+    "النقاط",
+"medicalProfileVerified":
+    "تم التحقق من الملف الطبي",
+
+"verificationRequired":
+    "التحقق مطلوب",
+
+"yourBloodGroup":
+    "فصيلة دمك",
+
+"hasBeenValidated":
+    "تم التحقق منها.",
+
+"pleaseCompleteMedicalVerification":
+    "يرجى إكمال التحقق الطبي.",
+"overview": "نظرة عامة",
+
+"history": "السجل",
+
+"qr": "QR",
+
+"info": "معلومات",
+"presentQrAtDonationCenters":
+    "قم بإظهار رمز QR هذا في مراكز التبرع",
+
+"secureDonationQrInfo":
+    "يحتوي رمز QR هذا على معلومات تبرعك المؤمنة"                        
+}

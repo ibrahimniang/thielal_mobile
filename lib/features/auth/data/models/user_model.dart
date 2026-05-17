@@ -24,6 +24,7 @@ class UserModel {
   final String? telephone;
   final String? email;
   final String? qrCode;
+  final int? points;
 
   // ==========================
   // LOCALISATION
@@ -89,6 +90,7 @@ class UserModel {
     this.profilComplet = false,
     this.actif = true,
     this.roleId,
+    this.points,
     this.role,
     this.centreId,
     this.accepteConditions = false,

@@ -1,470 +1,585 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'package:intl/intl.dart';
+// import 'package:url_launcher/url_launcher.dart';
 
 import '../../application/profile_controller.dart';
-import 'package:thielal/features/donations/application/donation_controller.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../donations/application/donation_controller.dart';
 
-import '../widgets/profile_header_card.dart';
-import '../widgets/profile_section_card.dart';
-import '../widgets/profile_badge_item.dart';
-import '../widgets/blood_compatibility_card.dart';
-import '../widgets/profile_action_button.dart';
+import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_spacing.dart';
+
+import '../widgets/profile_loading_shimmer.dart';
+import '../widgets/profile_error_state.dart';
+import '../widgets/profile_responsive_wrapper.dart';
+
+import '../widgets/profile_sliver_background.dart';
+import '../widgets/profile_hero_section.dart';
+import '../widgets/profile_tab_bar.dart';
+
+import '../widgets/profile_section_title.dart';
+
+import '../widgets/donor_level_progress.dart';
+import '../widgets/profile_medical_status_card.dart';
+import '../widgets/next_donation_card.dart';
+
+import '../widgets/badge_level_card.dart';
+import '../widgets/certificate_preview_modal.dart';
+
+import '../widgets/donation_timeline_card.dart';
+
+import '../widgets/qr_premium_card.dart';
+
+import '../widgets/medical_info_tile.dart';
+
+import '../widgets/premium_profile_button.dart';
+
+import '../widgets/empty_profile_state.dart';
 
 import 'edit_profile_screen.dart';
 
-import '../../../../shared/widgets/app_loading_view.dart';
-
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(profileControllerProvider);
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
 
-    // AJOUT : récupération des vrais dons
-    final donsAsync = ref.watch(myDonationsProvider);
+class _ProfileScreenState extends ConsumerState<ProfileScreen>
+    with TickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _tabController = TabController(length: 4, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final profileState = ref.watch(profileControllerProvider);
+
+    final donationsAsync = ref.watch(myDonationsProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FC),
-      appBar: AppBar(
-        title: const Text('Votre Profil'),
-        backgroundColor: Colors.red,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.white,
-              Colors.red.shade50.withOpacity(0.55),
-              Colors.green.shade50.withOpacity(0.35),
-              Colors.blue.shade50.withOpacity(0.40),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: state.when(
-          loading: () =>
-              const AppLoadingView(message: 'Chargement du profil...'),
+      backgroundColor: const Color(0xFFF5F7FB),
 
-          error: (e, _) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(
-                "Erreur: $e",
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+      body: profileState.when(
+        loading: () => const ProfileLoadingShimmer(),
+
+        error:
+            (e, _) => ProfileErrorState(
+              message: e.toString(),
+
+              onRetry: () {
+                ref.read(profileControllerProvider.notifier).refreshProfile();
+              },
             ),
-          ),
 
-          data: (user) {
-            if (user == null) {
-              return const Center(
-                child: Text(
-                  "Aucun profil",
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-              );
-            }
+        data: (user) {
+          if (user == null) {
+            return  EmptyProfileState(
+              title: l10n.profileNotFound,
 
-            final compatibleGroups =
-                _getCompatibleGroups(user.groupeSanguin ?? '');
+              subtitle: l10n.unableToLoadUserData,
 
-            final points = user.points ?? 0;
-            final badge = _getBadge(points);
+              icon: Icons.person_off_rounded,
+            );
+          }
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  ProfileHeaderCard(
-                    fullName: user.fullName,
-                    bloodGroup: user.groupeSanguin ?? '--',
-                    profilComplet: user.profilComplet,
-                    points: points,
-                    badge: badge,
-                  ),
+          return NestedScrollView(
+            headerSliverBuilder: (_, innerScrolled) {
+              return [
+                /// =====================================================
+                /// SLIVER APP BAR
+                /// =====================================================
+                SliverAppBar(
+                  expandedHeight: 420,
 
-                  const SizedBox(height: 20),
+                  pinned: true,
 
-                  /// QR CODE
-                  ProfileSectionCard(
-                    title: "Carte QR Donneur",
-                    icon: Icons.qr_code_rounded,
-                    child: Column(
+                  elevation: 0,
+
+                  automaticallyImplyLeading: false,
+
+                  backgroundColor: AppColors.primaryRed,
+
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Stack(
                       children: [
-                        if (user.qrCode != null &&
-                            user.qrCode!.trim().isNotEmpty) ...[
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(18),
-                              border:
-                                  Border.all(color: Colors.grey.shade300),
-                              color: Colors.white,
-                            ),
-                            child: QrImageView(
-                              data: user.qrCode!.trim(),
-                              version: QrVersions.auto,
-                              size: 130,
-                              backgroundColor: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          const Text(
-                            "QR code scannable du donneur",
-                            textAlign: TextAlign.center,
-                            style:
-                                TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ] else ...[
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(18),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(18),
-                              border:
-                                  Border.all(color: Colors.grey.shade300),
-                              color: Colors.white,
-                            ),
+                        /// BG
+                        const ProfileSliverBackground(),
+
+                        /// CONTENT
+                        SafeArea(
+                          child: Padding(
+                            padding: const EdgeInsets.all(AppSpacing.lg),
+
                             child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+
                               children: [
-                                Icon(
-                                  Icons.qr_code_2_rounded,
-                                  size: 56,
-                                  color: Colors.grey.shade400,
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  "Aucun QR code n’a encore été généré pour ce donneur.",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Colors.grey.shade700,
-                                    fontWeight: FontWeight.w600,
+                                ProfileHeroSection(
+                                  fullName: user.fullName,
+
+                                  bloodGroup: user.groupeSanguin ?? '--',
+
+                                  verified: user.profilComplet,
+
+                                  donationsCount: donationsAsync.maybeWhen(
+                                    data: (d) => d.length,
+
+                                    orElse: () => 0,
                                   ),
+
+                                  savedLives: donationsAsync.maybeWhen(
+                                    data: (d) => d.length * 3,
+                                    orElse: () => 0,
+                                  ),
+
+                                  points: user.points ?? 0,
+
+                                  onEditTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (_) => const EditProfileScreen(),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ],
                             ),
                           ),
-                        ],
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  /// BADGES
-                  ProfileSectionCard(
-                    title: "Badges",
-                    icon: Icons.workspace_premium_rounded,
-                    child: Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.spaceEvenly,
-                      children: const [
-                        ProfileBadgeItem(
-                          icon: Icons.emoji_events,
-                          label: "Bronze",
-                          color: Colors.brown,
-                        ),
-                        ProfileBadgeItem(
-                          icon: Icons.emoji_events,
-                          label: "Argent",
-                          color: Colors.grey,
-                        ),
-                        ProfileBadgeItem(
-                          icon: Icons.emoji_events,
-                          label: "Or",
-                          color: Colors.amber,
                         ),
                       ],
                     ),
                   ),
+                ),
 
-                  const SizedBox(height: 20),
+                /// =====================================================
+                /// TAB BAR
+                /// =====================================================
+                SliverPersistentHeader(
+                  pinned: true,
 
-                  BloodCompatibilityCard(groups: compatibleGroups),
+                  delegate: _ProfileTabDelegate(
+                    child: Container(
+                      color: const Color(0xFFF5F7FB),
 
-                  const SizedBox(height: 20),
+                      padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
 
-                  /// INFOS DONNEUR
-                  ProfileSectionCard(
-                    title: "Informations du donneur",
-                    icon: Icons.person_rounded,
-                    child: Column(
-                      children: [
-                        _infoTile(
-                          icon: Icons.badge_outlined,
-                          label: "Nom complet",
-                          value: user.fullName.isEmpty
-                              ? "--"
-                              : user.fullName,
-                        ),
-                        _infoTile(
-                          icon: Icons.phone_rounded,
-                          label: "Téléphone",
-                          value: user.telephone ?? "--",
-                        ),
-                        _infoTile(
-                          icon: Icons.email_rounded,
-                          label: "Email",
-                          value:
-                              user.email ?? "Aucun email ajouté",
-                        ),
-                        _infoTile(
-                          icon: Icons.location_on_outlined,
-                          label: "Ville / Quartier",
-                          value:
-                              "${user.ville ?? '--'} / ${user.quartier ?? '--'}",
-                        ),
-                        _infoTile(
-                          icon: Icons.bloodtype_rounded,
-                          label: "Groupe sanguin",
-                          value:
-                              user.groupeSanguin ?? "--",
-                        ),
-                        _infoTile(
-                          icon: Icons.verified_rounded,
-                          label: "Statut groupe sanguin",
-                          value:
-                              user.statutGroupeSanguin ??
-                                  "Non vérifié",
-                        ),
-                      ],
+                      child: ProfileTabBar(controller: _tabController),
                     ),
                   ),
+                ),
+              ];
+            },
 
-                  const SizedBox(height: 20),
+            /// =====================================================
+            /// BODY
+            /// =====================================================
+            body: ProfileResponsiveWrapper(
+              child: TabBarView(
+                controller: _tabController,
 
-                  /// HISTORIQUE RÉEL DES DONS
-                  ProfileSectionCard(
-                    title: "Historique de dons",
-                    icon: Icons.history_rounded,
-                    child: donsAsync.when(
-                      loading: () => const Padding(
-                        padding: EdgeInsets.all(20),
-                        child: CircularProgressIndicator(
-                          color: Colors.red,
-                        ),
-                      ),
+                children: [
+                  /// OVERVIEW
+                  _overviewTab(user, donationsAsync, l10n),
 
-                      error: (e, _) => Text(
-                        "Erreur historique: $e",
-                        style: const TextStyle(
-                          color: Colors.red,
-                        ),
-                      ),
+                  /// HISTORY
+                  _historyTab(user, donationsAsync, l10n),
 
-                      data: (dons) {
-                        if (dons.isEmpty) {
-                          return const Text(
-                            "Aucun don enregistré",
-                          );
-                        }
+                  /// QR
+                  _qrTab(user, l10n),
 
-                        return Column(
-                          children: dons.map((don) {
-                            final hasCertificat =
-                                don.certificat != null;
-
-                            return Container(
-                              margin: const EdgeInsets.only(
-                                  bottom: 12),
-                              padding:
-                                  const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius:
-                                    BorderRadius.circular(16),
-                                border: Border.all(
-                                  color:
-                                      Colors.grey.shade200,
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.bloodtype,
-                                        color: Colors.red,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          "Don de sang (${don.groupeSanguin})",
-                                          style:
-                                              const TextStyle(
-                                            fontWeight:
-                                                FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-
-                                  const SizedBox(height: 8),
-
-                                  Text(
-                                    "Date : ${DateFormat('dd MMM yyyy').format(don.dateDon)}",
-                                  ),
-
-                                  Text(
-                                    "Centre : ${don.centre?.nom ?? "Centre inconnu"}",
-                                  ),
-
-                                  Text(
-                                    "Ville : ${don.centre?.ville ?? "Ville inconnue"}",
-                                  ),
-
-                                  const SizedBox(height: 8),
-
-                                  if (hasCertificat)
-                                    Align(
-                                      alignment:
-                                          Alignment.centerRight,
-                                      child: TextButton.icon(
-                                        onPressed: () {
-                                          debugPrint(
-                                            "Certificat: ${don.certificat!.urlCertificat}",
-                                          );
-                                        },
-                                        icon: const Icon(
-                                          Icons.description,
-                                          color:
-                                              Colors.deepPurple,
-                                        ),
-                                        label: const Text(
-                                          "Voir certificat",
-                                          style: TextStyle(
-                                            color: Colors
-                                                .deepPurple,
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                  else
-                                    const Text(
-                                      "Certificat non disponible",
-                                      style: TextStyle(
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                        );
-                      },
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  ProfileActionButton(
-                    text: "Modifier profil",
-                    icon: Icons.edit_rounded,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              const EditProfileScreen(),
-                        ),
-                      );
-                    },
-                  ),
+                  /// INFOS
+                  _infosTab(user, l10n),
                 ],
               ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// =====================================================
+  /// OVERVIEW TAB
+  /// =====================================================
+
+  Widget _overviewTab(
+    dynamic user,
+    AsyncValue donationsAsync,
+    AppLocalizations l10n,
+  ) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+
+      child: Column(
+        children: [
+          /// LEVEL
+          DonorLevelProgress(points: user.points ?? 0),
+
+          const SizedBox(height: 24),
+
+          /// MEDICAL STATUS
+          ProfileMedicalStatusCard(
+            verified: user.profilComplet,
+
+            bloodGroup: user.groupeSanguin ?? '--',
+          ),
+
+          const SizedBox(height: 24),
+
+          /// NEXT DONATION
+          NextDonationCard(nextDonationDate: null),
+
+          const SizedBox(height: 28),
+
+          /// TITLE
+          ProfileSectionTitle(
+            title: l10n.badgesRewards,
+
+            subtitle: l10n.donorProgress,
+
+            icon: Icons.workspace_premium_rounded,
+          ),
+
+          const SizedBox(height: 20),
+
+          /// BADGES
+          GridView.count(
+            crossAxisCount: 2,
+
+            shrinkWrap: true,
+
+            physics: const NeverScrollableScrollPhysics(),
+
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+
+            childAspectRatio: 1.06,
+
+            children: [
+              BadgeLevelCard(
+                title: l10n.bronze,
+
+                description: l10n.firstDonorLevel,
+
+                icon: Icons.workspace_premium_rounded,
+
+                color: Colors.brown,
+
+                unlocked: (user.points ?? 0) >= 50,
+              ),
+
+              BadgeLevelCard(
+                title: l10n.silver,
+
+                description: l10n.regularDonor,
+
+                icon: Icons.workspace_premium_rounded,
+
+                color: Colors.grey,
+
+                unlocked: (user.points ?? 0) >= 200,
+              ),
+
+              BadgeLevelCard(
+                title: l10n.gold,
+
+                description: l10n.exemplaryDonor,
+
+                icon: Icons.workspace_premium_rounded,
+
+                color: Colors.amber,
+
+                unlocked: (user.points ?? 0) >= 500,
+              ),
+
+              BadgeLevelCard(
+                title: l10n.elite,
+
+                description: l10n.lifelinkHero,
+
+                icon: Icons.emoji_events_rounded,
+
+                color: Colors.purple,
+
+                unlocked: (user.points ?? 0) >= 1000,
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+
+  /// =====================================================
+  /// HISTORY TAB
+  /// =====================================================
+
+  Widget _historyTab(
+    dynamic user,
+    AsyncValue donationsAsync,
+    AppLocalizations l10n,
+  ) {
+    return donationsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+
+      error: (e, _) => Center(child: Text('${l10n.historyError} : $e')),
+
+      data: (dons) {
+        if (dons.isEmpty) {
+          return  EmptyProfileState(
+            title: l10n.noDonationRecorded,
+
+            subtitle: l10n.donationHistoryWillAppear,
+
+            icon: Icons.history_rounded,
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+
+          itemCount: dons.length,
+
+          itemBuilder: (_, index) {
+            final don = dons[index];
+
+            return DonationTimelineCard(
+              hospitalName: don.centre?.nom ?? l10n.unknownCenter,
+
+              donationDate: don.dateDon,
+
+              bloodGroup: don.groupeSanguin ?? '--',
+
+              validated: true,
+
+              savedLives: 3,
+
+              onCertificateTap: () {
+                final certificat = don.certificat?.urlCertificat;
+
+                if (certificat == null || certificat.trim().isEmpty) {
+                  return;
+                }
+
+                CertificatePreviewModal.show(
+                  context,
+
+                  donorName:
+                      user.fullName.isEmpty
+                          ? l10n.lifelinkDonor
+                          : user.fullName,
+
+                  bloodGroup: don.groupeSanguin ?? user.groupeSanguin ?? '--',
+
+                  hospitalName: don.centre?.nom ?? l10n.unknownCenter,
+
+                  donationDate: don.dateDon.toString(),
+
+                  certificateUrl: certificat,
+                );
+              },
             );
           },
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _infoTile({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 14,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: Colors.grey.shade200,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.red.shade600),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: Colors.grey.shade700,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            Flexible(
-              child: Text(
-                value,
-                textAlign: TextAlign.right,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  /// =====================================================
+  /// QR TAB
+  /// =====================================================
 
-  List<String> _getCompatibleGroups(String group) {
-    switch (group) {
-      case "O-":
-        return ["Tous les groupes"];
-      case "O+":
-        return ["O+", "A+", "B+", "AB+"];
-      case "A-":
-        return ["A-", "A+", "AB-", "AB+"];
-      case "A+":
-        return ["A+", "AB+"];
-      case "B-":
-        return ["B-", "B+", "AB-", "AB+"];
-      case "B+":
-        return ["B+", "AB+"];
-      case "AB-":
-        return ["AB-", "AB+"];
-      case "AB+":
-        return ["AB+"];
-      default:
-        return [];
+  Widget _qrTab(dynamic user, AppLocalizations l10n) {
+    final qr = user.qrCode?.trim() ?? '';
+
+    if (qr.isEmpty) {
+      return  EmptyProfileState(
+        title: l10n.qrUnavailable,
+
+        subtitle: l10n.qrGeneratedAutomatically,
+
+        icon: Icons.qr_code_rounded,
+      );
     }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+
+      child: Column(
+        children: [
+          QrPremiumCard(
+            qrData: qr,
+
+            fullName: user.fullName,
+
+            bloodGroup: user.groupeSanguin ?? '--',
+
+            verified: user.profilComplet,
+
+            onShareWhatsapp: () {
+              debugPrint('Partager WhatsApp');
+            },
+
+            onShareEmail: () {
+              debugPrint('Partager Email');
+            },
+          ),
+
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
   }
 
-  String _getBadge(int points) {
-    if (points >= 500) return "Or 🟡";
-    if (points >= 100) return "Argent ⚪";
-    return "Bronze 🟤";
+  /// =====================================================
+  /// INFOS TAB
+  /// =====================================================
+
+  Widget _infosTab(dynamic user, AppLocalizations l10n) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+
+      child: Column(
+        children: [
+          /// TITLE
+           ProfileSectionTitle(
+            title: l10n.personalInformation,
+
+            subtitle: l10n.medicalInformationContacts,
+
+            icon: Icons.person_rounded,
+          ),
+
+          const SizedBox(height: 24),
+
+          /// INFOS
+          MedicalInfoTile(
+            icon: Icons.badge_rounded,
+
+            label: l10n.fullName,
+
+            value: user.fullName.isEmpty ? '--' : user.fullName,
+          ),
+
+          MedicalInfoTile(
+            icon: Icons.phone_rounded,
+
+            label: l10n.phone,
+
+            value: user.telephone ?? '--',
+          ),
+
+          MedicalInfoTile(
+            icon: Icons.email_rounded,
+
+            label: l10n.email,
+
+            value: user.email ?? 'Aucun email',
+          ),
+
+          MedicalInfoTile(
+            icon: Icons.location_city_rounded,
+
+            label: l10n.city,
+
+            value: user.ville ?? '--',
+          ),
+
+          MedicalInfoTile(
+            icon: Icons.location_on_rounded,
+
+            label: l10n.district,
+
+            value: user.quartier ?? '--',
+          ),
+
+          MedicalInfoTile(
+            icon: Icons.bloodtype_rounded,
+
+            label: l10n.bloodGroup,
+
+            value: user.groupeSanguin ?? '--',
+
+            iconColor: AppColors.primaryRed,
+          ),
+
+          MedicalInfoTile(
+            icon: Icons.verified_rounded,
+
+            label: l10n.medicalStatus,
+
+            value: user.profilComplet ? l10n.verified : l10n.notVerified,
+
+            iconColor: user.profilComplet ? Colors.green : Colors.orange,
+          ),
+
+          const SizedBox(height: 24),
+
+          /// BUTTON
+          PremiumProfileButton(
+           text: l10n.editProfile,
+
+            icon: Icons.edit_rounded,
+
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const EditProfileScreen()),
+              );
+            },
+          ),
+
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+}
+
+/// =====================================================
+/// TAB DELEGATE
+/// =====================================================
+
+class _ProfileTabDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+
+  _ProfileTabDelegate({required this.child});
+
+  @override
+  double get minExtent => 90;
+
+  @override
+  double get maxExtent => 90;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return child;
+  }
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
+    return true;
   }
 }
