@@ -33,6 +33,10 @@ class RouteNames {
   // ==========================
   static const String home = '/home';
   static const String profile = '/profile';
+  
+// profil public autre utilisateur
+  static const String publicProfile = '/profile-user';
+  static String publicUser(int id) => '/users/public/$id';
   static const String settings = '/settings';
   static const String notifications = '/notifications';
   static const String map = '/map';
@@ -42,6 +46,14 @@ class RouteNames {
   static const String centers = '/centers';
   static const String donors = '/donors';
 
+  // ==========================
+  // CHAT
+  // ==========================
+  
+static const String conversations = '/conversations';
+
+// IMPORTANT : chat par conversationId
+static const String chat = '/chat';
   // ==========================
   // Dashboards protégés
   // ==========================
