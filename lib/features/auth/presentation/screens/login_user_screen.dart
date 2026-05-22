@@ -261,6 +261,39 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
                   onPressed: () => context.push(RouteNames.forgotPassword),
                   child: Text(l10n.forgotPassword),
                 ),
+                const SizedBox(height: 10),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+
+                  children: [
+                    Text(
+                      'Nouveau sur LifeLink ?',
+
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+
+                    TextButton(
+                      onPressed: () {
+                        context.go(RouteNames.entryIdentity);
+                      },
+
+                      child: const Text(
+                        'Continuer avec OTP',
+
+                        style: TextStyle(
+                          color: Colors.red,
+
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),

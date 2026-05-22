@@ -56,17 +56,13 @@ class ApiEndpoints {
   static const String updateLocation = '/location';
 
   /// Changement email / téléphone avec vérification
-  static const String requestEmailChange =
-      '/users/request-email-change';
+  static const String requestEmailChange = '/users/request-email-change';
 
-  static const String verifyEmailChange =
-      '/users/verify-email-change';
+  static const String verifyEmailChange = '/users/verify-email-change';
 
-  static const String requestPhoneChange =
-      '/users/request-phone-change';
+  static const String requestPhoneChange = '/users/request-phone-change';
 
-  static const String verifyPhoneChange =
-      '/users/verify-phone-change';
+  static const String verifyPhoneChange = '/users/verify-phone-change';
 
   // ==========================
   // DONATIONS
@@ -99,26 +95,23 @@ class ApiEndpoints {
 
   static const String notifications = '/notifications';
 
-  static const String unreadCount = '/unread-count';
+  static const String unreadCount = '/notifications/unread-count';
 
   /// Marquer notification comme lue
   static String markAsRead(dynamic id) {
-    return '/$id/read';
+    return '/notifications/$id/read';
   }
 
   /// Enregistrement device
-  static const String registerDevice =
-      '/register-device';
+  static const String registerDevice = '/register-device';
 
   // ==========================
   // ADMIN / DIRECTOR / STAFF
   // ==========================
 
-  static const String createBackOffice =
-      '/users/admin/create-backoffice';
+  static const String createBackOffice = '/users/admin/create-backoffice';
 
-  static const String createStaffByDirector =
-      '/users/admin/create-staff';
+  static const String createStaffByDirector = '/users/admin/create-staff';
 
   static const String users = '/users';
 
@@ -131,16 +124,13 @@ class ApiEndpoints {
   // ==========================
 
   /// créer ou récupérer conversation
-  static const String createConversation =
-      '/chat/conversation';
+  static const String createConversation = '/chat/conversation';
 
   /// envoyer message
-  static const String sendMessage =
-      '/chat/message';
+  static const String sendMessage = '/chat/message';
 
   /// liste conversations utilisateur
-  static const String conversations =
-      '/chat/conversations';
+  static const String conversations = '/chat/conversations';
 
   /// messages d'une conversation
   static String messages(int conversationId) =>
@@ -151,8 +141,7 @@ class ApiEndpoints {
       '/chat/read/$conversationId';
 
   /// compteur non lus
-  static const String unreadMessages =
-      '/chat/unread-count';
+  static const String unreadMessages = '/chat/unread-count';
 
   // ==========================
   // ALERTES

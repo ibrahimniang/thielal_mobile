@@ -333,6 +333,50 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (_step == 1) {
       final isValid = _formKey.currentState?.validate() ?? false;
       if (!isValid) return;
+      /// ======================================
+/// AGE VALIDATION
+/// ======================================
+
+if (_dateNaissanceController
+    .text
+    .trim()
+    .isNotEmpty) {
+  final birthDate = DateTime.parse(
+    _dateNaissanceController.text.trim(),
+  );
+
+  final today = DateTime.now();
+
+  int age =
+      today.year -
+      birthDate.year;
+
+  if (today.month <
+          birthDate.month ||
+      (today.month ==
+              birthDate.month &&
+          today.day <
+              birthDate.day)) {
+    age--;
+  }
+
+  /// minimum 18 ans
+  if (age < 18) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+      SnackBar(
+        backgroundColor:
+            Colors.red.shade600,
+
+        content: const Text(
+          'Vous devez avoir au moins 18 ans pour créer un compte LifeLink.',
+        ),
+      ),
+    );
+
+    return;
+  }
+}
 
       await authCtrl.registerStep1(
         nom: _nomController.text.trim(),

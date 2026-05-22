@@ -24,16 +24,13 @@ class LiveMapSection extends StatefulWidget {
   });
 
   @override
-  State<LiveMapSection> createState() =>
-      _LiveMapSectionState();
+  State<LiveMapSection> createState() => _LiveMapSectionState();
 }
 
-class _LiveMapSectionState
-    extends State<LiveMapSection> {
+class _LiveMapSectionState extends State<LiveMapSection> {
   double selectedRadius = 15;
 
-  final MapController _mapController =
-      MapController();
+  final MapController _mapController = MapController();
 
   Position? currentPosition;
 
@@ -46,51 +43,35 @@ class _LiveMapSectionState
 
   Future<void> _loadCurrentLocation() async {
     try {
-      bool serviceEnabled =
-          await Geolocator
-              .isLocationServiceEnabled();
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
 
       if (!serviceEnabled) {
         return;
       }
 
-      LocationPermission permission =
-          await Geolocator.checkPermission();
+      LocationPermission permission = await Geolocator.checkPermission();
 
-      if (permission ==
-          LocationPermission.denied) {
-        permission =
-            await Geolocator
-                .requestPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
       }
 
-      if (permission ==
-              LocationPermission.denied ||
-          permission ==
-              LocationPermission
-                  .deniedForever) {
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
         return;
       }
 
-      final position =
-          await Geolocator
-              .getCurrentPosition();
+      final position = await Geolocator.getCurrentPosition();
 
       setState(() {
         currentPosition = position;
       });
 
       _mapController.move(
-        LatLng(
-          position.latitude,
-          position.longitude,
-        ),
+        LatLng(position.latitude, position.longitude),
         zoomLevel,
       );
     } catch (e) {
-      debugPrint(
-        'Erreur GPS : $e',
-      );
+      debugPrint('Erreur GPS : $e');
     }
   }
 
@@ -112,16 +93,14 @@ class _LiveMapSectionState
     }
 
     return widget.centers.where((c) {
-      final distance =
-          Geolocator.distanceBetween(
-            currentPosition!.latitude,
-            currentPosition!.longitude,
-            c.latitude,
-            c.longitude,
-          );
+      final distance = Geolocator.distanceBetween(
+        currentPosition!.latitude,
+        currentPosition!.longitude,
+        c.latitude,
+        c.longitude,
+      );
 
-      return distance <=
-          (selectedRadius * 1000);
+      return distance <= (selectedRadius * 1000);
     }).toList();
   }
 
@@ -129,82 +108,59 @@ class _LiveMapSectionState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal:
-            AppSpacing.screenPadding,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
 
       child: Container(
         width: double.infinity,
 
-        padding: const EdgeInsets.all(
-          AppSpacing.xl,
-        ),
+        padding: const EdgeInsets.all(18),
 
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
 
-            colors: [
-              Color(0xFF101D46),
-              Color(0xFF162B69),
-              Color(0xFF243B87),
-            ],
+            colors: [Color(0xFF101D46), Color(0xFF162B69), Color(0xFF243B87)],
           ),
 
-          borderRadius:
-              BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(30),
 
           boxShadow: [
             BoxShadow(
-              color: const Color(
-                0xFF243B87,
-              ).withOpacity(0.28),
+              color: const Color(0xFF243B87).withOpacity(0.28),
 
               blurRadius: 30,
 
-              offset: const Offset(
-                0,
-                14,
-              ),
+              offset: const Offset(0, 14),
             ),
           ],
         ),
 
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
             /// ==========================================
             /// TOP BAR
             /// ==========================================
-
             Row(
               children: [
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-
-                  decoration: BoxDecoration(
-                    color: Colors.white
-                        .withOpacity(0.10),
-
-                    borderRadius:
-                        BorderRadius.circular(
-                          30,
-                        ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
                   ),
 
-                  child:  Row(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.10),
+
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+
+                  child: Row(
                     children: [
                       Icon(
-                        Icons
-                            .radio_button_checked,
+                        Icons.radio_button_checked,
 
                         color: Colors.red,
 
@@ -217,12 +173,9 @@ class _LiveMapSectionState
                         l10n.realTimeSituation,
 
                         style: TextStyle(
-                          color:
-                              Colors.white,
+                          color: Colors.white,
 
-                          fontWeight:
-                              FontWeight
-                                  .w800,
+                          fontWeight: FontWeight.w800,
 
                           fontSize: 11,
                         ),
@@ -234,29 +187,24 @@ class _LiveMapSectionState
                 const Spacer(),
 
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
 
                   decoration: BoxDecoration(
                     color: Colors.red,
 
-                    borderRadius:
-                        BorderRadius.circular(
-                          30,
-                        ),
+                    borderRadius: BorderRadius.circular(30),
                   ),
 
-                  child:Text(
-  l10n.live.toUpperCase(),
+                  child: Text(
+                    l10n.live.toUpperCase(),
 
                     style: TextStyle(
                       color: Colors.white,
 
-                      fontWeight:
-                          FontWeight.w800,
+                      fontWeight: FontWeight.w800,
 
                       fontSize: 11,
                     ),
@@ -270,22 +218,15 @@ class _LiveMapSectionState
             /// ==========================================
             /// MINI MAP PREMIUM
             /// ==========================================
-
             Container(
-              height: 230,
+              height: 190,
 
               clipBehavior: Clip.antiAlias,
 
               decoration: BoxDecoration(
-                borderRadius:
-                    BorderRadius.circular(
-                      28,
-                    ),
+                borderRadius: BorderRadius.circular(28),
 
-                border: Border.all(
-                  color: Colors.white
-                      .withOpacity(0.08),
-                ),
+                border: Border.all(color: Colors.white.withOpacity(0.08)),
               ),
 
               child: Stack(
@@ -293,98 +234,73 @@ class _LiveMapSectionState
                   /// ==========================================
                   /// MAP
                   /// ==========================================
-
                   FlutterMap(
-                    mapController:
-                        _mapController,
+                    mapController: _mapController,
 
                     options: MapOptions(
                       initialCenter: LatLng(
-                        currentPosition
-                                ?.latitude ??
-                            18.0735,
+                        currentPosition?.latitude ?? 18.0735,
 
-                        currentPosition
-                                ?.longitude ??
-                            -15.9582,
+                        currentPosition?.longitude ?? -15.9582,
                       ),
 
                       initialZoom: zoomLevel,
 
-                      interactionOptions:
-                          const InteractionOptions(
-                            flags:
-                                InteractiveFlag.none,
-                          ),
+                      interactionOptions: const InteractionOptions(
+                        flags: InteractiveFlag.none,
+                      ),
                     ),
 
                     children: [
                       TileLayer(
                         urlTemplate:
                             'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+
+                        userAgentPackageName: 'com.thielal.lifelink',
                       ),
 
                       /// ==========================================
                       /// CENTERS MARKERS
                       /// ==========================================
-
                       MarkerLayer(
                         markers:
-                            filteredCenters.map((
-                              center,
-                            ) {
+                            filteredCenters.map((center) {
                               return Marker(
                                 point: LatLng(
                                   center.latitude,
                                   center.longitude,
                                 ),
-
-                                width: 65,
-                                height: 65,
+                                //taille localisation centre
+                                width: 48,
+                                height: 48,
 
                                 child: Container(
-                                  decoration:
-                                      BoxDecoration(
-                                        color:
-                                            Colors.red,
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
 
-                                        shape:
-                                            BoxShape
-                                                .circle,
+                                    shape: BoxShape.circle,
 
-                                        border:
-                                            Border.all(
-                                              color:
-                                                  Colors
-                                                      .white,
+                                    border: Border.all(
+                                      color: Colors.white,
 
-                                              width:
-                                                  4,
-                                            ),
+                                      width: 2.5,
+                                    ),
 
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors
-                                                .red
-                                                .withOpacity(
-                                                  0.40,
-                                                ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.red.withOpacity(0.40),
 
-                                            blurRadius:
-                                                18,
-                                          ),
-                                        ],
+                                        blurRadius: 18,
                                       ),
+                                    ],
+                                  ),
 
                                   child: const Icon(
-                                    Icons
-                                        .local_hospital,
+                                    Icons.local_hospital,
 
-                                    color:
-                                        Colors
-                                            .white,
+                                    color: Colors.white,
 
-                                    size: 28,
+                                    size: 22,
                                   ),
                                 ),
                               );
@@ -396,28 +312,19 @@ class _LiveMapSectionState
                   /// ==========================================
                   /// BLUE OVERLAY
                   /// ==========================================
-
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        begin:
-                            Alignment.topCenter,
+                        begin: Alignment.topCenter,
 
-                        end:
-                            Alignment.bottomCenter,
+                        end: Alignment.bottomCenter,
 
                         colors: [
-                          const Color(
-                            0xFF243B87,
-                          ).withOpacity(0.20),
+                          const Color(0xFF243B87).withOpacity(0.20),
 
-                          const Color(
-                            0xFF162B69,
-                          ).withOpacity(0.30),
+                          const Color(0xFF162B69).withOpacity(0.30),
 
-                          const Color(
-                            0xFF101D46,
-                          ).withOpacity(0.42),
+                          const Color(0xFF101D46).withOpacity(0.42),
                         ],
                       ),
                     ),
@@ -426,32 +333,23 @@ class _LiveMapSectionState
                   /// ==========================================
                   /// CITY BADGE
                   /// ==========================================
-
                   Positioned(
                     top: 16,
                     left: 16,
 
                     child: Container(
-                      padding:
-                          const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
 
                       decoration: BoxDecoration(
-                        color: Colors.white
-                            .withOpacity(0.14),
+                        color: Colors.white.withOpacity(0.14),
 
-                        borderRadius:
-                            BorderRadius.circular(
-                              30,
-                            ),
+                        borderRadius: BorderRadius.circular(30),
 
                         border: Border.all(
-                          color: Colors.white
-                              .withOpacity(
-                                0.10,
-                              ),
+                          color: Colors.white.withOpacity(0.10),
                         ),
                       ),
 
@@ -460,29 +358,21 @@ class _LiveMapSectionState
                           const Icon(
                             Icons.location_city,
 
-                            color:
-                                Colors.white,
+                            color: Colors.white,
 
                             size: 16,
                           ),
 
-                          const SizedBox(
-                            width: 8,
-                          ),
+                          const SizedBox(width: 8),
 
                           Text(
                             widget.city,
 
-                            style:
-                                const TextStyle(
-                                  color:
-                                      Colors
-                                          .white,
+                            style: const TextStyle(
+                              color: Colors.white,
 
-                                  fontWeight:
-                                      FontWeight
-                                          .w700,
-                                ),
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ],
                       ),
@@ -492,7 +382,6 @@ class _LiveMapSectionState
                   /// ==========================================
                   /// VIEW MAP BUTTON
                   /// ==========================================
-
                   Positioned(
                     bottom: 16,
                     right: 16,
@@ -501,31 +390,25 @@ class _LiveMapSectionState
                       onTap: widget.onTap,
 
                       child: Container(
-                        padding:
-                            const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
-                            ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
 
                         decoration: BoxDecoration(
                           color: Colors.white,
 
-                          borderRadius:
-                              BorderRadius.circular(
-                                30,
-                              ),
+                          borderRadius: BorderRadius.circular(30),
                         ),
 
-                        child:  Row(
+                        child: Row(
                           children: [
                             Icon(
                               Icons.map_rounded,
 
                               size: 18,
 
-                              color: Color(
-                                0xFF101D46,
-                              ),
+                              color: Color(0xFF101D46),
                             ),
 
                             SizedBox(width: 8),
@@ -534,13 +417,9 @@ class _LiveMapSectionState
                               l10n.viewMap,
 
                               style: TextStyle(
-                                color: Color(
-                                  0xFF101D46,
-                                ),
+                                color: Color(0xFF101D46),
 
-                                fontWeight:
-                                    FontWeight
-                                        .w800,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                           ],
@@ -557,72 +436,71 @@ class _LiveMapSectionState
             /// ==========================================
             /// STATS
             /// ==========================================
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
 
-            Row(
-              mainAxisAlignment:
-                  MainAxisAlignment
-                      .spaceBetween,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.06),
 
-              children: [
-                Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                borderRadius: BorderRadius.circular(22),
 
-                  children: [
-                    Text(
-                      '${filteredCenters.length}',
+                border: Border.all(color: Colors.white.withOpacity(0.05)),
+              ),
+
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+
+                      children: [
+                        Text(
+                          '${filteredCenters.length}',
+
+                          style: const TextStyle(
+                            color: Colors.white,
+
+                            fontSize: 30,
+
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        Text(
+                          l10n.nearbyCenters,
+
+                          style: TextStyle(color: Colors.white70, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.16),
+
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+
+                    child: Text(
+                      '${widget.urgentRequests} ${l10n.urgencies}',
 
                       style: const TextStyle(
                         color: Colors.white,
 
-                        fontSize: 40,
-
-                        fontWeight:
-                            FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
-                    ),
-
-                     Text(
-                      l10n.nearbyCenters,
-
-                      style: TextStyle(
-                        color: Colors.white70,
-
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
-                      ),
-
-                  decoration: BoxDecoration(
-                    color: Colors.red
-                        .withOpacity(0.18),
-
-                    borderRadius:
-                        BorderRadius.circular(
-                          30,
-                        ),
-                  ),
-
-                  child: Text(
-                    '${widget.urgentRequests} ${l10n.urgencies}',
-
-                    style: const TextStyle(
-                      color: Colors.redAccent,
-
-                      fontWeight:
-                          FontWeight.w700,
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
 
             const SizedBox(height: 26),
@@ -630,10 +508,8 @@ class _LiveMapSectionState
             /// ==========================================
             /// RANGE FILTER
             /// ==========================================
-
             Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
 
               children: [
                 GestureDetector(
@@ -644,23 +520,16 @@ class _LiveMapSectionState
 
                     _mapController.move(
                       LatLng(
-                        currentPosition
-                                ?.latitude ??
-                            18.0735,
+                        currentPosition?.latitude ?? 18.0735,
 
-                        currentPosition
-                                ?.longitude ??
-                            -15.9582,
+                        currentPosition?.longitude ?? -15.9582,
                       ),
 
                       15.5,
                     );
                   },
 
-                  child: _chip(
-                    '5 km',
-                    selectedRadius == 5,
-                  ),
+                  child: _chip('5 km', selectedRadius == 5),
                 ),
 
                 const SizedBox(width: 10),
@@ -673,23 +542,16 @@ class _LiveMapSectionState
 
                     _mapController.move(
                       LatLng(
-                        currentPosition
-                                ?.latitude ??
-                            18.0735,
+                        currentPosition?.latitude ?? 18.0735,
 
-                        currentPosition
-                                ?.longitude ??
-                            -15.9582,
+                        currentPosition?.longitude ?? -15.9582,
                       ),
 
                       13.8,
                     );
                   },
 
-                  child: _chip(
-                    '15 km',
-                    selectedRadius == 15,
-                  ),
+                  child: _chip('15 km', selectedRadius == 15),
                 ),
 
                 const SizedBox(width: 10),
@@ -702,23 +564,16 @@ class _LiveMapSectionState
 
                     _mapController.move(
                       LatLng(
-                        currentPosition
-                                ?.latitude ??
-                            18.0735,
+                        currentPosition?.latitude ?? 18.0735,
 
-                        currentPosition
-                                ?.longitude ??
-                            -15.9582,
+                        currentPosition?.longitude ?? -15.9582,
                       ),
 
                       12.5,
                     );
                   },
 
-                  child: _chip(
-                    '30 km',
-                    selectedRadius == 30,
-                  ),
+                  child: _chip('30 km', selectedRadius == 30),
                 ),
               ],
             ),
@@ -728,37 +583,19 @@ class _LiveMapSectionState
     );
   }
 
-  Widget _chip(
-    String text,
-    bool active,
-  ) {
+  Widget _chip(String text, bool active) {
     return AnimatedContainer(
-      duration: const Duration(
-        milliseconds: 250,
-      ),
+      duration: const Duration(milliseconds: 220),
 
-      padding:
-          const EdgeInsets.symmetric(
-            horizontal: 18,
-            vertical: 10,
-          ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
 
       decoration: BoxDecoration(
-        color:
-            active
-                ? Colors.red
-                : Colors.white
-                    .withOpacity(0.08),
+        color: active ? Colors.white : Colors.white.withOpacity(0.06),
 
-        borderRadius:
-            BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(18),
 
         border: Border.all(
-          color:
-              active
-                  ? Colors.red
-                  : Colors.white
-                      .withOpacity(0.08),
+          color: active ? Colors.white : Colors.white.withOpacity(0.05),
         ),
       ),
 
@@ -766,12 +603,11 @@ class _LiveMapSectionState
         text,
 
         style: TextStyle(
-          color:
-              active
-                  ? Colors.white
-                  : Colors.white70,
+          color: active ? const Color(0xFF101D46) : Colors.white70,
 
           fontWeight: FontWeight.w700,
+
+          fontSize: 13,
         ),
       ),
     );
