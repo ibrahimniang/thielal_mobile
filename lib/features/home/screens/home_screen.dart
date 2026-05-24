@@ -28,6 +28,7 @@ import '../widgets/national_impact_section.dart';
 import '../widgets/next_collection_section.dart';
 import '../widgets/urgent_request_card.dart';
 import '../widgets/information_ticker.dart';
+import '../../auth/presentation/widgets/set_password_modal.dart';
 
 // import '../widgets/nearby_donor_card.dart';
 
@@ -41,6 +42,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   // final TextEditingController _searchController = TextEditingController();
   int unreadCount = 0;
+  bool passwordModalShown = false;
 
 @override
 void initState() {
@@ -77,6 +79,55 @@ Future<void> loadUnreadCount() async {
     final authState = ref.watch(authControllerProvider);
 
     final user = authState.currentUser;
+  /// ======================================
+/// PASSWORD REQUIRED MODAL
+/// ======================================
+
+WidgetsBinding.instance.addPostFrameCallback((_) {
+  if (!mounted) return;
+
+  /// déjà affiché
+  if (passwordModalShown) return;
+
+  final pendingUserId =
+      authState.pendingUserId;
+
+  /// pas onboarding
+  if (pendingUserId == null) return;
+
+  passwordModalShown = true;
+
+  showDialog(
+    context: context,
+
+    barrierDismissible: false,
+
+    builder: (_) {
+      return SetPasswordModal(
+        onSuccess: () async {
+          /// CLEAR PENDING
+          ref
+              .read(
+                authControllerProvider
+                    .notifier,
+              )
+              .clearPendingUser();
+
+          if (!mounted) return;
+
+          ScaffoldMessenger.of(context)
+              .showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Compte sécurisé avec succès 🔐',
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
+});
 
     final alertsAsync = ref.watch(alertsProvider);
 

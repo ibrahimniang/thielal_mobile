@@ -8,6 +8,8 @@ class ProfileTabBar extends StatelessWidget {
   final TabController controller;
 
   const ProfileTabBar({
+    tabAlignment = TabAlignment.fill,
+    labelPadding = const EdgeInsets.symmetric(horizontal: 2),
     super.key,
     required this.controller,
   });
@@ -16,22 +18,18 @@ class ProfileTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Container(
-      height: 62,
+      height: 75,
 
       padding: const EdgeInsets.all(6),
 
       decoration: BoxDecoration(
         color: Colors.white,
 
-        borderRadius: BorderRadius.circular(
-          22,
-        ),
+        borderRadius: BorderRadius.circular(22),
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
-              0.04,
-            ),
+            color: Colors.black.withOpacity(0.04),
 
             blurRadius: 18,
 
@@ -43,14 +41,16 @@ class ProfileTabBar extends StatelessWidget {
       child: TabBar(
         controller: controller,
 
+        indicatorPadding: EdgeInsets.zero,
+
+        padding: EdgeInsets.zero,
+
         dividerColor: Colors.transparent,
 
         indicator: BoxDecoration(
           color: AppColors.primaryRed,
 
-          borderRadius: BorderRadius.circular(
-            18,
-          ),
+          borderRadius: BorderRadius.circular(18),
         ),
 
         indicatorSize: TabBarIndicatorSize.tab,
@@ -59,30 +59,107 @@ class ProfileTabBar extends StatelessWidget {
 
         unselectedLabelColor: Colors.grey[700],
 
-        labelStyle: const TextStyle(
-          fontWeight: FontWeight.w800,
-          fontSize: 13,
-        ),
+        labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 11),
 
-        tabs:  [
+        tabs: [
           Tab(
-            icon: Icon(Icons.dashboard_rounded),
-            text: l10n.overview,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+
+              mainAxisSize: MainAxisSize.min,
+
+              children: [
+                const Icon(Icons.dashboard_rounded, size: 18),
+
+                const SizedBox(height: 2),
+
+                Text(
+                  l10n.overview,
+
+                  overflow: TextOverflow.ellipsis,
+
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
           ),
 
           Tab(
-            icon: Icon(Icons.history_rounded),
-            text: l10n.history,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+
+              mainAxisSize: MainAxisSize.min,
+
+              children: [
+                const Icon(Icons.history_rounded, size: 18),
+
+                const SizedBox(height: 2),
+
+                Text(
+                  l10n.history,
+
+                  overflow: TextOverflow.ellipsis,
+
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
           ),
 
           Tab(
-            icon: Icon(Icons.qr_code_rounded),
-            text: l10n.qr,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+
+              mainAxisSize: MainAxisSize.min,
+
+              children: [
+                const Icon(Icons.qr_code_rounded, size: 18),
+
+                const SizedBox(height: 2),
+
+                Text(
+                  l10n.qr,
+
+                  overflow: TextOverflow.ellipsis,
+
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
           ),
 
           Tab(
-            icon: Icon(Icons.person_rounded),
-            text: l10n.info,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+
+              mainAxisSize: MainAxisSize.min,
+
+              children: [
+                const Icon(Icons.person_rounded, size: 18),
+
+                const SizedBox(height: 2),
+
+                Text(
+                  l10n.info,
+
+                  overflow: TextOverflow.ellipsis,
+
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

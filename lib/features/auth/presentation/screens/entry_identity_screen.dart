@@ -593,8 +593,47 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 22),
+
+Row(
+  mainAxisAlignment:
+      MainAxisAlignment.center,
+
+  children: [
+    Text(
+      'Vous avez déjà un compte ?',
+
+      style: TextStyle(
+        color: Colors.grey.shade700,
+
+        fontWeight: FontWeight.w500,
+      ),
+    ),
+
+    TextButton(
+      onPressed: () {
+        context.go(
+          RouteNames.loginUser,
+        );
+      },
+
+      child: const Text(
+        'Se connecter',
+
+        style: TextStyle(
+          fontWeight:
+              FontWeight.w800,
+
+          color: Colors.red,
+        ),
+      ),
+    ),
+  ],
+),
                   ],
+                  
                 ),
+                
               ),
             ),
           ),
