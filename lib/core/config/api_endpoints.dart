@@ -99,11 +99,11 @@ class ApiEndpoints {
 
   static const String notifications = '/notifications';
 
-  static const String unreadCount = '/unread-count';
+  static const String unreadCount = '/notifications/unread-count';
 
   /// Marquer notification comme lue
   static String markAsRead(dynamic id) {
-    return '/$id/read';
+    return '/notifications/$id/read';
   }
 
   /// Enregistrement device

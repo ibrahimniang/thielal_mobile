@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
+import 'package:geolocator/geolocator.dart';
 
 import '../../../../core/config/api_endpoints.dart';
 import '../../../../core/config/env.dart';
@@ -14,10 +15,13 @@ class DemandeSangScreen extends ConsumerStatefulWidget {
   const DemandeSangScreen({super.key});
 
   @override
-  ConsumerState<DemandeSangScreen> createState() => _DemandeSangScreenState();
+  ConsumerState<DemandeSangScreen> createState() =>
+      _DemandeSangScreenState();
 }
 
-class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
+class _DemandeSangScreenState
+    extends ConsumerState<DemandeSangScreen> {
+
   /// ==========================================
   /// CONTROLLERS
   /// ==========================================
@@ -29,6 +33,24 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
   int quantite = 1;
 
   bool isLoading = false;
+
+  /// ==========================================
+  /// USER LOCATION
+  /// ==========================================
+
+  double? userLatitude;
+
+  double? userLongitude;
+
+  /// ==========================================
+  /// CENTRES
+  /// ==========================================
+
+  List<dynamic> centres = [];
+
+  dynamic selectedCentre;
+
+  bool loadingCentres = true;
 
   /// ==========================================
   /// GROUPES
@@ -45,13 +67,189 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
     "O-",
   ];
 
+  @override
+  void initState() {
+    super.initState();
+
+    chargerCentres();
+  }
+
+  /// ==========================================
+  /// GET USER LOCATION
+  /// ==========================================
+
+  Future<void> getUserLocation() async {
+    try {
+      bool serviceEnabled =
+          await Geolocator.isLocationServiceEnabled();
+
+      if (!serviceEnabled) {
+        return;
+      }
+
+      LocationPermission permission =
+          await Geolocator.checkPermission();
+
+      if (permission == LocationPermission.denied) {
+        permission =
+            await Geolocator.requestPermission();
+      }
+
+      if (permission ==
+              LocationPermission.denied ||
+          permission ==
+              LocationPermission.deniedForever) {
+        return;
+      }
+
+      final position =
+          await Geolocator.getCurrentPosition(
+        desiredAccuracy:
+            LocationAccuracy.high,
+      );
+
+      userLatitude = position.latitude;
+
+      userLongitude = position.longitude;
+
+      debugPrint(
+        "📍 USER LOCATION => "
+        "$userLatitude / $userLongitude",
+      );
+    } catch (e) {
+      debugPrint(
+        "❌ LOCATION ERROR => $e",
+      );
+    }
+  }
+
+  /// ==========================================
+  /// CALCULATE DISTANCE
+  /// ==========================================
+
+  double calculateDistance(dynamic centre) {
+    try {
+      if (userLatitude == null ||
+          userLongitude == null) {
+        return 999999;
+      }
+
+      final centreLat =
+          double.tryParse(
+            centre["latitude"].toString(),
+          ) ??
+          0;
+
+      final centreLng =
+          double.tryParse(
+            centre["longitude"].toString(),
+          ) ??
+          0;
+
+      final distanceInMeters =
+          Geolocator.distanceBetween(
+        userLatitude!,
+        userLongitude!,
+        centreLat,
+        centreLng,
+      );
+
+      return distanceInMeters / 1000;
+    } catch (e) {
+      return 999999;
+    }
+  }
+
+  /// ==========================================
+  /// CHARGER CENTRES
+  /// ==========================================
+
+  Future<void> chargerCentres() async {
+    try {
+      await getUserLocation();
+
+      final token =
+          ref.read(authControllerProvider).accessToken;
+
+      final response = await http.get(
+        Uri.parse("${Env.baseUrl}/centres"),
+
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+      );
+
+      debugPrint(
+        "🏥 CENTRES STATUS => ${response.statusCode}",
+      );
+
+      debugPrint(
+        "🏥 CENTRES BODY => ${response.body}",
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200 &&
+          data["success"] == true) {
+
+        List<dynamic> loadedCentres =
+            data["data"];
+
+        /// ======================================
+        /// SORT BY DISTANCE
+        /// ======================================
+
+        loadedCentres.sort((a, b) {
+          final distanceA =
+              calculateDistance(a);
+
+          final distanceB =
+              calculateDistance(b);
+
+          return distanceA.compareTo(
+            distanceB,
+          );
+        });
+
+        setState(() {
+          centres = loadedCentres;
+
+          /// AUTO SELECT NEAREST
+          if (centres.isNotEmpty) {
+            selectedCentre = centres.first;
+          }
+
+          loadingCentres = false;
+        });
+      } else {
+        setState(() {
+          loadingCentres = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("❌ ERREUR CENTRES => $e");
+
+      if (!mounted) return;
+
+      setState(() {
+        loadingCentres = false;
+      });
+    }
+  }
+
   /// ==========================================
   /// ENVOYER DEMANDE
   /// ==========================================
 
   Future<void> envoyerDemande() async {
     final l10n = AppLocalizations.of(context)!;
-    if (selectedGroupe == null || villeController.text.trim().isEmpty) {
+
+    if (selectedGroupe == null ||
+        villeController.text.trim().isEmpty ||
+        selectedCentre == null) {
       _showErrorDialog(l10n.fillAllFields);
 
       return;
@@ -62,47 +260,63 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
     });
 
     try {
-      final token = ref.read(authControllerProvider).accessToken;
+      final token =
+          ref.read(authControllerProvider).accessToken;
 
       if (token == null || token.isEmpty) {
         throw Exception(l10n.sessionExpired);
       }
 
-      final cleanToken = token.replaceAll("Bearer ", "");
+      final cleanToken =
+          token.replaceAll("Bearer ", "");
 
       final response = await http.post(
-        Uri.parse("${Env.baseUrl}${ApiEndpoints.demandeSang}"),
+        Uri.parse(
+          "${Env.baseUrl}${ApiEndpoints.demandeSang}",
+        ),
 
         headers: {
           "Content-Type": "application/json",
 
           "Accept": "application/json",
 
-          "Authorization": "Bearer $cleanToken",
+          "Authorization":
+              "Bearer $cleanToken",
         },
 
         body: jsonEncode({
           "groupe_sanguin": selectedGroupe,
 
-          "ville": villeController.text.trim(),
+          "ville":
+              villeController.text.trim(),
 
           "quantite": quantite,
+
+          "centre_id":
+              selectedCentre["id_centre"],
         }),
       );
 
-      debugPrint('🩸 STATUS => ${response.statusCode}');
+      debugPrint(
+        '🩸 STATUS => ${response.statusCode}',
+      );
 
-      debugPrint('🩸 RESPONSE => ${response.body}');
+      debugPrint(
+        '🩸 RESPONSE => ${response.body}',
+      );
 
       if (!mounted) return;
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (response.statusCode == 200 ||
+          response.statusCode == 201) {
         _showSuccessDialog();
       } else {
         throw Exception(response.body);
       }
     } catch (e) {
-      debugPrint('❌ DEMANDE ERROR => $e');
+      debugPrint(
+        '❌ DEMANDE ERROR => $e',
+      );
 
       if (!mounted) return;
 
@@ -122,6 +336,7 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
 
   void _showSuccessDialog() {
     final l10n = AppLocalizations.of(context)!;
+
     showDialog(
       context: context,
 
@@ -137,20 +352,21 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
 
-              borderRadius: BorderRadius.circular(30),
+              borderRadius:
+                  BorderRadius.circular(30),
             ),
 
             child: Column(
               mainAxisSize: MainAxisSize.min,
 
               children: [
-                /// ICON
                 Container(
                   height: 84,
                   width: 84,
 
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.10),
+                    color: Colors.green
+                        .withOpacity(0.10),
 
                     shape: BoxShape.circle,
                   ),
@@ -166,27 +382,30 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
 
                 const SizedBox(height: 22),
 
-                /// TITLE
-                 Text(
+                Text(
                   l10n.requestSent,
 
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
 
                 const SizedBox(height: 12),
 
-                /// TEXT
-                 Text(
+                Text(
                   l10n.nearbyDonorsAlerted,
 
                   textAlign: TextAlign.center,
 
-                  style: TextStyle(color: Colors.grey, height: 1.5),
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    height: 1.5,
+                  ),
                 ),
 
                 const SizedBox(height: 26),
 
-                /// BUTTON
                 SizedBox(
                   width: double.infinity,
 
@@ -194,35 +413,42 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
 
                   child: ElevatedButton(
                     onPressed: () {
-                      /// 🔥 ferme uniquement le dialog
                       if (context.canPop()) {
                         context.pop();
                       }
 
-                      /// 🔥 reset formulaire
                       setState(() {
                         selectedGroupe = null;
 
                         quantite = 1;
 
                         villeController.clear();
+
+                        if (centres.isNotEmpty) {
+                          selectedCentre =
+                              centres.first;
+                        }
                       });
                     },
 
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
 
-                      backgroundColor: const Color(0xFFC1121F),
+                      backgroundColor:
+                          const Color(0xFFC1121F),
 
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius:
+                            BorderRadius.circular(18),
                       ),
                     ),
 
                     child: Text(
                       l10n.continueText,
 
-                      style: TextStyle(fontWeight: FontWeight.w800),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                 ),
@@ -240,13 +466,15 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
 
   void _showErrorDialog(String message) {
     final l10n = AppLocalizations.of(context)!;
+
     showDialog(
       context: context,
 
       builder: (_) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius:
+                BorderRadius.circular(24),
           ),
 
           title: Text(l10n.error),
@@ -261,7 +489,7 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
                 }
               },
 
-              child:  Text(l10n.ok),
+              child: Text(l10n.ok),
             ),
           ],
         );
@@ -278,9 +506,12 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n =
+        AppLocalizations.of(context)!;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FA),
+      backgroundColor:
+          const Color(0xFFF7F8FA),
 
       appBar: AppBar(
         elevation: 0,
@@ -291,365 +522,664 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
 
         centerTitle: true,
 
-        title:  Text(
-         l10n.urgentRequest,
+        title: Text(
+          l10n.urgentRequest,
 
-          style: TextStyle(fontWeight: FontWeight.w900),
+          style: const TextStyle(
+            fontWeight: FontWeight.w900,
+          ),
         ),
       ),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-
-          children: [
-            /// ======================================
-            /// HEADER
-            /// ======================================
-            Container(
-              width: double.infinity,
-
-              padding: const EdgeInsets.all(24),
-
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-
-                  end: Alignment.bottomRight,
-
-                  colors: [Color(0xFFE53946), Color(0xFFC1121F)],
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight,
                 ),
 
-                borderRadius: BorderRadius.circular(32),
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
 
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.red.withOpacity(0.20),
+                  children: [
 
-                    blurRadius: 30,
+                    /// HEADER
+                    Container(
+                      width: double.infinity,
 
-                    offset: const Offset(0, 14),
-                  ),
-                ],
-              ),
+                      padding:
+                          const EdgeInsets.all(24),
 
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                      decoration: BoxDecoration(
+                        gradient:
+                            const LinearGradient(
+                          begin: Alignment.topLeft,
 
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
+                          end:
+                              Alignment.bottomRight,
 
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.14),
+                          colors: [
+                            Color(0xFFE53946),
+                            Color(0xFFC1121F),
+                          ],
+                        ),
 
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+                        borderRadius:
+                            BorderRadius.circular(32),
 
-                    child:  Text(
-                     l10n.urgentNeed,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.red
+                                .withOpacity(0.20),
 
-                      style: TextStyle(
-                        color: Colors.white,
+                            blurRadius: 30,
 
-                        fontWeight: FontWeight.w900,
+                            offset:
+                                const Offset(0, 14),
+                          ),
+                        ],
+                      ),
+
+                      child: Column(
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
+
+                        children: [
+                          Container(
+                            padding:
+                                const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
+
+                            decoration: BoxDecoration(
+                              color: Colors.white
+                                  .withOpacity(0.14),
+
+                              borderRadius:
+                                  BorderRadius.circular(
+                                16,
+                              ),
+                            ),
+
+                            child: Text(
+                              l10n.urgentNeed,
+
+                              style: const TextStyle(
+                                color: Colors.white,
+
+                                fontWeight:
+                                    FontWeight.w900,
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          Text(
+                            l10n.sendBloodRequest,
+
+                            style: const TextStyle(
+                              color: Colors.white,
+
+                              fontSize: 30,
+
+                              fontWeight:
+                                  FontWeight.w900,
+                            ),
+                          ),
+
+                          const SizedBox(height: 14),
+
+                          Text(
+                            l10n.donorsReceiveAlert,
+
+                            style: const TextStyle(
+                              color: Colors.white70,
+
+                              fontSize: 15,
+
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 28),
 
-                   Text(
-                   l10n.sendBloodRequest,
+                    /// FORM
+                    Container(
+                      padding:
+                          const EdgeInsets.all(22),
 
-                    style: TextStyle(
-                      color: Colors.white,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
 
-                      fontSize: 30,
+                        borderRadius:
+                            BorderRadius.circular(30),
 
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black
+                                .withOpacity(0.04),
 
-                  const SizedBox(height: 14),
+                            blurRadius: 24,
 
-                   Text(
-                   l10n.donorsReceiveAlert,
+                            offset:
+                                const Offset(0, 10),
+                          ),
+                        ],
+                      ),
 
-                    style: TextStyle(
-                      color: Colors.white70,
+                      child: Column(
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
 
-                      fontSize: 15,
+                        children: [
 
-                      height: 1.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                          /// GROUPES
+                          Text(
+                            l10n.bloodGroup,
 
-            const SizedBox(height: 28),
+                            style: const TextStyle(
+                              fontWeight:
+                                  FontWeight.w800,
+                              fontSize: 16,
+                            ),
+                          ),
 
-            /// ======================================
-            /// FORM
-            /// ======================================
-            Container(
-              padding: const EdgeInsets.all(22),
+                          const SizedBox(height: 16),
 
-              decoration: BoxDecoration(
-                color: Colors.white,
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 12,
 
-                borderRadius: BorderRadius.circular(30),
+                            children:
+                                groupes.map((groupe) {
+                              final selected =
+                                  selectedGroupe ==
+                                      groupe;
 
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    selectedGroupe =
+                                        groupe;
+                                  });
+                                },
 
-                    blurRadius: 24,
+                                child:
+                                    AnimatedContainer(
+                                  duration:
+                                      const Duration(
+                                    milliseconds: 220,
+                                  ),
 
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
+                                  padding:
+                                      const EdgeInsets
+                                          .symmetric(
+                                    horizontal: 18,
 
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                                    vertical: 14,
+                                  ),
 
-                children: [
-                  /// ==================================
-                  /// GROUPES
-                  /// ==================================
-                   Text(
-                    l10n.bloodGroup,
+                                  decoration:
+                                      BoxDecoration(
+                                    color: selected
+                                        ? const Color(
+                                            0xFFC1121F)
+                                        : const Color(
+                                            0xFFF5F6FA),
 
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-                  ),
+                                    borderRadius:
+                                        BorderRadius
+                                            .circular(
+                                      18,
+                                    ),
+                                  ),
 
-                  const SizedBox(height: 16),
+                                  child: Text(
+                                    groupe,
 
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
+                                    style: TextStyle(
+                                      color: selected
+                                          ? Colors.white
+                                          : Colors
+                                              .black87,
 
-                    children:
-                        groupes.map((groupe) {
-                          final selected = selectedGroupe == groupe;
+                                      fontWeight:
+                                          FontWeight
+                                              .w800,
 
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                selectedGroupe = groupe;
-                              });
-                            },
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
 
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 220),
+                          const SizedBox(height: 28),
 
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 18,
+                          /// VILLE
+                          Text(
+                            l10n.city,
 
-                                vertical: 14,
+                            style: const TextStyle(
+                              fontWeight:
+                                  FontWeight.w800,
+                              fontSize: 16,
+                            ),
+                          ),
+
+                          const SizedBox(height: 14),
+
+                          TextField(
+                            controller:
+                                villeController,
+
+                            decoration:
+                                InputDecoration(
+                              hintText:
+                                  l10n.enterYourCity,
+
+                              prefixIcon:
+                                  const Icon(
+                                Icons
+                                    .location_on_rounded,
+                              ),
+
+                              filled: true,
+
+                              fillColor:
+                                  const Color(
+                                0xFFF5F6FA,
+                              ),
+
+                              border:
+                                  OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius
+                                        .circular(20),
+
+                                borderSide:
+                                    BorderSide.none,
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 28),
+
+                          /// CENTRES
+                          const Text(
+                            "Centre proche",
+
+                            style: TextStyle(
+                              fontWeight:
+                                  FontWeight.w800,
+                              fontSize: 16,
+                            ),
+                          ),
+
+                          const SizedBox(height: 14),
+
+                          loadingCentres
+                              ? const Center(
+                                  child:
+                                      CircularProgressIndicator(),
+                                )
+                              : DropdownButtonFormField<
+                                  dynamic>(
+                                  value:
+                                      selectedCentre,
+
+                                  isExpanded: true,
+
+                                  decoration:
+                                      InputDecoration(
+                                    filled: true,
+
+                                    fillColor:
+                                        const Color(
+                                      0xFFF5F6FA,
+                                    ),
+
+                                    prefixIcon:
+                                        const Icon(
+                                      Icons
+                                          .local_hospital,
+                                    ),
+
+                                    border:
+                                        OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius
+                                              .circular(
+                                        20,
+                                      ),
+
+                                      borderSide:
+                                          BorderSide
+                                              .none,
+                                    ),
+                                  ),
+
+                                  hint: const Text(
+                                    "Choisir un centre",
+                                  ),
+
+                                  items:
+                                      centres.map(
+                                    (centre) {
+
+                                      final distance =
+                                          calculateDistance(
+                                        centre,
+                                      );
+
+                                      return DropdownMenuItem<
+                                          dynamic>(
+                                        value: centre,
+
+                                        child: Text(
+                                          "${centre["nom"]} "
+                                          "- "
+                                          "${distance.toStringAsFixed(1)} km",
+
+                                          overflow:
+                                              TextOverflow
+                                                  .ellipsis,
+                                        ),
+                                      );
+                                    },
+                                  ).toList(),
+
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedCentre =
+                                          value;
+                                    });
+                                  },
+                                ),
+
+                          const SizedBox(height: 16),
+
+                          if (selectedCentre != null)
+                            Container(
+                              width: double.infinity,
+
+                              padding:
+                                  const EdgeInsets.all(
+                                16,
                               ),
 
                               decoration: BoxDecoration(
                                 color:
-                                    selected
-                                        ? const Color(0xFFC1121F)
-                                        : const Color(0xFFF5F6FA),
+                                    Colors.red.shade50,
 
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-
-                              child: Text(
-                                groupe,
-
-                                style: TextStyle(
-                                  color:
-                                      selected ? Colors.white : Colors.black87,
-
-                                  fontWeight: FontWeight.w800,
-
-                                  fontSize: 15,
+                                borderRadius:
+                                    BorderRadius.circular(
+                                  20,
                                 ),
                               ),
+
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment
+                                        .start,
+
+                                children: [
+
+                                  Text(
+                                    selectedCentre["nom"]
+                                        .toString(),
+
+                                    style:
+                                        const TextStyle(
+                                      fontWeight:
+                                          FontWeight
+                                              .w800,
+
+                                      fontSize: 16,
+                                    ),
+                                  ),
+
+                                  const SizedBox(
+                                    height: 8,
+                                  ),
+
+                                  Text(
+                                    selectedCentre["adresse"]
+                                            ?.toString() ??
+                                        "",
+
+                                    style:
+                                        const TextStyle(
+                                      color:
+                                          Colors.black87,
+                                    ),
+                                  ),
+
+                                  const SizedBox(
+                                    height: 8,
+                                  ),
+
+                                  Text(
+                                    "📍 "
+                                    "${calculateDistance(selectedCentre).toStringAsFixed(1)} km",
+
+                                    style:
+                                        const TextStyle(
+                                      fontWeight:
+                                          FontWeight
+                                              .bold,
+
+                                      color:
+                                          Colors.red,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          );
-                        }).toList(),
-                  ),
 
-                  const SizedBox(height: 28),
+                          const SizedBox(height: 28),
 
-                  /// ==================================
-                  /// VILLE
-                  /// ==================================
-                   Text(
-                   l10n.city,
+                          /// QUANTITE
+                          Text(
+                            l10n.requestedQuantity,
 
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-                  ),
+                            style: const TextStyle(
+                              fontWeight:
+                                  FontWeight.w800,
+                              fontSize: 16,
+                            ),
+                          ),
 
-                  const SizedBox(height: 14),
+                          const SizedBox(height: 14),
 
-                  TextField(
-                    controller: villeController,
+                          Container(
+                            padding:
+                                const EdgeInsets
+                                    .symmetric(
+                              horizontal: 18,
+                              vertical: 12,
+                            ),
 
-                    decoration: InputDecoration(
-                      hintText:l10n.enterYourCity,
+                            decoration: BoxDecoration(
+                              color: const Color(
+                                0xFFF5F6FA,
+                              ),
 
-                      prefixIcon: const Icon(Icons.location_on_rounded),
+                              borderRadius:
+                                  BorderRadius
+                                      .circular(20),
+                            ),
 
-                      filled: true,
+                            child: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment
+                                      .spaceBetween,
 
-                      fillColor: const Color(0xFFF5F6FA),
+                              children: [
 
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
+                                IconButton(
+                                  onPressed: () {
+                                    if (quantite >
+                                        1) {
+                                      setState(() {
+                                        quantite--;
+                                      });
+                                    }
+                                  },
 
-                        borderSide: BorderSide.none,
+                                  icon: Container(
+                                    padding:
+                                        const EdgeInsets
+                                            .all(6),
+
+                                    decoration:
+                                        BoxDecoration(
+                                      color:
+                                          Colors.white,
+
+                                      borderRadius:
+                                          BorderRadius
+                                              .circular(
+                                        12,
+                                      ),
+                                    ),
+
+                                    child:
+                                        const Icon(
+                                      Icons.remove,
+                                    ),
+                                  ),
+                                ),
+
+                                Text(
+                                  "$quantite ${l10n.bags}",
+
+                                  style:
+                                      const TextStyle(
+                                    fontSize: 18,
+
+                                    fontWeight:
+                                        FontWeight
+                                            .w900,
+                                  ),
+                                ),
+
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      quantite++;
+                                    });
+                                  },
+
+                                  icon: Container(
+                                    padding:
+                                        const EdgeInsets
+                                            .all(6),
+
+                                    decoration:
+                                        BoxDecoration(
+                                      color:
+                                          const Color(
+                                        0xFFC1121F,
+                                      ),
+
+                                      borderRadius:
+                                          BorderRadius
+                                              .circular(
+                                        12,
+                                      ),
+                                    ),
+
+                                    child:
+                                        const Icon(
+                                      Icons.add,
+                                      color:
+                                          Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 28),
+                    const SizedBox(height: 34),
 
-                  /// ==================================
-                  /// QUANTITE
-                  /// ==================================
-                   Text(
-                    l10n.requestedQuantity,
+                    /// BUTTON
+                    SizedBox(
+                      width: double.infinity,
 
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-                  ),
+                      height: 58,
 
-                  const SizedBox(height: 14),
+                      child: ElevatedButton(
+                        onPressed:
+                            isLoading
+                                ? null
+                                : envoyerDemande,
 
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 12,
-                    ),
+                        style:
+                            ElevatedButton.styleFrom(
+                          elevation: 0,
 
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF5F6FA),
+                          backgroundColor:
+                              const Color(
+                            0xFFC1121F,
+                          ),
 
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                      children: [
-                        /// MINUS
-                        IconButton(
-                          onPressed: () {
-                            if (quantite > 1) {
-                              setState(() {
-                                quantite--;
-                              });
-                            }
-                          },
-
-                          icon: Container(
-                            padding: const EdgeInsets.all(6),
-
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-
-                            child: const Icon(Icons.remove),
+                          shape:
+                              RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius
+                                    .circular(22),
                           ),
                         ),
 
-                        /// VALUE
-                        Text(
-                          "$quantite ${l10n.bags}",
+                        child:
+                            isLoading
+                                ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
 
-                          style: const TextStyle(
-                            fontSize: 18,
+                                    child:
+                                        CircularProgressIndicator(
+                                      color:
+                                          Colors.white,
+                                    ),
+                                  )
+                                : Text(
+                                    l10n.sendNow,
 
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
+                                    style:
+                                        const TextStyle(
+                                      fontSize: 16,
 
-                        /// PLUS
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              quantite++;
-                            });
-                          },
-
-                          icon: Container(
-                            padding: const EdgeInsets.all(6),
-
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFC1121F),
-
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-
-                            child: const Icon(Icons.add, color: Colors.white),
-                          ),
-                        ),
-                      ],
+                                      fontWeight:
+                                          FontWeight
+                                              .w800,
+                                    ),
+                                  ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
 
-            const SizedBox(height: 34),
-
-            /// ======================================
-            /// BUTTON
-            /// ======================================
-            SizedBox(
-              width: double.infinity,
-
-              height: 58,
-
-              child: ElevatedButton(
-                onPressed: isLoading ? null : envoyerDemande,
-
-                style: ElevatedButton.styleFrom(
-                  elevation: 0,
-
-                  backgroundColor: const Color(0xFFC1121F),
-
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(22),
-                  ),
+                    const SizedBox(height: 40),
+                  ],
                 ),
-
-                child:
-                    isLoading
-                        ? const SizedBox(
-                          height: 24,
-                          width: 24,
-
-                          child: CircularProgressIndicator(color: Colors.white),
-                        )
-                        :  Text(
-                          l10n.sendNow,
-
-                          style: TextStyle(
-                            fontSize: 16,
-
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
               ),
-            ),
-
-            const SizedBox(height: 40),
-          ],
+            );
+          },
         ),
       ),
     );

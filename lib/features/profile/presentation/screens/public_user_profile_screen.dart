@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -25,6 +26,7 @@ class PublicUserProfileScreen extends ConsumerStatefulWidget {
 
 class _PublicUserProfileScreenState
     extends ConsumerState<PublicUserProfileScreen> {
+
   Map<String, dynamic>? user;
   bool loading = true;
 
@@ -35,41 +37,39 @@ class _PublicUserProfileScreenState
   }
 
   // =========================
-  // Charger profil public
+  // LOAD PROFILE
   // =========================
   Future<void> loadUserProfile() async {
     try {
-      final token =
-          ref.read(authControllerProvider).accessToken;
+      final token = ref.read(authControllerProvider).accessToken;
 
       final response = await http.get(
-        Uri.parse(
-          // IMPORTANT:
-          // utilise ta nouvelle route backend publique
-          "${Env.baseUrl}/users/public/${widget.userId}",
-        ),
+        Uri.parse("${Env.baseUrl}/users/public/${widget.userId}"),
         headers: {
           "Authorization": "Bearer $token",
         },
       );
 
+      debugPrint("PROFILE STATUS => ${response.statusCode}");
+      debugPrint("PROFILE BODY => ${response.body}");
+
       final data = jsonDecode(response.body);
 
       if (!mounted) return;
 
-      if (response.statusCode == 200 &&
-          data["success"] == true) {
+      if (response.statusCode == 200 && data["success"] == true) {
         setState(() {
           user = data["data"];
           loading = false;
         });
       } else {
         setState(() {
+          user = null;
           loading = false;
         });
       }
     } catch (e) {
-      debugPrint("Erreur profil public: $e");
+      debugPrint("❌ Erreur profil public: $e");
 
       if (!mounted) return;
 
@@ -80,37 +80,25 @@ class _PublicUserProfileScreenState
   }
 
   // =========================
-  // Appeler utilisateur
+  // CALL USER
   // =========================
   Future<void> callUser(String phone) async {
-    try {
-      final Uri uri = Uri(
-        scheme: "tel",
-        path: phone,
-      );
+    final Uri uri = Uri(scheme: "tel", path: phone);
 
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
-      } else {
-        debugPrint("Impossible d'appeler");
-      }
-    } catch (e) {
-      debugPrint("Erreur appel: $e");
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 
   // =========================
-  // Ouvrir chat
+  // CHAT
   // =========================
   Future<void> openChat() async {
     try {
-      final token =
-          ref.read(authControllerProvider).accessToken;
+      final token = ref.read(authControllerProvider).accessToken;
 
       final response = await http.post(
-        Uri.parse(
-          "${Env.baseUrl}${ApiEndpoints.createConversation}",
-        ),
+        Uri.parse("${Env.baseUrl}${ApiEndpoints.createConversation}"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -121,11 +109,7 @@ class _PublicUserProfileScreenState
       );
 
       final data = jsonDecode(response.body);
-
-      if (data["success"] != true) {
-        debugPrint("Erreur création conversation");
-        return;
-      }
+      if (data["success"] != true) return;
 
       final conversation = data["data"];
 
@@ -135,46 +119,86 @@ class _PublicUserProfileScreenState
         "/chat/${conversation["id_conversation"]}",
         extra: {
           "fullName":
-              "${user?["nom"] ?? ""} ${user?["prenom"] ?? ""}",
+              "${user?["prenom"] ?? ""} ${user?["nom"] ?? ""}",
           "otherUserId": widget.userId,
         },
       );
     } catch (e) {
-      debugPrint("Erreur ouverture chat: $e");
+      debugPrint("❌ chat error $e");
     }
   }
 
-  Widget infoTile(
-    IconData icon,
-    String label,
-    String value,
-  ) {
+  // =========================
+  // SAFE VALUE (IMPORTANT)
+  // =========================
+  String format(dynamic v) {
+    if (v == null) return "Non renseigné";
+    final s = v.toString().trim();
+    if (s.isEmpty || s == "null") return "Non renseigné";
+    return s;
+  }
+
+  // =========================
+  // TILE
+  // =========================
+  Widget infoTile({
+    required IconData icon,
+    required String label,
+    required dynamic value,
+    Color? color,
+  }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            color: Colors.red,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-              ),
+          Container(
+            height: 52,
+            width: 52,
+            decoration: BoxDecoration(
+              color: (color ?? Colors.red).withOpacity(0.12),
+              borderRadius: BorderRadius.circular(16),
             ),
+            child: Icon(icon, color: color ?? Colors.red, size: 26),
           ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
+          const SizedBox(width: 16),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  format(value),
+                  softWrap: true,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    height: 1.4,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -182,176 +206,181 @@ class _PublicUserProfileScreenState
     );
   }
 
+  // =========================
+  // UI
+  // =========================
   @override
   Widget build(BuildContext context) {
     final fullName =
-        "${user?["nom"] ?? ""} ${user?["prenom"] ?? ""}";
-
-    final phone =
-        user?["telephone"]?.toString() ?? "--";
-
-    final bloodGroup =
-        user?["groupe_sanguin"]?.toString() ?? "--";
-
-    final status =
-        user?["statut_groupe_sanguin"]?.toString() ?? "--";
-
-    final distance =
-        user?["distance_km"] != null
-            ? "${user!["distance_km"]} km"
-            : "--";
+        "${user?["prenom"] ?? ""} ${user?["nom"] ?? ""}".trim();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FC),
-      appBar: AppBar(
-        backgroundColor: Colors.red,
-        title: const Text("Profil utilisateur"),
-      ),
+      backgroundColor: const Color(0xFFF5F7FB),
+
       body: loading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator(color: Colors.red))
           : user == null
-              ? const Center(
-                  child: Text(
-                    "Utilisateur introuvable",
-                  ),
-                )
-              : SingleChildScrollView(
-                  padding:
-                      const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundColor:
-                            Colors.red.shade100,
-                        child: const Icon(
-                          Icons.person,
-                          size: 50,
-                          color: Colors.red,
-                        ),
-                      ),
+              ? const Center(child: Text("Utilisateur introuvable"))
+              : SafeArea(
 
-                      const SizedBox(height: 12),
+                  // 🔥 IMPORTANT: SCROLL GLOBAL
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
 
-                      Text(
-                        fullName,
-                        style:
-                            const TextStyle(
-                          fontSize: 22,
-                          fontWeight:
-                              FontWeight.bold,
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // téléphone
-                      infoTile(
-                        Icons.phone,
-                        "Téléphone",
-                        phone,
-                      ),
-
-                      // distance
-                      infoTile(
-                        Icons.location_on,
-                        "Distance",
-                        distance,
-                      ),
-
-                      // groupe sanguin
-                      infoTile(
-                        Icons.bloodtype,
-                        "Groupe sanguin",
-                        bloodGroup,
-                      ),
-
-                      // statut
-                      infoTile(
-                        Icons.verified,
-                        "Statut",
-                        status,
-                      ),
-
-                      const SizedBox(
-                        height: 30,
-                      ),
-
-                      Row(
-                        children: [
-                          Expanded(
-                            child:
-                                ElevatedButton.icon(
-                              onPressed:
-                                  phone == "--"
-                                      ? null
-                                      : () =>
-                                          callUser(
-                                            phone,
-                                          ),
-                              icon:
-                                  const Icon(
-                                Icons.call,
-                              ),
-                              label:
-                                  const Text(
-                                "Appeler",
-                              ),
-                              style:
-                                  ElevatedButton
-                                      .styleFrom(
-                                backgroundColor:
-                                    Colors
-                                        .green,
-                                foregroundColor:
-                                    Colors
-                                        .white,
-                                padding:
-                                    const EdgeInsets
-                                        .all(
-                                  14,
-                                ),
-                              ),
+                        // ================= HEADER =================
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 35),
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Color(0xFFE53946),
+                                Color(0xFFC1121F),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.only(
+                              bottomLeft: Radius.circular(35),
+                              bottomRight: Radius.circular(35),
                             ),
                           ),
-
-                          const SizedBox(
-                            width: 12,
-                          ),
-
-                          Expanded(
-                            child:
-                                ElevatedButton.icon(
-                              onPressed:
-                                  openChat,
-                              icon:
-                                  const Icon(
-                                Icons.message,
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () => context.pop(),
+                                    child: const Icon(
+                                      Icons.arrow_back_ios_new,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              label:
-                                  const Text(
-                                "Message",
-                              ),
-                              style:
-                                  ElevatedButton
-                                      .styleFrom(
-                                backgroundColor:
-                                    Colors.red,
-                                foregroundColor:
-                                    Colors.white,
-                                padding:
-                                    const EdgeInsets
-                                        .all(
-                                  14,
+
+                              const SizedBox(height: 25),
+
+                              CircleAvatar(
+                                radius: 55,
+                                backgroundColor: Colors.white24,
+                                child: Text(
+                                  fullName.isNotEmpty
+                                      ? fullName[0].toUpperCase()
+                                      : "?",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 40,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
-                            ),
+
+                              const SizedBox(height: 15),
+
+                              Text(
+                                fullName.isEmpty
+                                    ? "Utilisateur"
+                                    : fullName,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+
+                              const SizedBox(height: 10),
+
+                              Text(
+                                format(user?["statut_groupe_sanguin"]),
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+
+                        // ================= BODY =================
+                        Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            children: [
+
+                              infoTile(
+                                icon: Icons.phone,
+                                label: "Téléphone",
+                                value: user?["telephone"],
+                                color: Colors.green,
+                              ),
+
+                              infoTile(
+                                icon: Icons.location_on,
+                                label: "Ville",
+                                value: user?["ville"],
+                                color: Colors.purple,
+                              ),
+
+                              infoTile(
+                                icon: Icons.social_distance,
+                                label: "Distance",
+                                value: user?["distance_km"] == null
+                                    ? "Non renseignée"
+                                    : "${user?["distance_km"]} km",
+                                color: Colors.orange,
+                              ),
+
+                              infoTile(
+                                icon: Icons.bloodtype,
+                                label: "Groupe sanguin",
+                                value: user?["groupe_sanguin"],
+                                color: Colors.red,
+                              ),
+
+                              infoTile(
+                                icon: Icons.verified,
+                                label: "Statut",
+                                value: user?["statut_groupe_sanguin"],
+                                color: Colors.blue,
+                              ),
+
+                              const SizedBox(height: 30),
+
+                              Row(
+                                children: [
+
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      onPressed: () =>
+                                          callUser(format(user?["telephone"])),
+                                      icon: const Icon(Icons.call),
+                                      label: const Text("Appeler"),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.green,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+
+                                  const SizedBox(width: 16),
+
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      onPressed: openChat,
+                                      icon: const Icon(Icons.message),
+                                      label: const Text("Message"),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFFE53946),
+                                        foregroundColor: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 40),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
     );
