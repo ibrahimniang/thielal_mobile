@@ -33,7 +33,7 @@ class NationalImpactSection extends StatelessWidget {
       child: Container(
         width: double.infinity,
 
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        padding: const EdgeInsets.all(18),
 
         decoration: BoxDecoration(
           color: Colors.white,
@@ -44,9 +44,9 @@ class NationalImpactSection extends StatelessWidget {
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
 
-              blurRadius: 24,
+              blurRadius: 18,
 
-              offset: const Offset(0, 10),
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -66,7 +66,7 @@ class NationalImpactSection extends StatelessWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.w900,
 
-                    fontSize: 15,
+                    fontSize: 16,
 
                     letterSpacing: 0.7,
                   ),
@@ -88,7 +88,7 @@ class NationalImpactSection extends StatelessWidget {
 
                   child:  Row(
                     children: [
-                      Icon(Icons.circle, size: 8, color: Colors.green),
+                      Icon(Icons.circle, size: 6, color: Colors.green),
 
                       SizedBox(width: 6),
 
@@ -100,7 +100,7 @@ class NationalImpactSection extends StatelessWidget {
 
                           fontWeight: FontWeight.w700,
 
-                          fontSize: 11,
+                          fontSize: 10,
                         ),
                       ),
                     ],
@@ -109,7 +109,7 @@ class NationalImpactSection extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 26),
+            const SizedBox(height: 18),
 
             /// ==========================================
             /// LAST DONATION
@@ -118,7 +118,7 @@ class NationalImpactSection extends StatelessWidget {
               Container(
                 width: double.infinity,
 
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(14),
 
                 decoration: BoxDecoration(
                   color: Colors.red.withOpacity(0.06),
@@ -129,13 +129,13 @@ class NationalImpactSection extends StatelessWidget {
                 child: Row(
                   children: [
                     Container(
-                      height: 52,
-                      width: 52,
+                      height: 44,
+                      width: 44,
 
                       decoration: BoxDecoration(
                         color: Colors.red.withOpacity(0.12),
 
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(14),
                       ),
 
                       child: const Icon(
@@ -175,75 +175,203 @@ class NationalImpactSection extends StatelessWidget {
                 ),
               ),
 
-            const SizedBox(height: 28),
+            const SizedBox(height: 18),
 
             /// ==========================================
             /// STATS
             /// ==========================================
-            Row(
-              children: [
-                Expanded(
-                  child: _card(
-                    icon: Icons.water_drop_rounded,
+            Column(
+  children: [
+    Row(
+      children: [
+        Expanded(
+          child: _card(
+            icon:
+                Icons.water_drop_rounded,
 
-                    iconColor: Colors.blueAccent,
+            iconColor:
+                Colors.blueAccent,
 
-                   title: l10n.donations,
+            title:
+                l10n.donations,
 
-                    value: donations.toString(),
+            value:
+                donations.toString(),
 
-                    subtitle: l10n.totalValidated,
-                  ),
-                ),
+            subtitle:
+                l10n.totalValidated,
+          ),
+        ),
 
-                const SizedBox(width: 14),
+        const SizedBox(width: 12),
 
-                Expanded(
-                  child: _card(
-                    icon: Icons.favorite_rounded,
+        Expanded(
+          child: _card(
+            icon:
+                Icons.favorite_rounded,
 
-                    iconColor: Colors.redAccent,
+            iconColor:
+                Colors.redAccent,
 
-                    title: l10n.savedLives,
+            title:
+                l10n.savedLives,
 
-                    value: livesSaved.toString(),
+            value:
+                livesSaved.toString(),
 
-                    subtitle: l10n.realImpact,
-                  ),
-                ),
+            subtitle:
+                l10n.realImpact,
+          ),
+        ),
+      ],
+    ),
 
-                const SizedBox(width: 14),
+    const SizedBox(height: 12),
 
-                Expanded(
-                  child: _card(
-                    icon: Icons.timer_rounded,
+    _wideCard(
+      icon: Icons.timer_rounded,
 
-                    iconColor: Colors.orangeAccent,
+      iconColor:
+          Colors.orangeAccent,
 
-                   title: l10n.delay,
+      title: l10n.delay,
 
-                    value: '$averageDelay ${l10n.minutes}',
+      value:
+          '$averageDelay ${l10n.minutes}',
 
-                    subtitle: l10n.averageTime,
-                  ),
-                ),
-              ],
-            ),
+      subtitle:
+          l10n.averageTime,
+    ),
+  ],
+),
           ],
         ),
       ),
     );
   }
+Widget _wideCard({
+  required IconData icon,
+  required Color iconColor,
+  required String title,
+  required String value,
+  required String subtitle,
+}) {
+  return Container(
+    width: double.infinity,
 
+    padding: const EdgeInsets.all(16),
+
+    decoration: BoxDecoration(
+      color: AppColors.silverBackground,
+
+      borderRadius:
+          BorderRadius.circular(22),
+    ),
+
+    child: Row(
+      children: [
+        Container(
+          height: 50,
+          width: 50,
+
+          decoration: BoxDecoration(
+            color:
+                iconColor.withOpacity(0.12),
+
+            borderRadius:
+                BorderRadius.circular(
+                  16,
+                ),
+          ),
+
+          child: Icon(
+            icon,
+            color: iconColor,
+          ),
+        ),
+
+        const SizedBox(width: 14),
+
+        Expanded(
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+
+            children: [
+              Text(
+                title,
+
+                style: const TextStyle(
+                  color:
+                      AppColors.textSecondary,
+
+                  fontWeight:
+                      FontWeight.w600,
+
+                  fontSize: 12,
+                ),
+              ),
+
+              const SizedBox(height: 4),
+
+              Text(
+                value,
+
+                style: const TextStyle(
+                  fontSize: 22,
+
+                  fontWeight:
+                      FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        Container(
+          padding:
+              const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 6,
+              ),
+
+          decoration: BoxDecoration(
+            color:
+                Colors.orange.withOpacity(
+                  0.10,
+                ),
+
+            borderRadius:
+                BorderRadius.circular(30),
+          ),
+
+          child: Text(
+            subtitle,
+
+            style: const TextStyle(
+              color: Colors.orange,
+
+              fontWeight:
+                  FontWeight.w700,
+
+              fontSize: 11,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
   Widget _card({
     required IconData icon,
     required Color iconColor,
     required String title,
     required String value,
     required String subtitle,
-  }) {
+  })
+   {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
 
       decoration: BoxDecoration(
         color: AppColors.silverBackground,
@@ -254,19 +382,19 @@ class NationalImpactSection extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            height: 52,
-            width: 52,
+            height: 44,
+            width: 44,
 
             decoration: BoxDecoration(
               color: iconColor.withOpacity(0.12),
 
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(14),
             ),
 
             child: Icon(icon, color: iconColor),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
           Text(
             title,
@@ -282,17 +410,17 @@ class NationalImpactSection extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
 
           Text(
             value,
 
             textAlign: TextAlign.center,
 
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
 
           Text(
             subtitle,

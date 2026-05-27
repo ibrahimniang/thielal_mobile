@@ -221,6 +221,13 @@ class AuthController extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: false, errorMessage: _mapError(e));
     }
   }
+void clearPendingUser() {
+  state = state.copyWith(
+    clearPendingPhone: true,
+    clearPendingEmail: true,
+    clearPendingUserId: true,
+  );
+}
 
   // ==========================
   // LOGIN USER

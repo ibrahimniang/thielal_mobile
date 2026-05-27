@@ -71,8 +71,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final donationsAsync = ref.watch(myDonationsProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FB),
-
+      backgroundColor: const Color(0xFFF8FAFC),
       body: profileState.when(
         loading: () => const ProfileLoadingShimmer(),
 
@@ -87,7 +86,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
         data: (user) {
           if (user == null) {
-            return  EmptyProfileState(
+            return EmptyProfileState(
               title: l10n.profileNotFound,
 
               subtitle: l10n.unableToLoadUserData,
@@ -103,7 +102,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 /// SLIVER APP BAR
                 /// =====================================================
                 SliverAppBar(
-                  expandedHeight: 420,
+                  stretch: true,
+                  
+                  expandedHeight: 360,
 
                   pinned: true,
 
@@ -177,7 +178,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     child: Container(
                       color: const Color(0xFFF5F7FB),
 
-                      padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
 
                       child: ProfileTabBar(controller: _tabController),
                     ),
@@ -231,7 +232,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           /// LEVEL
           DonorLevelProgress(points: user.points ?? 0),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 18),
 
           /// MEDICAL STATUS
           ProfileMedicalStatusCard(
@@ -245,7 +246,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           /// NEXT DONATION
           NextDonationCard(nextDonationDate: null),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 20),
 
           /// TITLE
           ProfileSectionTitle(
@@ -269,7 +270,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
 
-            childAspectRatio: 1.06,
+            childAspectRatio: 1.18,
 
             children: [
               BadgeLevelCard(
@@ -344,7 +345,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
       data: (dons) {
         if (dons.isEmpty) {
-          return  EmptyProfileState(
+          return EmptyProfileState(
             title: l10n.noDonationRecorded,
 
             subtitle: l10n.donationHistoryWillAppear,
@@ -411,7 +412,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final qr = user.qrCode?.trim() ?? '';
 
     if (qr.isEmpty) {
-      return  EmptyProfileState(
+      return EmptyProfileState(
         title: l10n.qrUnavailable,
 
         subtitle: l10n.qrGeneratedAutomatically,
@@ -443,7 +444,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             },
           ),
 
-          const SizedBox(height: 40),
+          const SizedBox(height: 28),
         ],
       ),
     );
@@ -460,7 +461,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       child: Column(
         children: [
           /// TITLE
-           ProfileSectionTitle(
+          ProfileSectionTitle(
             title: l10n.personalInformation,
 
             subtitle: l10n.medicalInformationContacts,
@@ -535,7 +536,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
           /// BUTTON
           PremiumProfileButton(
-           text: l10n.editProfile,
+            text: l10n.editProfile,
 
             icon: Icons.edit_rounded,
 
@@ -564,10 +565,10 @@ class _ProfileTabDelegate extends SliverPersistentHeaderDelegate {
   _ProfileTabDelegate({required this.child});
 
   @override
-  double get minExtent => 90;
+  double get minExtent => 72;
 
   @override
-  double get maxExtent => 90;
+  double get maxExtent => 72;
 
   @override
   Widget build(

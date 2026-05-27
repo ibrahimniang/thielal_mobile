@@ -77,7 +77,10 @@ class _HomeHeaderState extends State<HomeHeader> {
                 filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
 
                 child: Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
 
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.90),
@@ -99,34 +102,43 @@ class _HomeHeaderState extends State<HomeHeader> {
 
                   child: Row(
                     children: [
+                      /// =====================================================
                       /// MENU
+                      /// =====================================================
                       _squareButton(
                         icon: Icons.menu_rounded,
-
                         onTap: widget.onMenuTap,
                       ),
 
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
 
-                      /// SEARCH
+                      /// =====================================================
+                      /// SEARCH BAR
+                      /// =====================================================
                       Expanded(
                         child: Container(
-                          height: 54,
+                          height: 50,
 
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
 
                           decoration: BoxDecoration(
                             color: AppColors.silverBackground,
 
                             borderRadius: BorderRadius.circular(18),
+
+                            border: Border.all(
+                              color: Colors.black.withOpacity(0.03),
+                            ),
                           ),
 
                           child: Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.search_rounded,
 
-                                color: Colors.grey,
+                                color: Colors.grey.shade500,
+
+                                size: 22,
                               ),
 
                               const SizedBox(width: 10),
@@ -138,8 +150,6 @@ class _HomeHeaderState extends State<HomeHeader> {
                                   textInputAction: TextInputAction.search,
 
                                   onChanged: (value) {
-                                    debugPrint('🔍 SEARCH => $value');
-
                                     setState(() {
                                       showSuggestions = value.trim().isNotEmpty;
                                     });
@@ -153,6 +163,12 @@ class _HomeHeaderState extends State<HomeHeader> {
                                     border: InputBorder.none,
 
                                     isCollapsed: true,
+
+                                    hintStyle: TextStyle(
+                                      color: Colors.grey.shade500,
+
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
 
                                   style: const TextStyle(
@@ -167,32 +183,36 @@ class _HomeHeaderState extends State<HomeHeader> {
                         ),
                       ),
 
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
 
+                      /// =====================================================
                       /// CHAT
+                      /// =====================================================
                       _iconButton(
                         icon: Icons.chat_bubble_outline_rounded,
 
                         onTap: widget.onChatTap,
                       ),
 
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
 
+                      /// =====================================================
                       /// PROFILE
+                      /// =====================================================
                       GestureDetector(
                         onTap: widget.onProfileTap,
 
                         child: Container(
-                          height: 54,
-                          width: 54,
+                          height: 50,
+                          width: 50,
 
                           decoration: BoxDecoration(
-                            color: AppColors.primaryRed.withOpacity(0.12),
+                            color: AppColors.primaryRed.withOpacity(0.10),
 
                             borderRadius: BorderRadius.circular(18),
 
                             border: Border.all(
-                              color: AppColors.primaryRed.withOpacity(0.18),
+                              color: AppColors.primaryRed.withOpacity(0.14),
                             ),
                           ),
 
@@ -205,7 +225,7 @@ class _HomeHeaderState extends State<HomeHeader> {
 
                                 fontWeight: FontWeight.w900,
 
-                                fontSize: 22,
+                                fontSize: 20,
                               ),
                             ),
                           ),
@@ -292,17 +312,21 @@ class _HomeHeaderState extends State<HomeHeader> {
     return GestureDetector(
       onTap: onTap,
 
-      child: Container(
-        height: 54,
-        width: 54,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+
+        height: 50,
+        width: 50,
 
         decoration: BoxDecoration(
           color: AppColors.silverBackground,
 
           borderRadius: BorderRadius.circular(18),
+
+          border: Border.all(color: Colors.black.withOpacity(0.03)),
         ),
 
-        child: Icon(icon, color: AppColors.textPrimary),
+        child: Icon(icon, color: AppColors.textPrimary, size: 24),
       ),
     );
   }
@@ -315,17 +339,21 @@ class _HomeHeaderState extends State<HomeHeader> {
     return GestureDetector(
       onTap: onTap,
 
-      child: Container(
-        height: 54,
-        width: 54,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+
+        height: 50,
+        width: 50,
 
         decoration: BoxDecoration(
           color: AppColors.silverBackground,
 
           borderRadius: BorderRadius.circular(18),
+
+          border: Border.all(color: Colors.black.withOpacity(0.03)),
         ),
 
-        child: Icon(icon, color: AppColors.textPrimary),
+        child: Icon(icon, color: AppColors.textPrimary, size: 22),
       ),
     );
   }

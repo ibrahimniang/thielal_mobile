@@ -30,12 +30,12 @@ class BadgeLevelCard extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
 
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(16),
 
       decoration: BoxDecoration(
         color: unlocked ? color.withOpacity(0.10) : Colors.white,
 
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(24),
 
         border: Border.all(
           color:
@@ -48,9 +48,9 @@ class BadgeLevelCard extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
 
-            blurRadius: 18,
+            blurRadius: 12,
 
-            offset: const Offset(0, 10),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -59,8 +59,8 @@ class BadgeLevelCard extends StatelessWidget {
         children: [
           /// ICON
           Container(
-            height: 72,
-            width: 72,
+            height: 56,
+            width: 56,
 
             decoration: BoxDecoration(
               color:
@@ -68,7 +68,7 @@ class BadgeLevelCard extends StatelessWidget {
                       ? color.withOpacity(0.15)
                       : Colors.grey.withOpacity(0.08),
 
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(18),
             ),
 
             child: Icon(
@@ -76,24 +76,24 @@ class BadgeLevelCard extends StatelessWidget {
 
               color: unlocked ? color : Colors.grey,
 
-              size: 34,
+              size: 26,
             ),
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
 
           /// TITLE
           Text(
             title,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 14,
               fontWeight: FontWeight.w900,
               color: unlocked ? Colors.black : Colors.grey,
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
 
           /// DESC
           Text(
@@ -106,11 +106,11 @@ class BadgeLevelCard extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 12),
 
           /// STATUS
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
 
             decoration: BoxDecoration(
               color: unlocked ? color : Colors.grey.withOpacity(0.14),
@@ -124,7 +124,7 @@ class BadgeLevelCard extends StatelessWidget {
               style: TextStyle(
                 color: unlocked ? Colors.white : Colors.grey[700],
 
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w700,fontSize: 11,
               ),
             ),
           ),
