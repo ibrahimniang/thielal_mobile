@@ -1,10 +1,10 @@
 import 'dart:convert';
 
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
-import 'package:geolocator/geolocator.dart';
 
 import '../../../../core/config/api_endpoints.dart';
 import '../../../../core/config/env.dart';
@@ -28,6 +28,7 @@ class _DemandeSangScreenState
 
   final villeController = TextEditingController();
 
+
   String? selectedGroupe;
 
   int quantite = 1;
@@ -35,22 +36,37 @@ class _DemandeSangScreenState
   bool isLoading = false;
 
   /// ==========================================
-  /// USER LOCATION
-  /// ==========================================
-
-  double? userLatitude;
-
-  double? userLongitude;
-
-  /// ==========================================
   /// CENTRES
   /// ==========================================
 
-  List<dynamic> centres = [];
+  List<Map<String, dynamic>> centres = [];
 
-  dynamic selectedCentre;
+
+  Map<String, dynamic>? selectedCentre;
 
   bool loadingCentres = true;
+
+  /// ==========================================
+  /// VILLES MAURITANIE
+  /// ==========================================
+
+  final List<String> mauritanieVilles = [
+    "Nouakchott",
+    "Nouadhibou",
+    "Rosso",
+    "Kaédi",
+    "Kiffa",
+    "Sélibaby",
+    "Atar",
+    "Zouerate",
+    "Aioun",
+    "Néma",
+    "Aleg",
+    "Akjoujt",
+    "Tidjikja",
+    "Boghé",
+    "Boutilimit",
+  ];
 
   /// ==========================================
   /// GROUPES
@@ -75,90 +91,31 @@ class _DemandeSangScreenState
   }
 
   /// ==========================================
-  /// GET USER LOCATION
+  /// DISTANCE ENTRE USER ET CENTRE
   /// ==========================================
 
-  Future<void> getUserLocation() async {
-    try {
-      bool serviceEnabled =
-          await Geolocator.isLocationServiceEnabled();
+  double calculateDistance(
+  double lat1,
+  double lon1,
+  double lat2,
+  double lon2,
+) {
+  const p = 0.017453292519943295;
 
-      if (!serviceEnabled) {
-        return;
-      }
+  final a =
+      0.5 -
+      math.cos((lat2 - lat1) * p) / 2 +
+      math.cos(lat1 * p) *
+          math.cos(lat2 * p) *
+          (1 -
+                  math.cos(
+                    (lon2 - lon1) * p,
+                  )) /
+              2;
 
-      LocationPermission permission =
-          await Geolocator.checkPermission();
-
-      if (permission == LocationPermission.denied) {
-        permission =
-            await Geolocator.requestPermission();
-      }
-
-      if (permission ==
-              LocationPermission.denied ||
-          permission ==
-              LocationPermission.deniedForever) {
-        return;
-      }
-
-      final position =
-          await Geolocator.getCurrentPosition(
-        desiredAccuracy:
-            LocationAccuracy.high,
-      );
-
-      userLatitude = position.latitude;
-
-      userLongitude = position.longitude;
-
-      debugPrint(
-        "📍 USER LOCATION => "
-        "$userLatitude / $userLongitude",
-      );
-    } catch (e) {
-      debugPrint(
-        "❌ LOCATION ERROR => $e",
-      );
-    }
-  }
-
-  /// ==========================================
-  /// CALCULATE DISTANCE
-  /// ==========================================
-
-  double calculateDistance(dynamic centre) {
-    try {
-      if (userLatitude == null ||
-          userLongitude == null) {
-        return 999999;
-      }
-
-      final centreLat =
-          double.tryParse(
-            centre["latitude"].toString(),
-          ) ??
-          0;
-
-      final centreLng =
-          double.tryParse(
-            centre["longitude"].toString(),
-          ) ??
-          0;
-
-      final distanceInMeters =
-          Geolocator.distanceBetween(
-        userLatitude!,
-        userLongitude!,
-        centreLat,
-        centreLng,
-      );
-
-      return distanceInMeters / 1000;
-    } catch (e) {
-      return 999999;
-    }
-  }
+  return 12742 *
+      math.asin(math.sqrt(a));
+}
 
   /// ==========================================
   /// CHARGER CENTRES
@@ -166,8 +123,6 @@ class _DemandeSangScreenState
 
   Future<void> chargerCentres() async {
     try {
-      await getUserLocation();
-
       final token =
           ref.read(authControllerProvider).accessToken;
 
@@ -195,35 +150,64 @@ class _DemandeSangScreenState
       if (response.statusCode == 200 &&
           data["success"] == true) {
 
-        List<dynamic> loadedCentres =
-            data["data"];
-
-        /// ======================================
-        /// SORT BY DISTANCE
-        /// ======================================
-
-        loadedCentres.sort((a, b) {
-          final distanceA =
-              calculateDistance(a);
-
-          final distanceB =
-              calculateDistance(b);
-
-          return distanceA.compareTo(
-            distanceB,
+        List<Map<String, dynamic>> centresData =
+          List<Map<String, dynamic>>.from(
+            data["data"],
           );
-        });
 
-        setState(() {
-          centres = loadedCentres;
+        /// ==========================================
+        /// TRI CENTRES PLUS PROCHES
+        /// ==========================================
 
-          /// AUTO SELECT NEAREST
-          if (centres.isNotEmpty) {
-            selectedCentre = centres.first;
+        final currentUser =
+           ref.read(authControllerProvider).currentUser;
+
+        final userLat =
+            currentUser?.latitude;
+
+        final userLng =
+            currentUser?.longitude;
+
+        if (userLat != null &&
+            userLng != null) {
+
+          for (var centre in centresData) {
+
+            final centreLat =
+                centre["latitude"];
+
+            final centreLng =
+                centre["longitude"];
+
+            if (centreLat != null &&
+                centreLng != null) {
+
+              centre["distance"] =
+                  calculateDistance(
+                userLat.toDouble(),
+                userLng.toDouble(),
+                centreLat.toDouble(),
+                centreLng.toDouble(),
+              );
+            } else {
+              centre["distance"] = 9999;
+            }
           }
 
+          centresData.sort(
+            (a, b) =>
+                (a["distance"] as double)
+                    .compareTo(
+              b["distance"] as double,
+            ),
+          );
+        }
+
+        setState(() {
+          centres = centresData;
           loadingCentres = false;
         });
+
       } else {
         setState(() {
           loadingCentres = false;
@@ -240,6 +224,7 @@ class _DemandeSangScreenState
     }
   }
 
+ 
   /// ==========================================
   /// ENVOYER DEMANDE
   /// ==========================================
@@ -293,7 +278,7 @@ class _DemandeSangScreenState
           "quantite": quantite,
 
           "centre_id":
-              selectedCentre["id_centre"],
+              selectedCentre?["id_centre"],
         }),
       );
 
@@ -360,6 +345,8 @@ class _DemandeSangScreenState
               mainAxisSize: MainAxisSize.min,
 
               children: [
+
+                /// ICON
                 Container(
                   height: 84,
                   width: 84,
@@ -382,6 +369,7 @@ class _DemandeSangScreenState
 
                 const SizedBox(height: 22),
 
+                /// TITLE
                 Text(
                   l10n.requestSent,
 
@@ -393,6 +381,7 @@ class _DemandeSangScreenState
 
                 const SizedBox(height: 12),
 
+                /// TEXT
                 Text(
                   l10n.nearbyDonorsAlerted,
 
@@ -406,6 +395,7 @@ class _DemandeSangScreenState
 
                 const SizedBox(height: 26),
 
+                /// BUTTON
                 SizedBox(
                   width: double.infinity,
 
@@ -413,21 +403,21 @@ class _DemandeSangScreenState
 
                   child: ElevatedButton(
                     onPressed: () {
+
                       if (context.canPop()) {
                         context.pop();
                       }
 
                       setState(() {
+
                         selectedGroupe = null;
 
                         quantite = 1;
 
+                        selectedCentre = null;
+
                         villeController.clear();
 
-                        if (centres.isNotEmpty) {
-                          selectedCentre =
-                              centres.first;
-                        }
                       });
                     },
 
@@ -499,6 +489,7 @@ class _DemandeSangScreenState
 
   @override
   void dispose() {
+
     villeController.dispose();
 
     super.dispose();
@@ -506,6 +497,7 @@ class _DemandeSangScreenState
 
   @override
   Widget build(BuildContext context) {
+
     final l10n =
         AppLocalizations.of(context)!;
 
@@ -532,14 +524,52 @@ class _DemandeSangScreenState
       ),
 
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
 
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+
+            children: [
+
+              /// ======================================
+              /// HEADER
+              /// ======================================
+              Container(
+                width: double.infinity,
+
+                padding:
+                    const EdgeInsets.all(24),
+
+                decoration: BoxDecoration(
+                  gradient:
+                      const LinearGradient(
+                    begin: Alignment.topLeft,
+
+                    end:
+                        Alignment.bottomRight,
+
+                    colors: [
+                      Color(0xFFE53946),
+                      Color(0xFFC1121F),
+                    ],
+                  ),
+
+                  borderRadius:
+                      BorderRadius.circular(32),
+
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.red
+                          .withOpacity(0.20),
+
+                      blurRadius: 30,
+
+                      offset:
+                          const Offset(0, 14),
+                    ),
+                  ],
                 ),
 
                 child: Column(
@@ -548,640 +578,778 @@ class _DemandeSangScreenState
 
                   children: [
 
-                    /// HEADER
                     Container(
-                      width: double.infinity,
-
                       padding:
-                          const EdgeInsets.all(24),
-
-                      decoration: BoxDecoration(
-                        gradient:
-                            const LinearGradient(
-                          begin: Alignment.topLeft,
-
-                          end:
-                              Alignment.bottomRight,
-
-                          colors: [
-                            Color(0xFFE53946),
-                            Color(0xFFC1121F),
-                          ],
-                        ),
-
-                        borderRadius:
-                            BorderRadius.circular(32),
-
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.red
-                                .withOpacity(0.20),
-
-                            blurRadius: 30,
-
-                            offset:
-                                const Offset(0, 14),
-                          ),
-                        ],
+                          const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
                       ),
 
-                      child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                      decoration: BoxDecoration(
+                        color: Colors.white
+                            .withOpacity(0.14),
 
-                        children: [
-                          Container(
-                            padding:
-                                const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
+                        borderRadius:
+                            BorderRadius.circular(
+                          16,
+                        ),
+                      ),
+
+                      child: Text(
+                        l10n.urgentNeed,
+
+                        style: const TextStyle(
+                          color: Colors.white,
+
+                          fontWeight:
+                              FontWeight.w900,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    Text(
+                      l10n.sendBloodRequest,
+
+                      style: const TextStyle(
+                        color: Colors.white,
+
+                        fontSize: 30,
+
+                        fontWeight:
+                            FontWeight.w900,
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    Text(
+                      l10n.donorsReceiveAlert,
+
+                      style: const TextStyle(
+                        color: Colors.white70,
+
+                        fontSize: 15,
+
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              /// ======================================
+              /// FORM
+              /// ======================================
+              Container(
+                padding:
+                    const EdgeInsets.all(22),
+
+                decoration: BoxDecoration(
+                  color: Colors.white,
+
+                  borderRadius:
+                      BorderRadius.circular(30),
+
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black
+                          .withOpacity(0.04),
+
+                      blurRadius: 24,
+
+                      offset:
+                          const Offset(0, 10),
+                    ),
+                  ],
+                ),
+
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+
+                  children: [
+
+                    /// ==================================
+                    /// GROUPES
+                    /// ==================================
+                    Text(
+                      l10n.bloodGroup,
+
+                      style: const TextStyle(
+                        fontWeight:
+                            FontWeight.w800,
+                        fontSize: 16,
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+
+                      children:
+                          groupes.map((groupe) {
+
+                        final selected =
+                            selectedGroupe ==
+                                groupe;
+
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedGroupe =
+                                  groupe;
+                            });
+                          },
+
+                          child:
+                              AnimatedContainer(
+                            duration:
+                                const Duration(
+                              milliseconds: 220,
                             ),
 
-                            decoration: BoxDecoration(
-                              color: Colors.white
-                                  .withOpacity(0.14),
+                            padding:
+                                const EdgeInsets
+                                    .symmetric(
+                              horizontal: 18,
+
+                              vertical: 14,
+                            ),
+
+                            decoration:
+                                BoxDecoration(
+                              color: selected
+                                  ? const Color(
+                                      0xFFC1121F)
+                                  : const Color(
+                                      0xFFF5F6FA),
 
                               borderRadius:
-                                  BorderRadius.circular(
-                                16,
+                                  BorderRadius
+                                      .circular(
+                                18,
                               ),
                             ),
 
                             child: Text(
-                              l10n.urgentNeed,
+                              groupe,
 
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: selected
+                                    ? Colors.white
+                                    : Colors
+                                        .black87,
 
                                 fontWeight:
-                                    FontWeight.w900,
+                                    FontWeight
+                                        .w800,
+
+                                fontSize: 15,
                               ),
                             ),
                           ),
-
-                          const SizedBox(height: 24),
-
-                          Text(
-                            l10n.sendBloodRequest,
-
-                            style: const TextStyle(
-                              color: Colors.white,
-
-                              fontSize: 30,
-
-                              fontWeight:
-                                  FontWeight.w900,
-                            ),
-                          ),
-
-                          const SizedBox(height: 14),
-
-                          Text(
-                            l10n.donorsReceiveAlert,
-
-                            style: const TextStyle(
-                              color: Colors.white70,
-
-                              fontSize: 15,
-
-                              height: 1.5,
-                            ),
-                          ),
-                        ],
-                      ),
+                        );
+                      }).toList(),
                     ),
 
                     const SizedBox(height: 28),
 
-                    /// FORM
-                    Container(
-                      padding:
-                          const EdgeInsets.all(22),
+                    /// ==================================
+                    /// VILLE AUTOCOMPLETE
+                    /// ==================================
+                    Text(
+                      l10n.city,
 
-                      decoration: BoxDecoration(
-                        color: Colors.white,
+                      style: const TextStyle(
+                        fontWeight:
+                            FontWeight.w800,
+                        fontSize: 16,
+                      ),
+                    ),
 
-                        borderRadius:
-                            BorderRadius.circular(30),
+                    const SizedBox(height: 14),
 
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black
-                                .withOpacity(0.04),
+                    Autocomplete<String>(
+                      optionsBuilder:
+                          (TextEditingValue value) {
 
-                            blurRadius: 24,
+                        if (value.text.isEmpty) {
+                          return mauritanieVilles;
+                        }
 
-                            offset:
-                                const Offset(0, 10),
+                        return mauritanieVilles.where(
+                          (ville) {
+                            return ville
+                                .toLowerCase()
+                                .contains(
+                                  value.text
+                                      .toLowerCase(),
+                                );
+                          },
+                        );
+                      },
+
+                      onSelected: (value) {
+                        villeController.text =
+                            value;
+                      },
+
+                      fieldViewBuilder: (
+                        context,
+                        controller,
+                        focusNode,
+                        onFieldSubmitted,
+                      ) {
+
+                        controller.text =
+                            villeController.text;
+
+                        return TextField(
+                          controller: controller,
+
+                          focusNode: focusNode,
+
+                          decoration:
+                              InputDecoration(
+                            hintText:
+                                l10n.enterYourCity,
+
+                            prefixIcon:
+                                const Icon(
+                              Icons
+                                  .location_on_rounded,
+                            ),
+
+                            filled: true,
+
+                            fillColor:
+                                const Color(
+                              0xFFF5F6FA,
+                            ),
+
+                            border:
+                                OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius
+                                      .circular(20),
+
+                              borderSide:
+                                  BorderSide.none,
+                            ),
                           ),
-                        ],
+
+                          onChanged: (value) {
+                            villeController.text =
+                                value;
+                          },
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 28),
+
+                   /// ==================================
+/// CENTRE DE DON
+/// ==================================
+const Text(
+  "Centre de don",
+
+  style: TextStyle(
+    fontWeight: FontWeight.w800,
+    fontSize: 16,
+  ),
+),
+
+const SizedBox(height: 8),
+
+const Text(
+  "3 centres proches affichés • recherchez pour voir tous les centres",
+
+  style: TextStyle(
+    color: Colors.grey,
+    fontSize: 13,
+    fontWeight: FontWeight.w500,
+  ),
+),
+
+const SizedBox(height: 14),
+
+loadingCentres
+    ? const Center(
+        child: CircularProgressIndicator(),
+      )
+    : Autocomplete<Map<String, dynamic>>(
+        optionsBuilder: (
+          TextEditingValue value,
+        ) {
+
+          /// SI VIDE => 3 PROCHES
+          if (value.text.trim().isEmpty) {
+            return centres.take(3).toList();
+          }
+
+          final search =
+              value.text.toLowerCase();
+
+          /// RECHERCHE TOUS LES CENTRES
+          return centres.where((centre) {
+
+            final nom =
+                centre["nom"]
+                    .toString()
+                    .toLowerCase();
+
+            final ville =
+                centre["ville"]
+                    .toString()
+                    .toLowerCase();
+
+            return nom.contains(search) ||
+                ville.contains(search);
+
+          }).toList();
+        },
+
+        displayStringForOption:
+            (centre) => centre["nom"],
+
+        onSelected: (centre) {
+
+          setState(() {
+            selectedCentre = centre;
+          });
+        },
+
+        fieldViewBuilder: (
+          context,
+          controller,
+          focusNode,
+          onFieldSubmitted,
+        ) {
+
+          if (selectedCentre != null) {
+           controller.text =
+              selectedCentre?["nom"] ?? "";
+          }
+
+          return TextField(
+            controller: controller,
+            focusNode: focusNode,
+
+            decoration: InputDecoration(
+              hintText:
+                  "Rechercher ou choisir un centre",
+
+              prefixIcon: const Icon(
+                Icons.local_hospital,
+              ),
+
+              filled: true,
+
+              fillColor:
+                  const Color(
+                0xFFF5F6FA,
+              ),
+
+              border: OutlineInputBorder(
+                borderRadius:
+                    BorderRadius.circular(
+                  20,
+                ),
+
+                borderSide:
+                    BorderSide.none,
+              ),
+            ),
+          );
+        },
+
+        optionsViewBuilder: (
+          context,
+          onSelected,
+          options,
+        ) {
+
+          return Align(
+            alignment: Alignment.topLeft,
+
+            child: Material(
+              elevation: 8,
+
+              borderRadius:
+                  BorderRadius.circular(20),
+
+              child: Container(
+                width:
+                    MediaQuery.of(context)
+                        .size
+                        .width - 40,
+
+                constraints:
+                    const BoxConstraints(
+                  maxHeight: 320,
+                ),
+
+                decoration: BoxDecoration(
+                  color: Colors.white,
+
+                  borderRadius:
+                      BorderRadius.circular(
+                    20,
+                  ),
+                ),
+
+                child: ListView.builder(
+                  padding:
+                      const EdgeInsets.all(8),
+
+                  itemCount:
+                      options.length,
+
+                  itemBuilder:
+                      (context, index) {
+
+                    final centre =
+                        options.elementAt(index);
+
+                    final distance =
+                        centre["distance"];
+
+                    return InkWell(
+                      borderRadius:
+                          BorderRadius.circular(
+                        16,
                       ),
 
-                      child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                      onTap: () {
+                        onSelected(centre);
+                      },
 
-                        children: [
+                      child: Container(
+                        padding:
+                            const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
 
-                          /// GROUPES
-                          Text(
-                            l10n.bloodGroup,
+                        child: Row(
+                          children: [
 
-                            style: const TextStyle(
-                              fontWeight:
-                                  FontWeight.w800,
-                              fontSize: 16,
-                            ),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          Wrap(
-                            spacing: 12,
-                            runSpacing: 12,
-
-                            children:
-                                groupes.map((groupe) {
-                              final selected =
-                                  selectedGroupe ==
-                                      groupe;
-
-                              return GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    selectedGroupe =
-                                        groupe;
-                                  });
-                                },
-
-                                child:
-                                    AnimatedContainer(
-                                  duration:
-                                      const Duration(
-                                    milliseconds: 220,
-                                  ),
-
-                                  padding:
-                                      const EdgeInsets
-                                          .symmetric(
-                                    horizontal: 18,
-
-                                    vertical: 14,
-                                  ),
-
-                                  decoration:
-                                      BoxDecoration(
-                                    color: selected
-                                        ? const Color(
-                                            0xFFC1121F)
-                                        : const Color(
-                                            0xFFF5F6FA),
-
-                                    borderRadius:
-                                        BorderRadius
-                                            .circular(
-                                      18,
-                                    ),
-                                  ),
-
-                                  child: Text(
-                                    groupe,
-
-                                    style: TextStyle(
-                                      color: selected
-                                          ? Colors.white
-                                          : Colors
-                                              .black87,
-
-                                      fontWeight:
-                                          FontWeight
-                                              .w800,
-
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-
-                          const SizedBox(height: 28),
-
-                          /// VILLE
-                          Text(
-                            l10n.city,
-
-                            style: const TextStyle(
-                              fontWeight:
-                                  FontWeight.w800,
-                              fontSize: 16,
-                            ),
-                          ),
-
-                          const SizedBox(height: 14),
-
-                          TextField(
-                            controller:
-                                villeController,
-
-                            decoration:
-                                InputDecoration(
-                              hintText:
-                                  l10n.enterYourCity,
-
-                              prefixIcon:
-                                  const Icon(
-                                Icons
-                                    .location_on_rounded,
-                              ),
-
-                              filled: true,
-
-                              fillColor:
-                                  const Color(
-                                0xFFF5F6FA,
-                              ),
-
-                              border:
-                                  OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius
-                                        .circular(20),
-
-                                borderSide:
-                                    BorderSide.none,
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 28),
-
-                          /// CENTRES
-                          const Text(
-                            "Centre proche",
-
-                            style: TextStyle(
-                              fontWeight:
-                                  FontWeight.w800,
-                              fontSize: 16,
-                            ),
-                          ),
-
-                          const SizedBox(height: 14),
-
-                          loadingCentres
-                              ? const Center(
-                                  child:
-                                      CircularProgressIndicator(),
-                                )
-                              : DropdownButtonFormField<
-                                  dynamic>(
-                                  value:
-                                      selectedCentre,
-
-                                  isExpanded: true,
-
-                                  decoration:
-                                      InputDecoration(
-                                    filled: true,
-
-                                    fillColor:
-                                        const Color(
-                                      0xFFF5F6FA,
-                                    ),
-
-                                    prefixIcon:
-                                        const Icon(
-                                      Icons
-                                          .local_hospital,
-                                    ),
-
-                                    border:
-                                        OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius
-                                              .circular(
-                                        20,
-                                      ),
-
-                                      borderSide:
-                                          BorderSide
-                                              .none,
-                                    ),
-                                  ),
-
-                                  hint: const Text(
-                                    "Choisir un centre",
-                                  ),
-
-                                  items:
-                                      centres.map(
-                                    (centre) {
-
-                                      final distance =
-                                          calculateDistance(
-                                        centre,
-                                      );
-
-                                      return DropdownMenuItem<
-                                          dynamic>(
-                                        value: centre,
-
-                                        child: Text(
-                                          "${centre["nom"]} "
-                                          "- "
-                                          "${distance.toStringAsFixed(1)} km",
-
-                                          overflow:
-                                              TextOverflow
-                                                  .ellipsis,
-                                        ),
-                                      );
-                                    },
-                                  ).toList(),
-
-                                  onChanged: (value) {
-                                    setState(() {
-                                      selectedCentre =
-                                          value;
-                                    });
-                                  },
-                                ),
-
-                          const SizedBox(height: 16),
-
-                          if (selectedCentre != null)
                             Container(
-                              width: double.infinity,
-
                               padding:
-                                  const EdgeInsets.all(
-                                16,
-                              ),
+                                  const EdgeInsets.all(10),
 
-                              decoration: BoxDecoration(
+                              decoration:
+                                  BoxDecoration(
                                 color:
-                                    Colors.red.shade50,
+                                    const Color(
+                                  0xFFC1121F,
+                                ).withOpacity(0.08),
 
                                 borderRadius:
                                     BorderRadius.circular(
-                                  20,
+                                  14,
                                 ),
                               ),
 
+                              child: const Icon(
+                                Icons.local_hospital,
+                                color:
+                                    Color(0xFFC1121F),
+                              ),
+                            ),
+
+                            const SizedBox(width: 14),
+
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment:
-                                    CrossAxisAlignment
-                                        .start,
+                                    CrossAxisAlignment.start,
 
                                 children: [
 
                                   Text(
-                                    selectedCentre["nom"]
-                                        .toString(),
+                                    centre["nom"],
+
+                                    maxLines: 1,
+
+                                    overflow:
+                                        TextOverflow.ellipsis,
 
                                     style:
                                         const TextStyle(
                                       fontWeight:
-                                          FontWeight
-                                              .w800,
-
-                                      fontSize: 16,
+                                          FontWeight.w800,
                                     ),
                                   ),
 
-                                  const SizedBox(
-                                    height: 8,
-                                  ),
+                                  const SizedBox(height: 4),
 
                                   Text(
-                                    selectedCentre["adresse"]
-                                            ?.toString() ??
-                                        "",
+                                    centre["ville"],
 
                                     style:
                                         const TextStyle(
-                                      color:
-                                          Colors.black87,
-                                    ),
-                                  ),
-
-                                  const SizedBox(
-                                    height: 8,
-                                  ),
-
-                                  Text(
-                                    "📍 "
-                                    "${calculateDistance(selectedCentre).toStringAsFixed(1)} km",
-
-                                    style:
-                                        const TextStyle(
-                                      fontWeight:
-                                          FontWeight
-                                              .bold,
-
-                                      color:
-                                          Colors.red,
+                                      color: Colors.grey,
+                                      fontSize: 13,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
 
-                          const SizedBox(height: 28),
+                            if (distance != null)
+                              Container(
+                                padding:
+                                    const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
 
-                          /// QUANTITE
-                          Text(
-                            l10n.requestedQuantity,
+                                decoration:
+                                    BoxDecoration(
+                                  color:
+                                      Colors.red.withOpacity(
+                                    0.08,
+                                  ),
 
-                            style: const TextStyle(
-                              fontWeight:
-                                  FontWeight.w800,
-                              fontSize: 16,
-                            ),
-                          ),
-
-                          const SizedBox(height: 14),
-
-                          Container(
-                            padding:
-                                const EdgeInsets
-                                    .symmetric(
-                              horizontal: 18,
-                              vertical: 12,
-                            ),
-
-                            decoration: BoxDecoration(
-                              color: const Color(
-                                0xFFF5F6FA,
-                              ),
-
-                              borderRadius:
-                                  BorderRadius
-                                      .circular(20),
-                            ),
-
-                            child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment
-                                      .spaceBetween,
-
-                              children: [
-
-                                IconButton(
-                                  onPressed: () {
-                                    if (quantite >
-                                        1) {
-                                      setState(() {
-                                        quantite--;
-                                      });
-                                    }
-                                  },
-
-                                  icon: Container(
-                                    padding:
-                                        const EdgeInsets
-                                            .all(6),
-
-                                    decoration:
-                                        BoxDecoration(
-                                      color:
-                                          Colors.white,
-
-                                      borderRadius:
-                                          BorderRadius
-                                              .circular(
-                                        12,
-                                      ),
-                                    ),
-
-                                    child:
-                                        const Icon(
-                                      Icons.remove,
-                                    ),
+                                  borderRadius:
+                                      BorderRadius.circular(
+                                    30,
                                   ),
                                 ),
 
-                                Text(
-                                  "$quantite ${l10n.bags}",
+                                child: Text(
+                                  "${distance.toStringAsFixed(1)} km",
 
                                   style:
                                       const TextStyle(
-                                    fontSize: 18,
+                                    color:
+                                        Color(0xFFC1121F),
 
                                     fontWeight:
-                                        FontWeight
-                                            .w900,
+                                        FontWeight.w700,
+
+                                    fontSize: 12,
                                   ),
                                 ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          );
+        },
+      ),
 
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      quantite++;
-                                    });
-                                  },
+         const SizedBox(height: 28),
+                    /// ==================================
+                    /// QUANTITE
+                    /// ==================================
+                    Text(
+                      l10n.requestedQuantity,
 
-                                  icon: Container(
-                                    padding:
-                                        const EdgeInsets
-                                            .all(6),
+                      style: const TextStyle(
+                        fontWeight:
+                            FontWeight.w800,
+                        fontSize: 16,
+                      ),
+                    ),
 
-                                    decoration:
-                                        BoxDecoration(
-                                      color:
-                                          const Color(
-                                        0xFFC1121F,
-                                      ),
+                    const SizedBox(height: 14),
 
-                                      borderRadius:
-                                          BorderRadius
-                                              .circular(
-                                        12,
-                                      ),
-                                    ),
+                    Container(
+                      padding:
+                          const EdgeInsets
+                              .symmetric(
+                        horizontal: 18,
+                        vertical: 12,
+                      ),
 
-                                    child:
-                                        const Icon(
-                                      Icons.add,
-                                      color:
-                                          Colors.white,
-                                    ),
-                                  ),
+                      decoration: BoxDecoration(
+                        color: const Color(
+                          0xFFF5F6FA,
+                        ),
+
+                        borderRadius:
+                            BorderRadius
+                                .circular(20),
+                      ),
+
+                      child: Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment
+                                .spaceBetween,
+
+                        children: [
+
+                          /// MINUS
+                          IconButton(
+                            onPressed: () {
+
+                              if (quantite > 1) {
+                                setState(() {
+                                  quantite--;
+                                });
+                              }
+                            },
+
+                            icon: Container(
+                              padding:
+                                  const EdgeInsets
+                                      .all(6),
+
+                              decoration:
+                                  BoxDecoration(
+                                color:
+                                    Colors.white,
+
+                                borderRadius:
+                                    BorderRadius
+                                        .circular(
+                                  12,
                                 ),
-                              ],
+                              ),
+
+                              child:
+                                  const Icon(
+                                Icons.remove,
+                              ),
+                            ),
+                          ),
+
+                          /// VALUE
+                          Text(
+                            "$quantite ${l10n.bags}",
+
+                            style:
+                                const TextStyle(
+                              fontSize: 18,
+
+                              fontWeight:
+                                  FontWeight
+                                      .w900,
+                            ),
+                          ),
+
+                          /// PLUS
+                          IconButton(
+                            onPressed: () {
+                              setState(() {
+                                quantite++;
+                              });
+                            },
+
+                            icon: Container(
+                              padding:
+                                  const EdgeInsets
+                                      .all(6),
+
+                              decoration:
+                                  BoxDecoration(
+                                color:
+                                    const Color(
+                                  0xFFC1121F,
+                                ),
+
+                                borderRadius:
+                                    BorderRadius
+                                        .circular(
+                                  12,
+                                ),
+                              ),
+
+                              child:
+                                  const Icon(
+                                Icons.add,
+                                color:
+                                    Colors.white,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-
-                    const SizedBox(height: 34),
-
-                    /// BUTTON
-                    SizedBox(
-                      width: double.infinity,
-
-                      height: 58,
-
-                      child: ElevatedButton(
-                        onPressed:
-                            isLoading
-                                ? null
-                                : envoyerDemande,
-
-                        style:
-                            ElevatedButton.styleFrom(
-                          elevation: 0,
-
-                          backgroundColor:
-                              const Color(
-                            0xFFC1121F,
-                          ),
-
-                          shape:
-                              RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius
-                                    .circular(22),
-                          ),
-                        ),
-
-                        child:
-                            isLoading
-                                ? const SizedBox(
-                                    height: 24,
-                                    width: 24,
-
-                                    child:
-                                        CircularProgressIndicator(
-                                      color:
-                                          Colors.white,
-                                    ),
-                                  )
-                                : Text(
-                                    l10n.sendNow,
-
-                                    style:
-                                        const TextStyle(
-                                      fontSize: 16,
-
-                                      fontWeight:
-                                          FontWeight
-                                              .w800,
-                                    ),
-                                  ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 40),
                   ],
                 ),
               ),
-            );
-          },
+
+              const SizedBox(height: 34),
+
+              /// ======================================
+              /// BUTTON
+              /// ======================================
+              SizedBox(
+                width: double.infinity,
+
+                height: 58,
+
+                child: ElevatedButton(
+                  onPressed:
+                      isLoading
+                          ? null
+                          : envoyerDemande,
+
+                  style:
+                      ElevatedButton.styleFrom(
+                    elevation: 0,
+
+                    backgroundColor:
+                        const Color(
+                      0xFFC1121F,
+                    ),
+
+                    shape:
+                        RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius
+                              .circular(22),
+                    ),
+                  ),
+
+                  child:
+                      isLoading
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+
+                              child:
+                                  CircularProgressIndicator(
+                                color:
+                                    Colors.white,
+                              ),
+                            )
+                          : Text(
+                              l10n.sendNow,
+
+                              style:
+                                  const TextStyle(
+                                fontSize: 16,
+
+                                fontWeight:
+                                    FontWeight
+                                        .w800,
+                              ),
+                            ),
+                ),
+              ),
+
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );
   }
 }
+

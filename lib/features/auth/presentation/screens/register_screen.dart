@@ -56,6 +56,40 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     'AB-',
   ];
 
+  /// ==========================================
+/// VILLES + QUARTIERS
+/// ==========================================
+
+final Map<String, List<String>> mauritaniaLocations = {
+  "Nouakchott": [
+    "Tevragh Zeina",
+    "Ksar",
+    "Sebkha",
+    "El Mina",
+    "Arafat",
+    "Riyadh",
+    "Dar Naim",
+    "Toujounine",
+    "Teyarett",
+  ],
+  "Nouadhibou": ["Cansado", "Numerowat", "Baghdad"],
+  "Rosso": ["Escale", "Satara", "Medina"],
+  "Kaedi": ["Moderne", "Touldé", "Gurel"],
+  "Kiffa": ["Bellewar", "Siyassa", "Moughataa"],
+  "Selibaby": ["Collège", "Silo", "Quartier Administratif", "Medina"],
+  "Atar": ["Atar Centre", "Tiyaret", "Extention"],
+  "Zouerate": ["Ksar", "Robinet", "Centre"],
+  "Aioun": ["Centre", "Medina"],
+  "Nema": ["Centre", "Jedida"],
+  "Aleg": ["Centre", "Jedida"],
+  "Akjoujt": ["Centre", "Ancien Quartier"],
+  "Tidjikja": ["Centre", "Moughataa"],
+  "Boghé": ["Centre", "Wendou"],
+  "Boutilimit": ["Centre", "Ancien Quartier"],
+};
+
+String? _selectedVille;
+
   @override
   void dispose() {
     _nomController.dispose();
@@ -854,17 +888,72 @@ if (_dateNaissanceController
             ),
           ),
           const SizedBox(height: 16),
-          CustomTextField(
-            controller: _villeController,
-            hintText: l10n.city,
-            labelText: l10n.city,
-          ),
-          const SizedBox(height: 16),
-          CustomTextField(
-            controller: _quartierController,
-            hintText: l10n.district,
-            labelText: l10n.district,
-          ),
+          DropdownButtonFormField<String>(
+  value: _selectedVille,
+
+  decoration: InputDecoration(
+    labelText: l10n.city,
+    hintText: l10n.city,
+    filled: true,
+    fillColor: Colors.white,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(18),
+    ),
+  ),
+
+  items: mauritaniaLocations.keys.map((ville) {
+    return DropdownMenuItem(
+      value: ville,
+      child: Text(ville),
+    );
+  }).toList(),
+
+  onChanged: (value) {
+    setState(() {
+      _selectedVille = value;
+      _villeController.text = value ?? "";
+
+      /// reset quartier
+      _quartierController.clear();
+    });
+  },
+),
+
+const SizedBox(height: 16),
+
+DropdownButtonFormField<String>(
+  value: _quartierController.text.isEmpty
+      ? null
+      : _quartierController.text,
+
+  decoration: InputDecoration(
+    labelText: l10n.district,
+    hintText: l10n.district,
+    filled: true,
+    fillColor: Colors.white,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(18),
+    ),
+  ),
+
+  items: (_selectedVille != null
+          ? mauritaniaLocations[_selectedVille]!
+          : <String>[])
+      .map((quartier) {
+    return DropdownMenuItem(
+      value: quartier,
+      child: Text(quartier),
+    );
+  }).toList(),
+
+  onChanged: _selectedVille == null
+      ? null
+      : (value) {
+          setState(() {
+            _quartierController.text = value ?? "";
+          });
+        },
+),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
