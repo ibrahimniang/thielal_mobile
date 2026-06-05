@@ -9,7 +9,10 @@ import '../../l10n/app_localizations.dart';
 class MainNavigation extends StatelessWidget {
   final Widget child;
 
-  const MainNavigation({super.key, required this.child});
+  const MainNavigation({
+    super.key,
+    required this.child,
+  });
 
   int _index(String location) {
     if (location.startsWith(RouteNames.home)) {
@@ -20,7 +23,7 @@ class MainNavigation extends StatelessWidget {
       return 1;
     }
 
-    if (location.startsWith(RouteNames.donations)) {
+    if (location.startsWith(RouteNames.demandeSang)) {
       return 2;
     }
 
@@ -38,251 +41,431 @@ class MainNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final location = GoRouterState.of(context).uri.toString();
 
-    final currentIndex = _index(location);
+    final location =
+        GoRouterState.of(context).uri.toString();
 
-    final items = [
-      {'icon': Icons.home_rounded, 'label': l10n.home},
-
-      {'icon': Icons.location_on_rounded, 'label': l10n.centers},
-
-      {'icon': Icons.bloodtype_rounded, 'label': l10n.request},
-
-      {'icon': Icons.settings_rounded, 'label': l10n.settings},
-
-      {'icon': Icons.notifications_rounded, 'label': l10n.notifications},
-    ];
+    final currentIndex =
+        _index(location);
 
     return Scaffold(
       extendBody: true,
 
-      body: child,
+      /// ==========================================
+      /// BODY
+      /// ==========================================
+      body: SafeArea(
+        bottom: false,
+        child: child,
+      ),
 
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      /// ==========================================
+      /// NAVIGATION
+      /// ==========================================
+      bottomNavigationBar: SafeArea(
+        top: false,
 
-        child: SizedBox(
-          height: 95,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            14,
+            0,
+            14,
+            10,
+          ),
 
-          child: Stack(
-            clipBehavior: Clip.none,
+          child: SizedBox(
+            height: 82,
 
-            alignment: Alignment.bottomCenter,
+            child: Stack(
+              alignment:
+                  Alignment.bottomCenter,
 
-            children: [
-              /// ==========================================
-              /// NAVBAR BACKGROUND
-              /// ==========================================
-              Positioned(
-                bottom: 0,
+              clipBehavior: Clip.none,
 
-                left: 0,
-                right: 0,
+              children: [
+                /// ==========================================
+                /// BACKGROUND NAVBAR
+                /// ==========================================
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
 
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(32),
+                  child: ClipRRect(
+                    borderRadius:
+                        BorderRadius.circular(
+                      28,
+                    ),
 
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(
+                        sigmaX: 20,
+                        sigmaY: 20,
+                      ),
 
-                    child: Container(
-                      height: 78,
+                      child: Container(
+                        height: 66,
 
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.92),
-
-                        borderRadius: BorderRadius.circular(32),
-
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.4),
+                        padding:
+                            const EdgeInsets.symmetric(
+                          horizontal: 10,
                         ),
 
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
-
-                            blurRadius: 24,
-
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-
-                      child: Row(
-                        children: List.generate(items.length, (index) {
-                          final item = items[index];
-
-                          final isSelected = currentIndex == index;
-
-                          final isCenter = index == 2;
-
-                          /// ==========================================
-                          /// CENTER BUTTON
-                          /// ==========================================
-
-                          if (isCenter) {
-                            return Expanded(child: const SizedBox());
-                          }
-
-                          return Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                switch (index) {
-                                  case 0:
-                                    context.go(RouteNames.home);
-                                    break;
-
-                                  case 1:
-                                    context.go(RouteNames.map);
-                                    break;
-
-                                  case 3:
-                                    context.go(RouteNames.settings);
-                                    break;
-
-                                  case 4:
-                                    context.go(RouteNames.notifications);
-                                    break;
-                                }
-                              },
-
-                              behavior: HitTestBehavior.opaque,
-
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-
-                                children: [
-                                  AnimatedContainer(
-                                    duration: const Duration(milliseconds: 250),
-
-                                    height: 44,
-                                    width: 44,
-
-                                    decoration: BoxDecoration(
-                                      gradient:
-                                          isSelected
-                                              ? const LinearGradient(
-                                                colors: [
-                                                  Color(0xFFE53946),
-                                                  Color(0xFFC1121F),
-                                                ],
-                                              )
-                                              : null,
-
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-
-                                    child: Icon(
-                                      item['icon'] as IconData,
-
-                                      color:
-                                          isSelected
-                                              ? Colors.white
-                                              : Colors.grey.shade500,
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 4),
-
-                                  Text(
-                                    item['label'] as String,
-
-                                    style: TextStyle(
-                                      color:
-                                          isSelected
-                                              ? const Color(0xFFE53946)
-                                              : Colors.grey.shade500,
-
-                                      fontSize: 11,
-
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              /// ==========================================
-              /// CENTER FLOATING BUTTON
-              /// ==========================================
-              Positioned(
-                top: -8,
-
-                child: GestureDetector(
-                  onTap: () {
-                    /// 🔥 ROUTE DEMANDE SANG
-                    context.go(RouteNames.demandeSang);
-                  },
-
-                  child: Column(
-                    children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-
-                        height: 76,
-                        width: 76,
-
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            begin: Alignment.topLeft,
-
-                            end: Alignment.bottomRight,
-
-                            colors: [Color(0xFFE53946), Color(0xFFC1121F)],
+                          color:
+                              Colors.white.withOpacity(
+                            0.92,
                           ),
 
-                          shape: BoxShape.circle,
+                          borderRadius:
+                              BorderRadius.circular(
+                            28,
+                          ),
 
-                          border: Border.all(color: Colors.white, width: 6),
+                          border: Border.all(
+                            color:
+                                Colors.white.withOpacity(
+                              0.45,
+                            ),
+                          ),
 
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFE53946).withOpacity(0.40),
+                              color:
+                                  Colors.black.withOpacity(
+                                0.08,
+                              ),
 
                               blurRadius: 24,
 
-                              offset: const Offset(0, 10),
+                              offset:
+                                  const Offset(
+                                0,
+                                10,
+                              ),
                             ),
                           ],
                         ),
 
-                        child: const Icon(
-                          Icons.bloodtype_rounded,
+                        child: Row(
+                          children: [
+                            /// ==========================================
+                            /// HOME
+                            /// ==========================================
+                            Expanded(
+                              child: _NavItem(
+                                icon:
+                                    Icons.home_rounded,
 
-                          color: Colors.white,
+                                label:
+                                    l10n.home,
 
-                          size: 34,
+                                selected:
+                                    currentIndex ==
+                                        0,
+
+                                onTap: () {
+                                  context.go(
+                                    RouteNames.home,
+                                  );
+                                },
+                              ),
+                            ),
+
+                            /// ==========================================
+                            /// MAP
+                            /// ==========================================
+                            Expanded(
+                              child: _NavItem(
+                                icon: Icons
+                                    .location_on_rounded,
+
+                                label:
+                                    l10n.centers,
+
+                                selected:
+                                    currentIndex ==
+                                        1,
+
+                                onTap: () {
+                                  context.go(
+                                    RouteNames.map,
+                                  );
+                                },
+                              ),
+                            ),
+
+                            /// CENTER SPACE
+                            const SizedBox(
+                              width: 74,
+                            ),
+
+                            /// ==========================================
+                            /// SETTINGS
+                            /// ==========================================
+                            Expanded(
+                              child: _NavItem(
+                                icon: Icons
+                                    .settings_rounded,
+
+                                label:
+                                    l10n.settings,
+
+                                selected:
+                                    currentIndex ==
+                                        3,
+
+                                onTap: () {
+                                  context.go(
+                                    RouteNames
+                                        .settings,
+                                  );
+                                },
+                              ),
+                            ),
+
+                            /// ==========================================
+                            /// NOTIFICATIONS
+                            /// ==========================================
+                            Expanded(
+                              child: _NavItem(
+                                icon: Icons
+                                    .notifications_rounded,
+
+                                label: l10n
+                                    .notifications,
+
+                                selected:
+                                    currentIndex ==
+                                        4,
+
+                                onTap: () {
+                                  context.go(
+                                    RouteNames
+                                        .notifications,
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-
-                      const SizedBox(height: 4),
-
-                      Text(
-                        l10n.request,
-
-                        style: TextStyle(
-                          color: Color(0xFFE53946),
-
-                          fontWeight: FontWeight.w800,
-
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+
+                /// ==========================================
+                /// CENTER FLOATING BUTTON
+                /// ==========================================
+                Positioned(
+                  top: -6,
+
+                  child: GestureDetector(
+                    onTap: () {
+                      context.go(
+                        RouteNames.demandeSang,
+                      );
+                    },
+
+                    child: Column(
+                      children: [
+                        AnimatedContainer(
+                          duration:
+                              const Duration(
+                            milliseconds: 250,
+                          ),
+
+                          height: 68,
+                          width: 68,
+
+                          decoration: BoxDecoration(
+                            gradient:
+                                const LinearGradient(
+                              begin:
+                                  Alignment.topLeft,
+
+                              end: Alignment
+                                  .bottomRight,
+
+                              colors: [
+                                Color(
+                                  0xFFE53946,
+                                ),
+
+                                Color(
+                                  0xFFC1121F,
+                                ),
+                              ],
+                            ),
+
+                            shape: BoxShape.circle,
+
+                            border: Border.all(
+                              color:
+                                  Colors.white,
+
+                              width: 5,
+                            ),
+
+                            boxShadow: [
+                              BoxShadow(
+                                color:
+                                    const Color(
+                                  0xFFE53946,
+                                ).withOpacity(
+                                  0.32,
+                                ),
+
+                                blurRadius: 20,
+
+                                offset:
+                                    const Offset(
+                                  0,
+                                  8,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          child: Icon(
+                            Icons
+                                .bloodtype_rounded,
+
+                            color:
+                                Colors.white,
+
+                            size: currentIndex ==
+                                    2
+                                ? 34
+                                : 30,
+                          ),
+                        ),
+
+                        const SizedBox(
+                          height: 2,
+                        ),
+
+                        Text(
+                          l10n.request,
+
+                          style: TextStyle(
+                            color:
+                                currentIndex ==
+                                        2
+                                    ? const Color(
+                                      0xFFE53946,
+                                    )
+                                    : Colors
+                                        .grey
+                                        .shade500,
+
+                            fontWeight:
+                                FontWeight.w800,
+
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// ==========================================
+/// NAV ITEM
+/// ==========================================
+class _NavItem extends StatelessWidget {
+  final IconData icon;
+
+  final String label;
+
+  final bool selected;
+
+  final VoidCallback onTap;
+
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+
+      behavior: HitTestBehavior.opaque,
+
+      child: Column(
+        mainAxisAlignment:
+            MainAxisAlignment.center,
+
+        children: [
+          AnimatedContainer(
+            duration:
+                const Duration(
+              milliseconds: 220,
+            ),
+
+            height: 36,
+            width: 36,
+
+            decoration: BoxDecoration(
+              color: selected
+                  ? const Color(
+                    0xFFE53946,
+                  ).withOpacity(0.12)
+                  : Colors.transparent,
+
+              borderRadius:
+                  BorderRadius.circular(
+                12,
+              ),
+            ),
+
+            child: Icon(
+              icon,
+
+              color: selected
+                  ? const Color(
+                    0xFFE53946,
+                  )
+                  : Colors.grey.shade500,
+
+              size: 22,
+            ),
+          ),
+
+          const SizedBox(height: 3),
+
+          Text(
+            label,
+
+            overflow:
+                TextOverflow.ellipsis,
+
+            style: TextStyle(
+              color: selected
+                  ? const Color(
+                    0xFFE53946,
+                  )
+                  : Colors.grey.shade500,
+
+              fontSize: 10,
+
+              fontWeight:
+                  FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -263,8 +263,10 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
                 ),
                 const SizedBox(height: 10),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                Wrap(
+                  alignment: WrapAlignment.center,
+
+                  crossAxisAlignment: WrapCrossAlignment.center,
 
                   children: [
                     Text(

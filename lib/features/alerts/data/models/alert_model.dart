@@ -34,58 +34,36 @@ class AlertModel {
     this.center,
   });
 
-  factory AlertModel.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AlertModel.fromJson(Map<String, dynamic> json) {
     return AlertModel(
       /// 🔥 backend demandes
-      id:
-          json['id_demande'] ??
-          json['id_alerte'] ??
-          0,
+      id: json['id_demande'] ?? json['id_alerte'] ?? 0,
 
       /// 🔥 fallback
-      title:
-          json['titre'] ??
-          'Urgence sanguine',
+      title: json['titre'] ?? 'Urgence sanguine',
 
-      message:
-          json['message'] ??
-          '',
+      message: json['message'] ?? '',
 
       /// 🔥 défaut urgent
-      type:
-          json['type'] ??
-          'urgent',
+      type: json['type'] ?? 'urgent',
 
-      bloodGroup:
-          json['groupe_sanguin'] ??
-          '',
+      bloodGroup: json['groupe_sanguin'] ?? '',
 
-      city:
-          json['ville'] ??
-          '',
+      city: json['ville'] ?? '',
 
       /// 🔥 quantité
-      quantity:
-          json['quantite'] ??
-          1,
+      quantity: json['quantite'] ?? 1,
 
       /// 🔥 statut
-      status:
-          json['statut'] ??
-          'en attente',
+      status: json['statut'] ?? 'en attente',
 
       createdAt:
-          DateTime.parse(
-            json['date_creation'],
-          ),
+          DateTime.tryParse(json['date_creation'] ?? json['createdAt'] ?? '') ??
+          DateTime.now(),
 
       center:
           json['centre'] != null
-              ? AlertCenterModel.fromJson(
-                  json['centre'],
-                )
+              ? AlertCenterModel.fromJson(json['centre'])
               : null,
     );
   }
@@ -116,41 +94,21 @@ class AlertCenterModel {
     required this.phone,
   });
 
-  factory AlertCenterModel.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory AlertCenterModel.fromJson(Map<String, dynamic> json) {
     return AlertCenterModel(
-      id:
-          json['id_centre'] ??
-          0,
+      id: json['id_centre'] ?? 0,
 
-      name:
-          json['nom'] ??
-          '',
+      name: json['nom'] ?? '',
 
-      city:
-          json['ville'] ??
-          '',
+      city: json['ville'] ?? '',
 
-      address:
-          json['adresse'] ??
-          '',
+      address: json['adresse'] ?? '',
 
-      latitude:
-          (json['latitude']
-                  as num?)
-              ?.toDouble() ??
-          0.0,
+      latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
 
-      longitude:
-          (json['longitude']
-                  as num?)
-              ?.toDouble() ??
-          0.0,
+      longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
 
-      phone:
-          json['telephone'] ??
-          '',
+      phone: json['telephone'] ?? '',
     );
   }
 }

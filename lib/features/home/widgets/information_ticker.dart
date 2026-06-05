@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-class InformationTicker
-    extends StatefulWidget {
-
+class InformationTicker extends StatefulWidget {
   final String text;
 
   const InformationTicker({
@@ -11,49 +9,30 @@ class InformationTicker
   });
 
   @override
-  State<InformationTicker>
-      createState() =>
-          _InformationTickerState();
+  State<InformationTicker> createState() =>
+      _InformationTickerState();
 }
 
 class _InformationTickerState
     extends State<InformationTicker>
     with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
 
-  late final AnimationController
-      _controller;
+  double _textWidth = 0;
 
-  late final Animation<double>
-      _animation;
+  double _screenWidth = 0;
 
   @override
   void initState() {
     super.initState();
 
-    /// 🔥 animation fluide
-    _controller =
-        AnimationController(
-          vsync: this,
+    _controller = AnimationController(
+      vsync: this,
 
-          duration:
-              const Duration(
-                seconds: 10,
-              ),
-        )..repeat();
-
-    _animation =
-        Tween<double>(
-          begin: 1,
-          end: -1.4,
-        ).animate(
-          CurvedAnimation(
-            parent:
-                _controller,
-
-            curve:
-                Curves.linear,
-          ),
-        );
+      duration: const Duration(
+        seconds: 30,
+      ),
+    )..repeat();
   }
 
   @override
@@ -63,149 +42,172 @@ class _InformationTickerState
     super.dispose();
   }
 
-  @override
-  Widget build(
-      BuildContext context,
-      ) {
+  void _calculateTextWidth(
+    BuildContext context,
+  ) {
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: widget.text,
 
-    final screenWidth =
-        MediaQuery.of(
-          context,
-        ).size.width;
+        style: const TextStyle(
+          fontSize: 14,
+
+          fontWeight: FontWeight.w600,
+
+          letterSpacing: 0.2,
+        ),
+      ),
+
+      maxLines: 1,
+
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    _textWidth = textPainter.width;
+
+    _screenWidth =
+        MediaQuery.of(context).size.width;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _calculateTextWidth(context);
 
     return Container(
-      height: 62,
+      height: 56,
 
-      margin:
-          const EdgeInsets.symmetric(
-            horizontal: 20,
-          ),
+      width: double.infinity,
+
+      margin: const EdgeInsets.symmetric(
+        horizontal: 16,
+      ),
 
       decoration: BoxDecoration(
-        gradient:
-            const LinearGradient(
-              begin:
-                  Alignment.topLeft,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
 
-              end:
-                  Alignment.bottomRight,
+          end: Alignment.bottomRight,
 
-              colors: [
-                Color(
-                  0xFF162B69,
-                ),
-
-                Color(
-                  0xFF162B69,
-                ),
-              ],
-            ),
+          colors: [
+            Color(0xFFE53946),
+            Color(0xFFC1121F),
+          ],
+        ),
 
         borderRadius:
-            BorderRadius.circular(
-              30,
-            ),
+            BorderRadius.circular(22),
 
         boxShadow: [
           BoxShadow(
-            color:
-                Colors.black
-                    .withOpacity(
-                      0.12,
-                    ),
+            color: const Color(
+              0xFFE53946,
+            ).withOpacity(0.25),
 
-            blurRadius: 18,
+            blurRadius: 20,
 
-            offset:
-                const Offset(
-                  0,
-                  10,
-                ),
+            offset: const Offset(0, 8),
           ),
         ],
       ),
 
       child: ClipRRect(
         borderRadius:
-            BorderRadius.circular(
-              30,
-            ),
+            BorderRadius.circular(22),
 
         child: Row(
           children: [
-
             /// =====================================
-            /// ICON HEART
+            /// LIVE ICON
             /// =====================================
+            Container(
+              width: 54,
 
-            const Padding(
-              padding:
-                  EdgeInsets.only(
-                    left: 18,
-                    right: 14,
-                  ),
+              height: double.infinity,
 
-              child: Text(
-                '',
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(
+                  0.10,
+                ),
+              ),
 
-                style: TextStyle(
-                  fontSize: 24,
+              child: const Center(
+                child: Icon(
+                  Icons.graphic_eq_rounded,
+
+                  color: Colors.white,
+
+                  size: 24,
                 ),
               ),
             ),
 
             /// =====================================
-            /// TEXT ANIMATION
+            /// TEXT TICKER
             /// =====================================
-
             Expanded(
-              child:
-                  AnimatedBuilder(
-                    animation:
-                        _animation,
+              child: ClipRect(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(
+                    horizontal: 16,
+                  ),
+
+                  child: AnimatedBuilder(
+                    animation: _controller,
 
                     builder:
-                        (
-                          context,
-                          child,
-                        ) {
+                        (context, child) {
+                      /// distance totale
+                      final totalDistance =
+                          _textWidth +
+                              _screenWidth;
+
+                      /// animation fluide
+                      final animationValue =
+                          totalDistance *
+                              _controller.value;
 
                       return Transform.translate(
                         offset: Offset(
-                          _animation.value *
-                              screenWidth,
+                          _screenWidth -
+                              animationValue,
 
                           0,
                         ),
 
-                        child:
-                            child,
+                        child: child,
                       );
                     },
 
-                    child: Text(
-                      widget.text,
+                    child: Align(
+                      alignment:
+                          Alignment.centerLeft,
 
-                      maxLines: 1,
+                      child: Text(
+                        widget.text,
 
-                      overflow:
-                          TextOverflow
-                              .visible,
+                        maxLines: 1,
 
-                      style:
-                          const TextStyle(
-                            color:
-                                Colors.white,
+                        softWrap: false,
 
-                            fontSize:
-                                16,
+                        overflow:
+                            TextOverflow.visible,
 
-                            fontWeight:
-                                FontWeight
-                                    .w500,
-                          ),
+                        style: const TextStyle(
+                          color: Colors.white,
+
+                          fontSize: 14,
+
+                          fontWeight:
+                              FontWeight.w600,
+
+                          letterSpacing: 0.2,
+                        ),
+                      ),
                     ),
                   ),
+                ),
+              ),
             ),
           ],
         ),

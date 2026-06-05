@@ -103,7 +103,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 /// =====================================================
                 SliverAppBar(
                   stretch: true,
-                  
+
                   expandedHeight: 360,
 
                   pinned: true,
@@ -260,6 +260,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           const SizedBox(height: 20),
 
           /// BADGES
+          /// BADGES
           GridView.count(
             crossAxisCount: 2,
 
@@ -268,9 +269,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             physics: const NeverScrollableScrollPhysics(),
 
             crossAxisSpacing: 16,
+
             mainAxisSpacing: 16,
 
-            childAspectRatio: 1.18,
+            /// IMPORTANT
+            childAspectRatio: 0.92,
 
             children: [
               BadgeLevelCard(
@@ -322,6 +325,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               ),
             ],
           ),
+
+          const SizedBox(height: 20),
 
           const SizedBox(height: 20),
         ],

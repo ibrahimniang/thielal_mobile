@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-
-// import '../../../../app/theme/app_radius.dart';
-import '../../../../app/theme/app_spacing.dart';
 import '../../../../l10n/app_localizations.dart';
 
 class BadgeLevelCard extends StatelessWidget {
@@ -27,48 +24,51 @@ class BadgeLevelCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
 
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
 
       decoration: BoxDecoration(
-        color: unlocked ? color.withOpacity(0.10) : Colors.white,
+        color: Colors.white,
 
         borderRadius: BorderRadius.circular(24),
 
         border: Border.all(
           color:
               unlocked
-                  ? color.withOpacity(0.25)
-                  : Colors.grey.withOpacity(0.10),
+                  ? color.withOpacity(0.20)
+                  : Colors.grey.withOpacity(0.08),
         ),
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(0.03),
 
-            blurRadius: 12,
+            blurRadius: 10,
 
-            offset: const Offset(0, 6),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
 
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+
         children: [
           /// ICON
           Container(
-            height: 56,
-            width: 56,
+            height: 52,
+            width: 52,
 
             decoration: BoxDecoration(
+              shape: BoxShape.circle,
+
               color:
                   unlocked
-                      ? color.withOpacity(0.15)
+                      ? color.withOpacity(0.12)
                       : Colors.grey.withOpacity(0.08),
-
-              borderRadius: BorderRadius.circular(18),
             ),
 
             child: Icon(
@@ -76,44 +76,63 @@ class BadgeLevelCard extends StatelessWidget {
 
               color: unlocked ? color : Colors.grey,
 
-              size: 26,
+              size: 24,
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
           /// TITLE
           Text(
             title,
+
+            maxLines: 1,
+
+            overflow: TextOverflow.ellipsis,
+
             textAlign: TextAlign.center,
+
             style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
-              color: unlocked ? Colors.black : Colors.grey,
+              fontSize: 15,
+
+              fontWeight: FontWeight.w800,
+
+              color: unlocked ? Colors.black : Colors.grey[700],
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 6),
 
-          /// DESC
+          /// DESCRIPTION
           Text(
             description,
+
+            maxLines: 2,
+
+            overflow: TextOverflow.ellipsis,
+
             textAlign: TextAlign.center,
+
             style: TextStyle(
+              fontSize: 12,
+
+              height: 1.3,
+
               color: unlocked ? Colors.grey[700] : Colors.grey,
-              fontWeight: FontWeight.w500,
-              height: 1.4,
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
           /// STATUS
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
 
             decoration: BoxDecoration(
-              color: unlocked ? color : Colors.grey.withOpacity(0.14),
+              color:
+                  unlocked
+                      ? color.withOpacity(0.12)
+                      : Colors.grey.withOpacity(0.10),
 
               borderRadius: BorderRadius.circular(30),
             ),
@@ -122,9 +141,11 @@ class BadgeLevelCard extends StatelessWidget {
               unlocked ? l10n.unlocked : l10n.locked,
 
               style: TextStyle(
-                color: unlocked ? Colors.white : Colors.grey[700],
+                fontSize: 10,
 
-                fontWeight: FontWeight.w700,fontSize: 11,
+                fontWeight: FontWeight.w700,
+
+                color: unlocked ? color : Colors.grey[700],
               ),
             ),
           ),

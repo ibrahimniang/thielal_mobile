@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-
 import '../../../app/router/route_names.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
@@ -44,26 +43,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int unreadCount = 0;
   bool passwordModalShown = false;
 
-@override
-void initState() {
-  super.initState();
-  loadUnreadCount();
-}
-
-Future<void> loadUnreadCount() async {
-  try {
-    setState(() {
-      unreadCount = 0;
-    });
-
-    debugPrint('💬 unreadCount => $unreadCount');
-  } catch (e) {
-    debugPrint('❌ loadUnreadCount error => $e');
+  @override
+  void initState() {
+    super.initState();
+    loadUnreadCount();
   }
-}
+
+  Future<void> loadUnreadCount() async {
+    try {
+      setState(() {
+        unreadCount = 0;
+      });
+
+      debugPrint('💬 unreadCount => $unreadCount');
+    } catch (e) {
+      debugPrint('❌ loadUnreadCount error => $e');
+    }
+  }
 
   String selectedGroup = 'Tous';
-
 
   final List<String> bloodFilters = ['Tous', 'O+', 'O-', 'A+', 'B+', 'AB+'];
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -71,63 +69,51 @@ Future<void> loadUnreadCount() async {
   final searchController = TextEditingController();
   String searchQuery = '';
 
-  
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authControllerProvider);
 
     final user = authState.currentUser;
-  /// ======================================
-/// PASSWORD REQUIRED MODAL
-/// ======================================
 
-WidgetsBinding.instance.addPostFrameCallback((_) {
-  if (!mounted) return;
+    /// ======================================
+    /// PASSWORD REQUIRED MODAL
+    /// ======================================
 
-  /// déjà affiché
-  if (passwordModalShown) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
 
-  final pendingUserId =
-      authState.pendingUserId;
+      /// déjà affiché
+      if (passwordModalShown) return;
 
-  /// pas onboarding
-  if (pendingUserId == null) return;
+      final pendingUserId = authState.pendingUserId;
 
-  passwordModalShown = true;
+      /// pas onboarding
+      if (pendingUserId == null) return;
 
-  showDialog(
-    context: context,
+      passwordModalShown = true;
 
-    barrierDismissible: false,
+      showDialog(
+        context: context,
 
-    builder: (_) {
-      return SetPasswordModal(
-        onSuccess: () async {
-          /// CLEAR PENDING
-          ref
-              .read(
-                authControllerProvider
-                    .notifier,
-              )
-              .clearPendingUser();
+        barrierDismissible: false,
 
-          if (!mounted) return;
+        builder: (_) {
+          return SetPasswordModal(
+            onSuccess: () async {
+              /// CLEAR PENDING
+              ref.read(authControllerProvider.notifier).clearPendingUser();
 
-          ScaffoldMessenger.of(context)
-              .showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Compte sécurisé avec succès 🔐',
-              ),
-            ),
+              if (!mounted) return;
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Compte sécurisé avec succès 🔐')),
+              );
+            },
           );
         },
       );
-    },
-  );
-});
+    });
 
     final alertsAsync = ref.watch(alertsProvider);
 
@@ -290,14 +276,13 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
                         Scaffold.of(context).openDrawer();
                       },
 
-                      
                       onChatTap: () async {
-                          await context.push('/conversations');
+                        await context.push('/conversations');
 
-                          if (mounted) {
-                            loadUnreadCount();
-                          }
-                        },
+                        if (mounted) {
+                          loadUnreadCount();
+                        }
+                      },
 
                       /// 🔥 PROFILE
                       onProfileTap: () {
@@ -434,7 +419,7 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
 
                         const SizedBox(width: 18),
 
-                         Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
 
@@ -524,7 +509,7 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                           children: [
-                             Text(
+                            Text(
                               l10n.urgentRequests,
 
                               style: TextStyle(
@@ -539,7 +524,7 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
                                 context.push(RouteNames.alerts);
                               },
 
-                              child:  Text(l10n.seeAll),
+                              child: Text(l10n.seeAll),
                             ),
                           ],
                         ),
@@ -704,7 +689,7 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
                     /// ==========================================
 
                     if (filteredAlerts.isEmpty) {
-                      return  Center(
+                      return Center(
                         child: Padding(
                           padding: EdgeInsets.all(20),
 
@@ -968,7 +953,7 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
                         /// REFRESH
                         /// ======================================
 
-                        // ref.refresh(collectesProvider);
+                        ref.invalidate(collectesProvider);
                       } catch (e) {
                         debugPrint('❌ PARTICIPATION ERROR => $e');
 
@@ -1015,49 +1000,88 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
                   return Center(child: Text(e.toString()));
                 },
               ),
+              const SizedBox(height: 24),
 
-              
-              /// =====================================================
-              /// INFORMATIONS
-              /// =====================================================
-              alertsAsync.when(
-                data: (alerts) {
-                  final infoAlerts =
-                      alerts.where((a) {
-                        final type = a.type.trim().toLowerCase();
+            /// =====================================================
+/// INFORMATIONS
+/// =====================================================
 
-                        return type == 'info' || type == 'information';
-                      }).toList();
+alertsAsync.when(
+  data: (alerts) {
+    /// ==========================================
+    /// FILTRE ALERTES INFO
+    /// ==========================================
 
-                  /// AUCUNE INFO
-                  if (infoAlerts.isEmpty) {
-                    return const SizedBox();
-                  }
+    final infoAlerts = alerts.where((a) {
+      final type =
+          a.type.trim().toLowerCase();
 
-                  /// PREMIÈRE INFO
-                  final info = infoAlerts.first;
+      return type == 'info' ||
+          type == 'information';
+    }).toList();
 
-                  debugPrint('📢 INFO ALERT => ${info.message}');
+    /// ==========================================
+    /// AUCUNE INFO
+    /// ==========================================
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+    if (infoAlerts.isEmpty) {
+      return const SizedBox();
+    }
 
-                    child: InformationTicker(text: info.message),
-                  );
-                },
+    /// ==========================================
+    /// CONSTRUCTION TEXTE TICKER
+    /// ==========================================
 
-                loading: () => const SizedBox(),
+    final tickerText = infoAlerts
+        .map(
+          (a) =>
+              '🚨 ${a.message.trim()}',
+        )
+        .join(
+          '     •••     ',
+        );
 
-                error: (_, __) => const SizedBox(),
-              ),
+    debugPrint(
+      '📢 INFO ALERTS => $tickerText',
+    );
 
-              const SizedBox(height: 21),
+    /// ==========================================
+    /// TICKER
+    /// ==========================================
+
+    return Padding(
+      padding:
+          const EdgeInsets.only(
+        top: 8,
+      ),
+
+      child: InformationTicker(
+        text:
+            '$tickerText     •••     ',
+      ),
+    );
+  },
+
+  /// ==========================================
+  /// LOADING
+  /// ==========================================
+
+  loading: () =>
+      const SizedBox(),
+
+  /// ==========================================
+  /// ERROR
+  /// ==========================================
+
+  error: (_, __) =>
+      const SizedBox(),
+),
+
+const SizedBox(height: 24),
             ],
-            
           ),
         ),
       ),
     );
   }
 }
-

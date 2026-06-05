@@ -13,7 +13,7 @@ class NearbyDonorModel {
 
   final double? longitude;
 
-  final String distance;
+  final double distance;
 
   const NearbyDonorModel({
     required this.id,
@@ -42,7 +42,10 @@ class NearbyDonorModel {
 
       longitude: double.tryParse(json['longitude']?.toString() ?? ''),
 
-      distance: json['distance'].toString(),
+      distance:
+    double.tryParse(
+      json['distance'].toString(),
+    ) ?? 0,
     );
   }
 

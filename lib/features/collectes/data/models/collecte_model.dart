@@ -64,9 +64,9 @@ class CollecteModel {
 
       city: json['ville'] ?? '',
 
-      latitude: (json['latitude'] as num).toDouble(),
+      latitude: (json['latitude'] as num?)?.toDouble() ?? 0,
 
-      longitude: (json['longitude'] as num).toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble() ?? 0,
 
       startHour: json['heure_debut'] ?? '',
 

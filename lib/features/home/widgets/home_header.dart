@@ -3,20 +3,16 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../l10n/app_localizations.dart';
 
 class HomeHeader extends StatefulWidget {
   final TextEditingController controller;
 
-  /// 🔥 prénom utilisateur
   final String? firstName;
 
-  /// 🔥 données recherche
   final List<String> suggestions;
 
-  /// 🔥 callback recherche
   final Function(String)? onChanged;
 
   final Function(String)? onSuggestionTap;
@@ -38,20 +34,27 @@ class HomeHeader extends StatefulWidget {
   });
 
   @override
-  State<HomeHeader> createState() => _HomeHeaderState();
+  State<HomeHeader> createState() =>
+      _HomeHeaderState();
 }
 
-class _HomeHeaderState extends State<HomeHeader> {
+class _HomeHeaderState
+    extends State<HomeHeader> {
   bool showSuggestions = false;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    debugPrint('👤 FIRST NAME => ${widget.firstName}');
+    final l10n =
+        AppLocalizations.of(context)!;
 
     final letter =
-        (widget.firstName != null && widget.firstName!.trim().isNotEmpty)
-            ? widget.firstName!.trim()[0].toUpperCase()
+        (widget.firstName != null &&
+                widget.firstName!
+                    .trim()
+                    .isNotEmpty)
+            ? widget.firstName!
+                .trim()[0]
+                .toUpperCase()
             : '?';
 
     return SafeArea(
@@ -60,7 +63,7 @@ class _HomeHeaderState extends State<HomeHeader> {
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.screenPadding,
-          12,
+          8,
           AppSpacing.screenPadding,
           0,
         ),
@@ -70,226 +73,263 @@ class _HomeHeaderState extends State<HomeHeader> {
             /// ==========================================
             /// HEADER
             /// ==========================================
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadius.xl),
+            Row(
+              children: [
+                /// ==========================================
+                /// MENU
+                /// ==========================================
+                _iconButton(
+                  icon: Icons.menu_rounded,
+                  onTap: widget.onMenuTap,
+                ),
 
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                const SizedBox(width: 6),
 
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
+                /// ==========================================
+                /// SEARCH
+                /// ==========================================
+                Expanded(
+                  child: TextField(
+                    controller:
+                        widget.controller,
 
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.90),
+                    maxLines: 1,
 
-                    borderRadius: BorderRadius.circular(AppRadius.xl),
+                    textInputAction:
+                        TextInputAction.search,
 
-                    border: Border.all(color: Colors.white.withOpacity(0.45)),
+                    textAlignVertical:
+                        TextAlignVertical
+                            .center,
 
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                    onChanged: (value) {
+                      setState(() {
+                        showSuggestions =
+                            value
+                                .trim()
+                                .isNotEmpty;
+                      });
 
-                        blurRadius: 24,
+                      widget.onChanged?.call(
+                        value,
+                      );
+                    },
 
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
+                    cursorColor:
+                        AppColors.primaryRed,
 
-                  child: Row(
-                    children: [
-                      /// =====================================================
-                      /// MENU
-                      /// =====================================================
-                      _squareButton(
-                        icon: Icons.menu_rounded,
-                        onTap: widget.onMenuTap,
-                      ),
+                    style: TextStyle(
+                      color:
+                          Colors.grey.shade900,
 
-                      const SizedBox(width: 10),
+                      fontWeight:
+                          FontWeight.w500,
 
-                      /// =====================================================
-                      /// SEARCH BAR
-                      /// =====================================================
-                      Expanded(
-                        child: Container(
-                          height: 50,
+                      fontSize: 16,
+                    ),
 
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                    decoration:
+                        InputDecoration(
+                      hintText:
+                          l10n.search,
 
-                          decoration: BoxDecoration(
-                            color: AppColors.silverBackground,
+                      border:
+                          InputBorder.none,
 
-                            borderRadius: BorderRadius.circular(18),
+                      enabledBorder:
+                          InputBorder.none,
 
-                            border: Border.all(
-                              color: Colors.black.withOpacity(0.03),
-                            ),
-                          ),
+                      focusedBorder:
+                          InputBorder.none,
 
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.search_rounded,
+                      disabledBorder:
+                          InputBorder.none,
 
-                                color: Colors.grey.shade500,
+                      errorBorder:
+                          InputBorder.none,
 
-                                size: 22,
-                              ),
+                      focusedErrorBorder:
+                          InputBorder.none,
 
-                              const SizedBox(width: 10),
+                      filled: true,
 
-                              Expanded(
-                                child: TextField(
-                                  controller: widget.controller,
+                      fillColor:
+                          Colors.transparent,
 
-                                  textInputAction: TextInputAction.search,
+                      prefixIcon: Icon(
+                        Icons.search_rounded,
 
-                                  onChanged: (value) {
-                                    setState(() {
-                                      showSuggestions = value.trim().isNotEmpty;
-                                    });
+                        color: Colors
+                            .grey.shade600,
 
-                                    widget.onChanged?.call(value);
-                                  },
-
-                                  decoration: InputDecoration(
-                                    hintText: l10n.search,
-
-                                    border: InputBorder.none,
-
-                                    isCollapsed: true,
-
-                                    hintStyle: TextStyle(
-                                      color: Colors.grey.shade500,
-
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        size: 24,
                       ),
 
-                      const SizedBox(width: 10),
+                      hintStyle:
+                          TextStyle(
+                        color: Colors
+                            .grey.shade500,
 
-                      /// =====================================================
-                      /// CHAT
-                      /// =====================================================
-                      _iconButton(
-                        icon: Icons.chat_bubble_outline_rounded,
+                        fontWeight:
+                            FontWeight.w400,
 
-                        onTap: widget.onChatTap,
+                        fontSize: 16,
                       ),
-
-                      const SizedBox(width: 10),
-
-                      /// =====================================================
-                      /// PROFILE
-                      /// =====================================================
-                      GestureDetector(
-                        onTap: widget.onProfileTap,
-
-                        child: Container(
-                          height: 50,
-                          width: 50,
-
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryRed.withOpacity(0.10),
-
-                            borderRadius: BorderRadius.circular(18),
-
-                            border: Border.all(
-                              color: AppColors.primaryRed.withOpacity(0.14),
-                            ),
-                          ),
-
-                          child: Center(
-                            child: Text(
-                              letter,
-
-                              style: const TextStyle(
-                                color: AppColors.primaryRed,
-
-                                fontWeight: FontWeight.w900,
-
-                                fontSize: 20,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+
+                const SizedBox(width: 2),
+
+                /// ==========================================
+                /// CHAT
+                /// ==========================================
+                _iconButton(
+                  icon: Icons
+                      .chat_bubble_outline_rounded,
+
+                  onTap:
+                      widget.onChatTap,
+                ),
+
+                const SizedBox(width: 2),
+
+                /// ==========================================
+                /// PROFILE
+                /// ==========================================
+                GestureDetector(
+                  onTap:
+                      widget.onProfileTap,
+
+                  child: Container(
+                    height: 42,
+                    width: 42,
+
+                    decoration:
+                        BoxDecoration(
+                      color:
+                          const Color(
+                        0xFFFBECEF,
+                      ),
+
+                      borderRadius:
+                          BorderRadius.circular(
+                        14,
+                      ),
+                    ),
+
+                    child: Center(
+                      child: Text(
+                        letter,
+
+                        style:
+                            const TextStyle(
+                          color:
+                              AppColors
+                                  .primaryRed,
+
+                          fontWeight:
+                              FontWeight
+                                  .w900,
+
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
 
             /// ==========================================
-            /// LIVE SUGGESTIONS
+            /// SUGGESTIONS
             /// ==========================================
             AnimatedSwitcher(
-              duration: const Duration(milliseconds: 220),
+              duration:
+                  const Duration(
+                milliseconds: 220,
+              ),
 
               child:
-                  showSuggestions && widget.suggestions.isNotEmpty
+                  showSuggestions &&
+                          widget
+                              .suggestions
+                              .isNotEmpty
                       ? Container(
-                        margin: const EdgeInsets.only(top: 10),
+                        margin:
+                            const EdgeInsets.only(
+                          top: 10,
+                        ),
 
-                        padding: const EdgeInsets.all(12),
+                        padding:
+                            const EdgeInsets.all(
+                          12,
+                        ),
 
-                        decoration: BoxDecoration(
-                          color: Colors.white,
+                        decoration:
+                            BoxDecoration(
+                          color:
+                              Colors.white,
 
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius:
+                              BorderRadius.circular(
+                            20,
+                          ),
 
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black
+                                  .withOpacity(
+                                0.05,
+                              ),
 
-                              blurRadius: 18,
+                              blurRadius: 16,
 
-                              offset: const Offset(0, 8),
+                              offset:
+                                  const Offset(
+                                0,
+                                8,
+                              ),
                             ),
                           ],
                         ),
 
                         child: Column(
                           children:
-                              widget.suggestions
+                              widget
+                                  .suggestions
                                   .take(5)
                                   .map(
-                                    (item) => ListTile(
-                                      dense: true,
+                                    (
+                                      item,
+                                    ) => ListTile(
+                                      dense:
+                                          true,
 
-                                      leading: const Icon(
-                                        Icons.search_rounded,
-
-                                        color: AppColors.primaryRed,
+                                      title:
+                                          Text(
+                                        item,
                                       ),
 
-                                      title: Text(item),
+                                      onTap:
+                                          () {
+                                        widget
+                                                .controller
+                                                .text =
+                                            item;
 
-                                      onTap: () {
-                                        widget.controller.text = item;
+                                        widget
+                                            .onSuggestionTap
+                                            ?.call(
+                                              item,
+                                            );
 
-                                        widget.onSuggestionTap?.call(item);
-
-                                        setState(() {
-                                          showSuggestions = false;
-                                        });
+                                        setState(
+                                          () {
+                                            showSuggestions =
+                                                false;
+                                          },
+                                        );
                                       },
                                     ),
                                   )
@@ -305,55 +345,27 @@ class _HomeHeaderState extends State<HomeHeader> {
   }
 
   /// ==========================================
-  /// MENU BUTTON
-  /// ==========================================
-
-  Widget _squareButton({required IconData icon, VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-
-        height: 50,
-        width: 50,
-
-        decoration: BoxDecoration(
-          color: AppColors.silverBackground,
-
-          borderRadius: BorderRadius.circular(18),
-
-          border: Border.all(color: Colors.black.withOpacity(0.03)),
-        ),
-
-        child: Icon(icon, color: AppColors.textPrimary, size: 24),
-      ),
-    );
-  }
-
-  /// ==========================================
   /// ICON BUTTON
   /// ==========================================
 
-  Widget _iconButton({required IconData icon, VoidCallback? onTap}) {
+  Widget _iconButton({
+    required IconData icon,
+    VoidCallback? onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
 
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
+      child: SizedBox(
+        height: 36,
+        width: 36,
 
-        height: 50,
-        width: 50,
+        child: Icon(
+          icon,
 
-        decoration: BoxDecoration(
-          color: AppColors.silverBackground,
+          color: Colors.grey.shade800,
 
-          borderRadius: BorderRadius.circular(18),
-
-          border: Border.all(color: Colors.black.withOpacity(0.03)),
+          size: 24,
         ),
-
-        child: Icon(icon, color: AppColors.textPrimary, size: 22),
       ),
     );
   }

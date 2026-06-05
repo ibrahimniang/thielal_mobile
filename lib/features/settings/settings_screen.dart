@@ -12,83 +12,53 @@ import '../donations/application/donation_controller.dart';
 import '../auth/application/auth_controller.dart';
 
 class SettingsScreen extends ConsumerWidget {
-  const SettingsScreen({
-    super.key,
-  });
+  const SettingsScreen({super.key});
 
   @override
-  Widget build(
-    BuildContext context,
-    WidgetRef ref,
-  ) {
-    final l10n =
-        AppLocalizations.of(context)!;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor:
-          Colors.grey.shade100,
+      backgroundColor: Colors.grey.shade100,
 
       appBar: AppBar(
-        title: Text(
-          l10n.settings,
-        ),
+        title: Text(l10n.settings),
 
-        backgroundColor:
-            Colors.red,
+        backgroundColor: Colors.red,
 
-        foregroundColor:
-            Colors.white,
+        foregroundColor: Colors.white,
       ),
 
       body: ListView(
-        padding: const EdgeInsets.all(
-          16,
-        ),
+        padding: const EdgeInsets.all(16),
 
         children: [
           /// =====================================================
           /// ACCOUNT
           /// =====================================================
-
-          _sectionTitle(
-            l10n.profile,
-          ),
+          _sectionTitle(l10n.profile),
 
           _tile(
             icon: Icons.person,
 
             title: l10n.myProfile,
 
-            onTap:
-                () => context.go(
-                  RouteNames.profile,
-                ),
+            onTap: () => context.go(RouteNames.profile),
           ),
 
-          _tile(
-            icon: Icons.lock,
-
-            title: l10n.password,
-
-            onTap: () {},
-          ),
+          _tile(icon: Icons.lock, title: l10n.password, onTap: () {}),
 
           const SizedBox(height: 20),
 
           /// =====================================================
           /// APP
           /// =====================================================
-
-          _sectionTitle(
-            l10n.settings,
-          ),
+          _sectionTitle(l10n.settings),
 
           _tile(
-            icon:
-                Icons.notifications,
+            icon: Icons.notifications,
 
-            title:
-                l10n.notifications,
+            title: l10n.notifications,
 
             onTap: () {},
           ),
@@ -96,7 +66,6 @@ class SettingsScreen extends ConsumerWidget {
           /// =====================================================
           /// LANGUAGE
           /// =====================================================
-
           _tile(
             icon: Icons.language,
 
@@ -105,181 +74,114 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () {
               showModalBottomSheet(
                 context: context,
+                isScrollControlled: true,
 
-                shape:
-                    const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(
-                            top:
-                                Radius.circular(
-                                  24,
-                                ),
-                          ),
-                    ),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
 
                 builder:
                     (_) => Padding(
-                      padding:
-                          const EdgeInsets.all(
-                            16,
-                          ),
+                      padding: const EdgeInsets.all(16),
 
                       child: Column(
-                        mainAxisSize:
-                            MainAxisSize.min,
+                        mainAxisSize: MainAxisSize.min,
 
                         children: [
-                          const SizedBox(
-                            height: 8,
-                          ),
+                          const SizedBox(height: 8),
 
                           Container(
                             width: 60,
                             height: 6,
 
-                            decoration:
-                                BoxDecoration(
-                                  color:
-                                      Colors
-                                          .grey
-                                          .shade300,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
 
-                                  borderRadius:
-                                      BorderRadius.circular(
-                                        30,
-                                      ),
-                                ),
+                              borderRadius: BorderRadius.circular(30),
+                            ),
                           ),
 
-                          const SizedBox(
-                            height: 20,
-                          ),
+                          const SizedBox(height: 20),
 
                           Text(
                             l10n.changeLanguage,
 
-                            style:
-                                const TextStyle(
-                                  fontSize: 20,
+                            style: const TextStyle(
+                              fontSize: 20,
 
-                                  fontWeight:
-                                      FontWeight
-                                          .bold,
-                                ),
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
 
-                          const SizedBox(
-                            height: 20,
-                          ),
+                          const SizedBox(height: 20),
 
                           /// FR
                           ListTile(
-                            leading:
-                                const Text(
-                                  "🇫🇷",
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                  ),
-                                ),
-
-                            title: Text(
-                              l10n.french,
+                            leading: const Text(
+                              "🇫🇷",
+                              style: TextStyle(fontSize: 24),
                             ),
 
-                            trailing:
-                                const Icon(
-                                  Icons
-                                      .arrow_forward_ios_rounded,
+                            title: Text(l10n.french),
 
-                                  size: 16,
-                                ),
+                            trailing: const Icon(
+                              Icons.arrow_forward_ios_rounded,
+
+                              size: 16,
+                            ),
 
                             onTap: () {
-                              localeNotifier
-                                      .value =
-                                  const Locale(
-                                    'fr',
-                                  );
+                              localeNotifier.value = const Locale('fr');
 
-                              Navigator.pop(
-                                context,
-                              );
+                              Navigator.pop(context);
                             },
                           ),
 
                           /// EN
                           ListTile(
-                            leading:
-                                const Text(
-                                  "🇺🇸",
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                  ),
-                                ),
-
-                            title: Text(
-                              l10n.english,
+                            leading: const Text(
+                              "🇺🇸",
+                              style: TextStyle(fontSize: 24),
                             ),
 
-                            trailing:
-                                const Icon(
-                                  Icons
-                                      .arrow_forward_ios_rounded,
+                            title: Text(l10n.english),
 
-                                  size: 16,
-                                ),
+                            trailing: const Icon(
+                              Icons.arrow_forward_ios_rounded,
+
+                              size: 16,
+                            ),
 
                             onTap: () {
-                              localeNotifier
-                                      .value =
-                                  const Locale(
-                                    'en',
-                                  );
+                              localeNotifier.value = const Locale('en');
 
-                              Navigator.pop(
-                                context,
-                              );
+                              Navigator.pop(context);
                             },
                           ),
 
                           /// AR
                           ListTile(
-                            leading:
-                                const Text(
-                                  "🇲🇷",
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                  ),
-                                ),
-
-                            title: Text(
-                              l10n.arabic,
+                            leading: const Text(
+                              "🇲🇷",
+                              style: TextStyle(fontSize: 24),
                             ),
 
-                            trailing:
-                                const Icon(
-                                  Icons
-                                      .arrow_forward_ios_rounded,
+                            title: Text(l10n.arabic),
 
-                                  size: 16,
-                                ),
+                            trailing: const Icon(
+                              Icons.arrow_forward_ios_rounded,
+
+                              size: 16,
+                            ),
 
                             onTap: () {
-                              localeNotifier
-                                      .value =
-                                  const Locale(
-                                    'ar',
-                                  );
+                              localeNotifier.value = const Locale('ar');
 
-                              Navigator.pop(
-                                context,
-                              );
+                              Navigator.pop(context);
                             },
                           ),
 
-                          const SizedBox(
-                            height: 20,
-                          ),
+                          const SizedBox(height: 110),
                         ],
                       ),
                     ),
@@ -292,27 +194,20 @@ class SettingsScreen extends ConsumerWidget {
           /// =====================================================
           /// DONATION
           /// =====================================================
-
-          _sectionTitle(
-            l10n.donations,
-          ),
+          _sectionTitle(l10n.donations),
 
           _tile(
-            icon:
-                Icons.bloodtype_rounded,
+            icon: Icons.bloodtype_rounded,
 
-            title:
-                l10n.donationHistory,
+            title: l10n.donationHistory,
 
             onTap: () {},
           ),
 
           _tile(
-            icon:
-                Icons.location_on_rounded,
+            icon: Icons.location_on_rounded,
 
-            title:
-                l10n.healthCenters,
+            title: l10n.healthCenters,
 
             onTap: () {},
           ),
@@ -322,55 +217,33 @@ class SettingsScreen extends ConsumerWidget {
           /// =====================================================
           /// LOGOUT
           /// =====================================================
-
           ElevatedButton(
-            style:
-                ElevatedButton.styleFrom(
-                  backgroundColor:
-                      Colors.red,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
 
-                  minimumSize:
-                      const Size(
-                        double.infinity,
-                        50,
-                      ),
+              minimumSize: const Size(double.infinity, 50),
 
-                  shape:
-                      RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(
-                              16,
-                            ),
-                      ),
-                ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
 
             onPressed: () async {
               /// LOGOUT
-              await ref
-                  .read(
-                    authControllerProvider
-                        .notifier,
-                  )
-                  .logout();
+              await ref.read(authControllerProvider.notifier).logout();
 
               /// CLEAR PROFILE
-              ref.invalidate(
-                profileControllerProvider,
-              );
+              ref.invalidate(profileControllerProvider);
 
               /// CLEAR DONATIONS
-              ref.invalidate(
-                myDonationsProvider,
-              );
+              ref.invalidate(myDonationsProvider);
 
               if (!context.mounted) {
                 return;
               }
 
               /// REDIRECT
-              context.go(
-                RouteNames.loginUser,
-              );
+              context.go(RouteNames.loginUser);
             },
 
             child: Text(
@@ -379,15 +252,14 @@ class SettingsScreen extends ConsumerWidget {
               style: const TextStyle(
                 color: Colors.white,
 
-                fontWeight:
-                    FontWeight.w700,
+                fontWeight: FontWeight.w700,
 
                 fontSize: 16,
               ),
             ),
           ),
 
-          const SizedBox(height: 30),
+          const SizedBox(height: 120),
         ],
       ),
     );
@@ -397,22 +269,14 @@ class SettingsScreen extends ConsumerWidget {
   /// SECTION TITLE
   /// =====================================================
 
-  Widget _sectionTitle(
-    String title,
-  ) {
+  Widget _sectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(
-        bottom: 10,
-      ),
+      padding: const EdgeInsets.only(bottom: 10),
 
       child: Text(
         title,
 
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-
-          fontSize: 16,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
       ),
     );
   }
@@ -429,28 +293,14 @@ class SettingsScreen extends ConsumerWidget {
     return Card(
       elevation: 0,
 
-      shape:
-          RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(
-                  15,
-                ),
-          ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
 
       child: ListTile(
-        leading: Icon(
-          icon,
-          color: Colors.red,
-        ),
+        leading: Icon(icon, color: Colors.red),
 
-        title: Text(
-          title,
-        ),
+        title: Text(title),
 
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          size: 16,
-        ),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
 
         onTap: onTap,
       ),

@@ -181,7 +181,7 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
 
                               const SizedBox(height: 18),
 
-                               Text(
+                              Text(
                                 l10n.otpVerification,
                                 style: TextStyle(
                                   fontSize: 22,
@@ -213,12 +213,22 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                                     focusNode: otpFocusNodes[index],
                                     autoFocus: index == 0,
                                     onChanged: (value) {
+                                      if (!context.mounted) return;
+
                                       if (value.length == 1 && index < 5) {
-                                        otpFocusNodes[index + 1].requestFocus();
+                                        if (otpFocusNodes[index + 1]
+                                            .canRequestFocus) {
+                                          otpFocusNodes[index + 1]
+                                              .requestFocus();
+                                        }
                                       }
 
                                       if (value.isEmpty && index > 0) {
-                                        otpFocusNodes[index - 1].requestFocus();
+                                        if (otpFocusNodes[index - 1]
+                                            .canRequestFocus) {
+                                          otpFocusNodes[index - 1]
+                                              .requestFocus();
+                                        }
                                       }
 
                                       setModalState(() {});
@@ -271,7 +281,7 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                               const SizedBox(height: 20),
 
                               CustomButton(
-                               text: l10n.verify,
+                                text: l10n.verify,
                                 isLoading: authState.isLoading,
                                 onPressed:
                                     remainingSeconds <= 0
@@ -283,9 +293,9 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                                             ScaffoldMessenger.of(
                                               context,
                                             ).showSnackBar(
-                                               SnackBar(
+                                              SnackBar(
                                                 content: Text(
-                                                  l10n.enterOtpCode
+                                                  l10n.enterOtpCode,
                                                 ),
                                               ),
                                             );
@@ -310,9 +320,24 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
 
                                           if (state.otpVerified) {
                                             timer?.cancel();
-                                            if (modalContext.mounted) {
-                                              Navigator.of(modalContext).pop();
+
+                                            /// REMOVE KEYBOARD
+                                            FocusManager.instance.primaryFocus
+                                                ?.unfocus();
+
+                                            /// REMOVE ALL FOCUS
+                                            for (final node in otpFocusNodes) {
+                                              node.unfocus();
                                             }
+
+                                            /// WAIT SMALL FRAME
+                                            await Future.delayed(
+                                              const Duration(milliseconds: 250),
+                                            );
+
+                                            if (!mounted) return;
+
+                                            /// DIRECT NAVIGATION
                                             context.go(RouteNames.register);
                                           }
                                         },
@@ -348,7 +373,13 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                                                   .errorMessage ==
                                               null) {
                                             clearOtp();
-                                            otpFocusNodes.first.requestFocus();
+                                            if (modalContext.mounted &&
+                                                otpFocusNodes
+                                                    .first
+                                                    .canRequestFocus) {
+                                              otpFocusNodes.first
+                                                  .requestFocus();
+                                            }
                                             startTimer(() {
                                               if (modalContext.mounted) {
                                                 setModalState(() {});
@@ -385,7 +416,6 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
   Widget _buildHeroCard(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return ClipRRect(
-      
       borderRadius: BorderRadius.circular(30),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
@@ -595,45 +625,39 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                     ),
                     const SizedBox(height: 22),
 
-Row(
-  mainAxisAlignment:
-      MainAxisAlignment.center,
+                    Wrap(
+                      alignment: WrapAlignment.center,
 
-  children: [
-    Text(
-      'Vous avez déjà un compte ?',
+                      children: [
+                        Text(
+                          'Vous avez déjà un compte ?',
 
-      style: TextStyle(
-        color: Colors.grey.shade700,
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
 
-        fontWeight: FontWeight.w500,
-      ),
-    ),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
 
-    TextButton(
-      onPressed: () {
-        context.go(
-          RouteNames.loginUser,
-        );
-      },
+                        TextButton(
+                          onPressed: () {
+                            context.go(RouteNames.loginUser);
+                          },
 
-      child: const Text(
-        'Se connecter',
+                          child: const Text(
+                            'Se connecter',
 
-        style: TextStyle(
-          fontWeight:
-              FontWeight.w800,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
 
-          color: Colors.red,
-        ),
-      ),
-    ),
-  ],
-),
+                              color: Colors.red,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
-                  
                 ),
-                
               ),
             ),
           ),
