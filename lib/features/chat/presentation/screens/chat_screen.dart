@@ -25,10 +25,13 @@ class ChatScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ChatScreen> createState() => _ChatScreenState();
+  ConsumerState<ChatScreen> createState() =>
+      _ChatScreenState();
 }
 
-class _ChatScreenState extends ConsumerState<ChatScreen> {
+class _ChatScreenState
+    extends ConsumerState<ChatScreen> {
+
   final TextEditingController messageController =
       TextEditingController();
 
@@ -36,12 +39,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ScrollController();
 
   List messages = [];
+
   bool loading = true;
+  bool sending = false;
   bool markedAsRead = false;
 
   late IO.Socket socket;
 
   Map<String, dynamic>? otherUserData;
+
+  bool isUserOnline = true;
 
   @override
   void initState() {
@@ -50,14 +57,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     loadMessages();
     loadOtherUserInfo();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) {
       markAsRead();
     });
+
+    // =========================
+    // SOCKET
+    // =========================
 
     socket = IO.io(
       Env.baseUrl,
       IO.OptionBuilder()
           .setTransports(['websocket'])
+          .enableForceNew()
+          .enableReconnection()
+          .setReconnectionAttempts(999999)
+          .setReconnectionDelay(1000)
           .disableAutoConnect()
           .build(),
     );
@@ -65,7 +81,61 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     socket.connect();
 
     socket.onConnect((_) {
-      debugPrint("Socket chat connecté");
+
+      debugPrint(
+        "✅ Chat socket connecté",
+      );
+
+      // rejoindre conversation
+      socket.emit(
+        "joinConversation",
+        widget.conversationId,
+      );
+
+      // rejoindre user room
+      final currentUser =
+          ref.read(authControllerProvider)
+              .currentUser;
+
+      if (currentUser != null) {
+        socket.emit(
+          "joinUser",
+          currentUser.idUtilisateur,
+        );
+      }
+    });
+
+    // =========================
+    // NEW MESSAGE
+    // =========================
+
+    socket.on("newMessage", (data) async {
+
+      if (!mounted) return;
+
+      debugPrint(
+        "📩 Nouveau message realtime",
+      );
+
+      // recharge direct
+      await loadMessages();
+
+      // reset read
+      markedAsRead = false;
+
+      // mark read
+      await markAsRead();
+    });
+
+    // =========================
+    // RECONNECT
+    // =========================
+
+    socket.onReconnect((_) {
+
+      debugPrint(
+        "♻️ Socket reconnecté",
+      );
 
       socket.emit(
         "joinConversation",
@@ -73,42 +143,47 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       );
     });
 
-    socket.on("newMessage", (data) {
-      if (!mounted) return;
+    // =========================
+    // DISCONNECT
+    // =========================
 
-      debugPrint("Nouveau message reçu");
+    socket.onDisconnect((_) {
 
-      loadMessages();
-
-      // ✅ important pour mettre message en lu
-      markedAsRead = false;
-      markAsRead();
+      debugPrint(
+        "❌ Socket disconnected",
+      );
     });
   }
 
   @override
   void dispose() {
+
+    socket.off("newMessage");
+
     socket.disconnect();
     socket.dispose();
+
     messageController.dispose();
     scrollController.dispose();
+
     super.dispose();
   }
 
-  // =========================
-  // LOAD OTHER USER INFO
-  // =========================
+  // ======================================================
+  // LOAD USER INFO
+  // ======================================================
+
   Future<void> loadOtherUserInfo() async {
-    print("OTHER USER ID = ${widget.otherUserId}");
 
     if (widget.otherUserId == null) {
-      print("ERREUR -> otherUserId null");
       return;
     }
 
     try {
+
       final token =
-          ref.read(authControllerProvider).accessToken;
+          ref.read(authControllerProvider)
+              .accessToken;
 
       final res = await http.get(
         Uri.parse(
@@ -119,10 +194,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         },
       );
 
-      print("USER API STATUS = ${res.statusCode}");
-      print("USER API BODY = ${res.body}");
-
       if (res.statusCode == 200) {
+
         final data = jsonDecode(res.body);
 
         if (!mounted) return;
@@ -130,69 +203,73 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         setState(() {
           otherUserData = data["data"];
         });
-
-        print(
-          "PHONE FOUND = ${otherUserData?["telephone"]}",
-        );
-      } else {
-        print("Erreur récupération profil public");
       }
+
     } catch (e) {
-      debugPrint("Erreur user info: $e");
+
+      debugPrint(
+        "❌ load user info => $e",
+      );
     }
   }
 
-  // =========================
+  // ======================================================
   // CALL USER
-  // =========================
-  Future<void> callUser() async {
-    final phone = otherUserData?["telephone"];
+  // ======================================================
 
-    print("PHONE VALUE = $phone");
+  Future<void> callUser() async {
+
+    final phone =
+        otherUserData?["telephone"];
 
     if (phone == null ||
         phone.toString().trim().isEmpty) {
-      debugPrint("Téléphone indisponible");
-      debugPrint("USER DATA = $otherUserData");
       return;
     }
 
     final uri = Uri.parse("tel:$phone");
 
     try {
+
       if (kIsWeb) {
+
         debugPrint(
-          "Web détecté → tel peut ne pas fonctionner sur desktop",
+          "⚠️ tel non garanti sur web",
         );
       }
 
       if (await canLaunchUrl(uri)) {
+
         await launchUrl(
           uri,
-          mode: LaunchMode.externalApplication,
-        );
-      } else {
-        debugPrint(
-          "Impossible d'ouvrir téléphone",
+          mode:
+              LaunchMode.externalApplication,
         );
       }
+
     } catch (e) {
-      debugPrint("Erreur appel: $e");
+
+      debugPrint(
+        "❌ call error => $e",
+      );
     }
   }
 
-  // =========================
+  // ======================================================
   // OPEN PROFILE
-  // =========================
+  // ======================================================
+
   Future<void> openProfile() async {
-    final userId = widget.otherUserId;
+
+    final userId =
+        widget.otherUserId;
 
     if (userId == null) return;
 
     Navigator.of(context).pop();
 
     await Future.delayed(
-      const Duration(milliseconds: 300),
+      const Duration(milliseconds: 250),
     );
 
     if (!mounted) return;
@@ -202,18 +279,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  // =========================
+  // ======================================================
   // USER MODAL
-  // =========================
+  // ======================================================
+
   void showUserInfoModal() {
+
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(20),
+      backgroundColor: Colors.white,
+      shape:
+          const RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.vertical(
+          top: Radius.circular(30),
         ),
       ),
       builder: (_) {
+
         final phone =
             otherUserData?["telephone"] ??
                 "Non disponible";
@@ -223,85 +306,146 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 "Non renseignée";
 
         final groupe =
-            otherUserData?["groupe_sanguin"] ??
+            otherUserData?[
+                    "groupe_sanguin"] ??
                 "--";
 
         return Padding(
-          padding: const EdgeInsets.all(20),
+          padding:
+              const EdgeInsets.all(24),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize:
+                MainAxisSize.min,
             children: [
-              const CircleAvatar(
-                radius: 35,
-                backgroundColor: Colors.red,
-                child: Icon(
-                  Icons.person,
-                  color: Colors.white,
-                  size: 35,
+
+              Container(
+                height: 5,
+                width: 60,
+                decoration: BoxDecoration(
+                  color:
+                      Colors.grey.shade300,
+                  borderRadius:
+                      BorderRadius.circular(
+                    20,
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 22),
+
+              Container(
+                height: 80,
+                width: 80,
+                decoration:
+                    const BoxDecoration(
+                  color:
+                      Color(0xFFE53935),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.person,
+                  color: Colors.white,
+                  size: 42,
+                ),
+              ),
+
+              const SizedBox(height: 18),
 
               Text(
                 widget.fullName,
                 style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 22,
+                  fontWeight:
+                      FontWeight.w800,
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 26),
 
-              ListTile(
-                leading: const Icon(Icons.phone),
-                title: Text(phone),
+              _infoTile(
+                Icons.phone,
+                phone,
               ),
 
-              ListTile(
-                leading:
-                    const Icon(Icons.location_on),
-                title: Text(ville),
+              _infoTile(
+                Icons.location_on,
+                ville,
               ),
 
-              ListTile(
-                leading:
-                    const Icon(Icons.bloodtype),
-                title: Text("Groupe : $groupe"),
+              _infoTile(
+                Icons.bloodtype,
+                "Groupe sanguin : $groupe",
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 28),
 
               Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton.icon(
-                    style:
-                        ElevatedButton.styleFrom(
-                      backgroundColor:
-                          Colors.green,
+
+                  Expanded(
+                    child:
+                        ElevatedButton.icon(
+                      style:
+                          ElevatedButton
+                              .styleFrom(
+                        backgroundColor:
+                            Colors.green,
+                        padding:
+                            const EdgeInsets.symmetric(
+                          vertical: 14,
+                        ),
+                        shape:
+                            RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(
+                            16,
+                          ),
+                        ),
+                      ),
+                      onPressed:
+                          callUser,
+                      icon: const Icon(
+                        Icons.call,
+                      ),
+                      label: const Text(
+                        "Appeler",
+                      ),
                     ),
-                    onPressed: callUser,
-                    icon:
-                        const Icon(Icons.call),
-                    label:
-                        const Text("Appeler"),
                   ),
 
-                  ElevatedButton.icon(
-                    style:
-                        ElevatedButton.styleFrom(
-                      backgroundColor:
-                          Colors.red,
-                    ),
-                    onPressed: openProfile,
-                    icon:
-                        const Icon(Icons.person),
-                    label:
-                        const Text(
-                          "Voir profil",
+                  const SizedBox(width: 14),
+
+                  Expanded(
+                    child:
+                        ElevatedButton.icon(
+                      style:
+                          ElevatedButton
+                              .styleFrom(
+                        backgroundColor:
+                            const Color(
+                          0xFFE53935,
                         ),
+                        padding:
+                            const EdgeInsets.symmetric(
+                          vertical: 14,
+                        ),
+                        shape:
+                            RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(
+                            16,
+                          ),
+                        ),
+                      ),
+                      onPressed:
+                          openProfile,
+                      icon: const Icon(
+                        Icons.person,
+                      ),
+                      label: const Text(
+                        "Profil",
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -312,51 +456,124 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  // =========================
+  Widget _infoTile(
+    IconData icon,
+    String text,
+  ) {
+
+    return Container(
+      margin:
+          const EdgeInsets.only(
+        bottom: 14,
+      ),
+      padding:
+          const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius:
+            BorderRadius.circular(
+          18,
+        ),
+      ),
+      child: Row(
+        children: [
+
+          Icon(
+            icon,
+            color:
+                const Color(0xFFE53935),
+          ),
+
+          const SizedBox(width: 14),
+
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                fontWeight:
+                    FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ======================================================
   // DATE
-  // =========================
-  String formatDate(String? dateString) {
-    if (dateString == null) return "";
+  // ======================================================
+
+  String formatDate(
+    String? dateString,
+  ) {
+
+    if (dateString == null) {
+      return "";
+    }
 
     try {
+
       final date =
-          DateTime.parse(dateString).toLocal();
+          DateTime.parse(
+            dateString,
+          ).toLocal();
 
       return DateFormat(
         "d MMM",
         "fr_FR",
       ).format(date);
+
     } catch (_) {
+
       return "";
     }
   }
 
-  String formatTime(String? dateString) {
-    if (dateString == null) return "";
+  String formatTime(
+    String? dateString,
+  ) {
+
+    if (dateString == null) {
+      return "";
+    }
 
     try {
-      final date =
-          DateTime.parse(dateString).toLocal();
 
-      return DateFormat("HH:mm").format(date);
+      final date =
+          DateTime.parse(
+            dateString,
+          ).toLocal();
+
+      return DateFormat(
+        "HH:mm",
+      ).format(date);
+
     } catch (_) {
+
       return "";
     }
   }
 
-  // =========================
+  // ======================================================
   // SCROLL
-  // =========================
+  // ======================================================
+
   void scrollToBottom() {
+
     Future.delayed(
       const Duration(milliseconds: 200),
       () {
-        if (scrollController.hasClients) {
+
+        if (scrollController
+            .hasClients) {
+
           scrollController.animateTo(
             scrollController
                 .position.maxScrollExtent,
-            duration: const Duration(
-              milliseconds: 250,
+            duration:
+                const Duration(
+              milliseconds: 300,
             ),
             curve: Curves.easeOut,
           );
@@ -365,13 +582,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  // =========================
+  // ======================================================
   // MARK AS READ
-  // =========================
+  // ======================================================
+
   Future<void> markAsRead() async {
+
     if (markedAsRead) return;
 
     try {
+
       final token =
           ref.read(authControllerProvider)
               .accessToken;
@@ -381,23 +601,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           "${Env.baseUrl}/chat/read/${widget.conversationId}",
         ),
         headers: {
-          "Authorization": "Bearer $token",
+          "Authorization":
+              "Bearer $token",
         },
       );
 
       markedAsRead = true;
+
     } catch (e) {
+
       debugPrint(
-        "Erreur markAsRead: $e",
+        "❌ markAsRead => $e",
       );
     }
   }
 
-  // =========================
+  // ======================================================
   // LOAD MESSAGES
-  // =========================
+  // ======================================================
+
   Future<void> loadMessages() async {
+
     try {
+
       final token =
           ref.read(authControllerProvider)
               .accessToken;
@@ -407,21 +633,43 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           "${Env.baseUrl}/chat/messages/${widget.conversationId}",
         ),
         headers: {
-          "Authorization": "Bearer $token",
+          "Authorization":
+              "Bearer $token",
         },
       );
 
-      final data = jsonDecode(res.body);
+      if (res.statusCode != 200) {
+
+        if (!mounted) return;
+
+        setState(() {
+          loading = false;
+        });
+
+        return;
+      }
+
+      final data =
+          jsonDecode(res.body);
 
       if (!mounted) return;
 
       setState(() {
-        messages = data["data"] ?? [];
+
+        messages =
+            data["data"] ?? [];
+
         loading = false;
       });
 
       scrollToBottom();
+
     } catch (e) {
+
+      debugPrint(
+        "❌ load messages => $e",
+      );
+
       if (!mounted) return;
 
       setState(() {
@@ -430,16 +678,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
-  // =========================
+  // ======================================================
   // SEND MESSAGE
-  // =========================
+  // ======================================================
+
   Future<void> sendMessage() async {
+
     final text =
         messageController.text.trim();
 
-    if (text.isEmpty) return;
+    if (text.isEmpty ||
+        sending) {
+      return;
+    }
 
     try {
+
+      setState(() {
+        sending = true;
+      });
+
+      // clear direct
+      messageController.clear();
+
       final token =
           ref.read(authControllerProvider)
               .accessToken;
@@ -461,55 +722,192 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         }),
       );
 
-      if (res.statusCode == 200) {
-        messageController.clear();
-        await loadMessages();
+      if (res.statusCode != 200 &&
+          res.statusCode != 201) {
+
+        debugPrint(
+          "❌ send failed",
+        );
       }
+
+      // IMPORTANT
+      // realtime fera le reload
+
     } catch (e) {
+
       debugPrint(
-        "Erreur envoi message: $e",
+        "❌ send message => $e",
       );
+
+    } finally {
+
+      if (mounted) {
+
+        setState(() {
+          sending = false;
+        });
+      }
     }
   }
 
+  // ======================================================
+  // UI
+  // ======================================================
+
   @override
   Widget build(BuildContext context) {
+
     final currentUser =
         ref.read(authControllerProvider)
             .currentUser;
 
     return Scaffold(
+      backgroundColor:
+          const Color(0xFFF6F7FB),
+
       appBar: AppBar(
-        backgroundColor: Colors.red,
-        title: Row(
-          children: [
-            GestureDetector(
-              onTap: showUserInfoModal,
-              child: const CircleAvatar(
-                backgroundColor:
-                    Colors.white,
-                child: Icon(
-                  Icons.person,
-                  color: Colors.red,
+        elevation: 0,
+        backgroundColor: Colors.white,
+        surfaceTintColor:
+            Colors.white,
+
+        leading: IconButton(
+          onPressed: () {
+            context.pop();
+          },
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.black,
+          ),
+        ),
+
+        titleSpacing: 0,
+
+        title: GestureDetector(
+          onTap:
+              showUserInfoModal,
+          child: Row(
+            children: [
+
+              Stack(
+                children: [
+
+                  Container(
+                    height: 45,
+                    width: 45,
+                    decoration:
+                        const BoxDecoration(
+                      color:
+                          Color(0xFFE53935),
+                      shape:
+                          BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.person,
+                      color:
+                          Colors.white,
+                    ),
+                  ),
+
+                  Positioned(
+                    bottom: 2,
+                    right: 2,
+                    child: Container(
+                      height: 12,
+                      width: 12,
+                      decoration:
+                          BoxDecoration(
+                        color:
+                            isUserOnline
+                                ? Colors.green
+                                : Colors.grey,
+                        shape:
+                            BoxShape.circle,
+                        border: Border.all(
+                          color:
+                              Colors.white,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(width: 12),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment
+                          .start,
+                  children: [
+
+                    Text(
+                      widget.fullName,
+                      overflow:
+                          TextOverflow
+                              .ellipsis,
+                      style:
+                          const TextStyle(
+                        color:
+                            Colors.black,
+                        fontSize: 16,
+                        fontWeight:
+                            FontWeight
+                                .w700,
+                      ),
+                    ),
+
+                    const SizedBox(
+                      height: 2,
+                    ),
+
+                    Text(
+                      isUserOnline
+                          ? "En ligne"
+                          : "Hors ligne",
+                      style:
+                          TextStyle(
+                        color:
+                            isUserOnline
+                                ? Colors.green
+                                : Colors.grey,
+                        fontSize: 12,
+                        fontWeight:
+                            FontWeight
+                                .w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
+            ],
+          ),
+        ),
+
+        actions: [
+
+          Container(
+            margin:
+                const EdgeInsets.only(
+              right: 12,
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                widget.fullName,
-                overflow:
-                    TextOverflow.ellipsis,
+            decoration: BoxDecoration(
+              color:
+                  Colors.red.shade50,
+              borderRadius:
+                  BorderRadius.circular(
+                14,
               ),
             ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            onPressed: callUser,
-            icon: const Icon(
-              Icons.call,
-              color: Colors.white,
+            child: IconButton(
+              onPressed: callUser,
+              icon: const Icon(
+                Icons.call,
+                color:
+                    Color(0xFFE53935),
+              ),
             ),
           ),
         ],
@@ -517,6 +915,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
       body: Column(
         children: [
+
           Expanded(
             child: loading
                 ? const Center(
@@ -533,12 +932,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         controller:
                             scrollController,
                         padding:
-                            const EdgeInsets
-                                .all(10),
+                            const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 20,
+                        ),
                         itemCount:
                             messages.length,
                         itemBuilder:
-                            (context, index) {
+                            (
+                          context,
+                          index,
+                        ) {
+
                           final m =
                               messages[index];
 
@@ -547,99 +952,149 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                   currentUser
                                       ?.idUtilisateur;
 
-                          // ✅ tick lu/envoyé
                           final isRead =
-                              m["lu"] == true;
+                              m["lu"] ==
+                                  true;
 
                           return Align(
-                            alignment: isMe
-                                ? Alignment
-                                    .centerRight
-                                : Alignment
-                                    .centerLeft,
-                            child: Container(
+                            alignment:
+                                isMe
+                                    ? Alignment
+                                        .centerRight
+                                    : Alignment
+                                        .centerLeft,
+                            child:
+                                Container(
                               margin:
-                                  const EdgeInsets
-                                      .symmetric(
-                                vertical: 5,
+                                  const EdgeInsets.only(
+                                bottom:
+                                    12,
                               ),
                               padding:
-                                  const EdgeInsets
-                                      .all(12),
+                                  const EdgeInsets.symmetric(
+                                horizontal:
+                                    16,
+                                vertical:
+                                    12,
+                              ),
                               constraints:
                                   const BoxConstraints(
-                                maxWidth: 280,
+                                maxWidth:
+                                    290,
                               ),
                               decoration:
                                   BoxDecoration(
-                                color: isMe
-                                    ? Colors.red
-                                    : Colors.grey
-                                        .shade300,
+                                color:
+                                    isMe
+                                        ? const Color(
+                                            0xFFE53935,
+                                          )
+                                        : Colors
+                                            .white,
                                 borderRadius:
-                                    BorderRadius
-                                        .circular(
-                                  15,
+                                    BorderRadius.only(
+                                  topLeft:
+                                      const Radius.circular(
+                                    22,
+                                  ),
+                                  topRight:
+                                      const Radius.circular(
+                                    22,
+                                  ),
+                                  bottomLeft:
+                                      Radius.circular(
+                                    isMe
+                                        ? 22
+                                        : 6,
+                                  ),
+                                  bottomRight:
+                                      Radius.circular(
+                                    isMe
+                                        ? 6
+                                        : 22,
+                                  ),
                                 ),
+                                boxShadow: [
+
+                                  BoxShadow(
+                                    color: Colors
+                                        .black
+                                        .withOpacity(
+                                      0.04,
+                                    ),
+                                    blurRadius:
+                                        10,
+                                    offset:
+                                        const Offset(
+                                      0,
+                                      4,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              child: Column(
+                              child:
+                                  Column(
                                 crossAxisAlignment:
                                     CrossAxisAlignment
                                         .start,
                                 children: [
+
                                   Text(
                                     m["contenu"] ??
                                         "",
                                     style:
                                         TextStyle(
-                                      color: isMe
-                                          ? Colors
-                                              .white
-                                          : Colors
-                                              .black,
+                                      fontSize:
+                                          15,
+                                      height:
+                                          1.4,
+                                      color:
+                                          isMe
+                                              ? Colors.white
+                                              : Colors.black87,
                                     ),
                                   ),
 
                                   const SizedBox(
-                                      height:
-                                          5),
+                                    height:
+                                        8,
+                                  ),
 
                                   Row(
                                     mainAxisSize:
                                         MainAxisSize
                                             .min,
                                     children: [
+
                                       Text(
-                                        "${formatDate(m["date_envoi"])} ${formatTime(m["date_envoi"])}",
+                                        "${formatDate(m["date_envoi"])} • ${formatTime(m["date_envoi"])}",
                                         style:
                                             TextStyle(
                                           fontSize:
                                               11,
-                                          color: isMe
-                                              ? Colors
-                                                  .white70
-                                              : Colors
-                                                  .black54,
+                                          color:
+                                              isMe
+                                                  ? Colors.white70
+                                                  : Colors.grey,
                                         ),
                                       ),
 
                                       const SizedBox(
-                                          width:
-                                              6),
+                                        width:
+                                            6,
+                                      ),
 
                                       if (isMe)
                                         Icon(
                                           isRead
-                                              ? Icons
-                                                  .done_all
-                                              : Icons
-                                                  .done,
-                                          size: 16,
-                                          color: isRead
-                                              ? Colors
-                                                  .blue
-                                              : Colors
-                                                  .white70,
+                                              ? Icons.done_all
+                                              : Icons.done,
+                                          size:
+                                              16,
+                                          color:
+                                              isRead
+                                                  ? Colors.lightBlueAccent
+                                                  : Colors.white70,
                                         ),
                                     ],
                                   ),
@@ -651,31 +1106,114 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       ),
           ),
 
-          Container(
-            padding:
-                const EdgeInsets.all(8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller:
-                        messageController,
-                    decoration:
-                        const InputDecoration(
-                      hintText:
-                          "Message...",
+          SafeArea(
+            top: false,
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+
+                  BoxShadow(
+                    color: Colors.black
+                        .withOpacity(
+                      0.04,
+                    ),
+                    blurRadius: 12,
+                    offset:
+                        const Offset(
+                      0,
+                      -2,
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.send,
-                    color: Colors.red,
+                ],
+              ),
+              child: Row(
+                children: [
+
+                  Expanded(
+                    child: Container(
+                      padding:
+                          const EdgeInsets.symmetric(
+                        horizontal: 18,
+                      ),
+                      decoration:
+                          BoxDecoration(
+                        color:
+                            const Color(
+                          0xFFF4F5F7,
+                        ),
+                        borderRadius:
+                            BorderRadius.circular(
+                          30,
+                        ),
+                      ),
+                      child: TextField(
+                        controller:
+                            messageController,
+                        minLines: 1,
+                        maxLines: 5,
+                        textInputAction:
+                            TextInputAction
+                                .send,
+                        onSubmitted:
+                            (_) =>
+                                sendMessage(),
+                        decoration:
+                            const InputDecoration(
+                          border:
+                              InputBorder.none,
+                          hintText:
+                              "Écrire un message...",
+                        ),
+                      ),
+                    ),
                   ),
-                  onPressed:
-                      sendMessage,
-                )
-              ],
+
+                  const SizedBox(width: 10),
+
+                  GestureDetector(
+                    onTap:
+                        sendMessage,
+                    child: Container(
+                      height: 54,
+                      width: 54,
+                      decoration:
+                          const BoxDecoration(
+                        color:
+                            Color(
+                          0xFFE53935,
+                        ),
+                        shape:
+                            BoxShape.circle,
+                      ),
+                      child: sending
+                          ? const Padding(
+                              padding:
+                                  EdgeInsets.all(
+                                14,
+                              ),
+                              child:
+                                  CircularProgressIndicator(
+                                color:
+                                    Colors.white,
+                                strokeWidth:
+                                    2,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.send,
+                              color:
+                                  Colors.white,
+                            ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

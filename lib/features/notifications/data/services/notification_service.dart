@@ -24,6 +24,6 @@ class NotificationService {
 
   /// marquer notification comme lue
   Future<Response> markAsRead(int id) async {
-    return await dio.patch(ApiEndpoints.markAsRead(id));
-  }
+  return await dio.put(ApiEndpoints.markAsRead(id));
+}
 }

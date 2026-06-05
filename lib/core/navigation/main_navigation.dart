@@ -1,12 +1,14 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:thielal/features/notifications/presentation/controllers/notification_controller.dart';
 
 import '../../app/router/route_names.dart';
 import '../../l10n/app_localizations.dart';
 
-class MainNavigation extends StatelessWidget {
+class MainNavigation extends ConsumerWidget {
   final Widget child;
 
   const MainNavigation({super.key, required this.child});
@@ -36,12 +38,24 @@ class MainNavigation extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final location = GoRouterState.of(context).uri.toString();
 
     final currentIndex = _index(location);
-
+    // lire le compteur
+    final unreadCountAsync = ref.watch(unreadNotificationCountProvider);
+    unreadCountAsync.when(
+  data: (count) {
+    debugPrint('🔔 BADGE COUNT = $count');
+  },
+  loading: () {
+    debugPrint('🔔 BADGE LOADING');
+  },
+  error: (e, _) {
+    debugPrint('🔔 BADGE ERROR = $e');
+  },
+);
     final items = [
       {'icon': Icons.home_rounded, 'label': l10n.home},
 
@@ -173,14 +187,82 @@ class MainNavigation extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(16),
                                     ),
 
-                                    child: Icon(
-                                      item['icon'] as IconData,
+                                    child:
+                                        index == 4
+                                            ? Stack(
+                                              clipBehavior: Clip.none,
+                                              children: [
+                                                Icon(
+                                                  item['icon'] as IconData,
+                                                  color:
+                                                      isSelected
+                                                          ? Colors.white
+                                                          : Colors
+                                                              .grey
+                                                              .shade500,
+                                                ),
 
-                                      color:
-                                          isSelected
-                                              ? Colors.white
-                                              : Colors.grey.shade500,
-                                    ),
+                                                unreadCountAsync.when(
+                                                  data: (count) {
+                                                    if (count <= 0) {
+                                                      return const SizedBox();
+                                                    }
+
+                                                    return Positioned(
+                                                      right: -6,
+                                                      top: -6,
+                                                      child: Container(
+                                                        padding:
+                                                            const EdgeInsets.all(
+                                                              4,
+                                                            ),
+                                                        decoration:
+                                                            const BoxDecoration(
+                                                              color: Colors.red,
+                                                              shape:
+                                                                  BoxShape
+                                                                      .circle,
+                                                            ),
+                                                        constraints:
+                                                            const BoxConstraints(
+                                                              minWidth: 18,
+                                                              minHeight: 18,
+                                                            ),
+                                                        child: Text(
+                                                          count > 99
+                                                              ? '99+'
+                                                              : '$count',
+                                                          textAlign:
+                                                              TextAlign.center,
+                                                          style:
+                                                              const TextStyle(
+                                                                color:
+                                                                    Colors
+                                                                        .white,
+                                                                fontSize: 10,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                  loading:
+                                                      () => const SizedBox(),
+                                                  error:
+                                                      (_, __) =>
+                                                          const SizedBox(),
+                                                ),
+                                              ],
+                                            )
+                                            : Icon(
+                                              item['icon'] as IconData,
+                                              color:
+                                                  isSelected
+                                                      ? Colors.white
+                                                      : Colors.grey.shade500,
+                                            ),
                                   ),
 
                                   const SizedBox(height: 4),

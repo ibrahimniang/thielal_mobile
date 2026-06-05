@@ -39,26 +39,21 @@ class NotificationRepository {
   /// ===============================
   /// récupérer nombre notifications non lues
   /// ===============================
-  Future<int> fetchUnreadCount() async {
-    final response = await service.getUnreadCount();
+ Future<int> fetchUnreadCount() async {
+  final response = await service.getUnreadCount();
 
-    final data = response.data;
+  print("🔔 UNREAD RESPONSE:");
+  print(response.data);
 
-    /// Exemple backend attendu :
-    /// {
-    ///   "success": true,
-    ///   "data": 5
-    /// }
+  final data = response.data;
 
-    if (data["success"] == true) {
-
-      /// conversion sécurisée pour éviter
-      /// type 'String' is not subtype of int
-      return int.tryParse(data["data"].toString()) ?? 0;
-
-    }
-
-    return 0;
+  if (data["success"] == true) {
+    return int.tryParse(
+  data["count"].toString(),
+) ?? 0;
   }
+
+  return 0;
+}
   
 }

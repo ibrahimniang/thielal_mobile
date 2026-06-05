@@ -96,9 +96,9 @@ class ApiEndpoints {
   static const String notifications = '/notifications';
 
 
-  //static const unreadCount = "/notifications/unread-count";
+  static const unreadCount = "/notifications/unread-count";
 
-  static const String unreadCount = '/notifications/unread-count';
+  //static const String unreadCount = '/notifications/unread-count';
 
 
   /// Marquer notification comme lue
