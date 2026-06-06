@@ -8,18 +8,27 @@ class NotificationModel {
   final String type;
   final int? demandeId;
 
+  // AJOUT
+  final String nom;
+  final String prenom;
+
   NotificationModel({
     required this.idNotification,
     required this.utilisateurId,
     required this.message,
     required this.lu,
     required this.dateCreation,
-
     required this.type,
     this.demandeId,
+
+    // AJOUT
+    required this.nom,
+    required this.prenom,
   });
 
-/// Convertir JSON -> Model
+  String get fullName => "$prenom $nom".trim();
+
+  /// Convertir JSON -> Model
   factory NotificationModel.fromJson(
     Map<String, dynamic> json,
   ) {
@@ -61,6 +70,10 @@ class NotificationModel {
                   json['demande_id'].toString(),
                 )
               : null,
+
+      // AJOUT
+      nom: json['utilisateur']?['nom']?.toString() ?? '',
+      prenom: json['utilisateur']?['prenom']?.toString() ?? '',
     );
   }
 }

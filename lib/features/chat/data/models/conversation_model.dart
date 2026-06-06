@@ -4,6 +4,7 @@ class ConversationModel {
   final int utilisateur2Id;
   final String? dernierMessage;
   final DateTime? dateDernierMessage;
+  final int? demandeId;
 
   ConversationModel({
     required this.idConversation,
@@ -11,6 +12,7 @@ class ConversationModel {
     required this.utilisateur2Id,
     this.dernierMessage,
     this.dateDernierMessage,
+     this.demandeId,
   });
 
   factory ConversationModel.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,7 @@ class ConversationModel {
       dateDernierMessage: json['date_dernier_message'] != null
           ? DateTime.parse(json['date_dernier_message'])
           : null,
+      demandeId: json['demande_id'],
     );
   }
 }
