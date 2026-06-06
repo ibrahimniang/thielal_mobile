@@ -23,9 +23,13 @@ class ConversationsScreen extends ConsumerStatefulWidget {
 class _ConversationsScreenState
     extends ConsumerState<ConversationsScreen> {
 
+  bool isSearching = false;
+
   List conversations = [];
 
   bool loading = true;
+  TextEditingController searchController = TextEditingController();
+  String searchQuery = "";
 
   late IO.Socket socket;
 
@@ -42,6 +46,12 @@ class _ConversationsScreenState
     currentUserId = user?.idUtilisateur;
 
     loadConversations();
+
+    searchController.addListener(() {
+      setState(() {
+        searchQuery = searchController.text.toLowerCase();
+      });
+    });
 
     // =========================
     // SOCKET
@@ -149,6 +159,7 @@ class _ConversationsScreenState
     socket.disconnect();
 
     socket.dispose();
+    searchController.dispose();
 
     super.dispose();
   }
@@ -372,21 +383,26 @@ class _ConversationsScreenState
                     ),
                   ),
 
-                  Container(
-                    padding:
-                        const EdgeInsets.all(12),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isSearching = !isSearching;
 
-                    decoration:
-                        BoxDecoration(
-                      color: Colors.white24,
-
-                      shape:
-                          BoxShape.circle,
-                    ),
-
-                    child: const Icon(
-                      Icons.chat_bubble_outline,
-                      color: Colors.white,
+                        if (!isSearching) {
+                          searchController.clear();
+                        }
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        isSearching ? Icons.close : Icons.search,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ],
@@ -394,6 +410,25 @@ class _ConversationsScreenState
             ),
 
             const SizedBox(height: 20),
+            if (isSearching)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: TextField(
+                  controller: searchController,
+                  decoration: InputDecoration(
+                    hintText: "Rechercher un utilisateur...",
+                    prefixIcon: const Icon(Icons.search),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(18),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+
+           
 
             /// =========================
             /// LOADING
@@ -523,6 +558,18 @@ class _ConversationsScreenState
                           getFullName(
                         otherUser,
                       );
+                      final telephone =
+                        (otherUser?["telephone"] ?? "")
+                            .toString()
+                            .toLowerCase();
+                            
+                      final search = searchQuery.trim().toLowerCase();
+
+                      if (search.isNotEmpty &&
+                          !fullName.toLowerCase().contains(search) &&
+                          !telephone.contains(search)) {
+                        return const SizedBox.shrink();
+                      }
 
                       final lastMessage =
                           c["dernier_message"] ??
@@ -543,6 +590,7 @@ class _ConversationsScreenState
                         c["date_dernier_message"]
                             ?.toString(),
                       );
+                      
 
                       return GestureDetector(
 
