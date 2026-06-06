@@ -43,22 +43,47 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     });
   }
 
-  Future<void> _initializeApp() async {
-    await Future.delayed(const Duration(seconds: 2));
+ Future<void> _initializeApp() async {
+  await Future.delayed(
+    const Duration(seconds: 2),
+  );
 
-    if (!mounted) return;
+  if (!mounted) return;
 
-    final hasCompletedEntryFlow =
-        await SecureStorageService.hasCompletedEntryFlow();
+  final hasSeenOnboarding =
+      await SecureStorageService.hasSeenOnboarding();
 
-    print('SPLASH DEBUG -> hasCompletedEntryFlow: $hasCompletedEntryFlow');
+  print(
+    'SPLASH DEBUG -> hasSeenOnboarding: '
+    '$hasSeenOnboarding',
+  );
 
-    if (hasCompletedEntryFlow) {
-      await _goOnce(RouteNames.loginUser);
-    } else {
-      await _goOnce(RouteNames.entryIdentity);
-    }
+  if (!hasSeenOnboarding) {
+    await _goOnce(
+      RouteNames.onboarding,
+    );
+
+    return;
   }
+
+  final hasCompletedEntryFlow =
+      await SecureStorageService.hasCompletedEntryFlow();
+
+  print(
+    'SPLASH DEBUG -> hasCompletedEntryFlow: '
+    '$hasCompletedEntryFlow',
+  );
+
+  if (hasCompletedEntryFlow) {
+    await _goOnce(
+      RouteNames.loginUser,
+    );
+  } else {
+    await _goOnce(
+      RouteNames.entryIdentity,
+    );
+  }
+}
 
   @override
   void dispose() {

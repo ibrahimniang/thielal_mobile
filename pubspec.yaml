@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+    
 
   firebase_core: ^4.0.0
   firebase_messaging: ^16.0.0
@@ -77,3 +78,4 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/onboarding/

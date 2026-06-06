@@ -21,6 +21,7 @@ class SecureStorageService {
   // ==========================
   static const String hasCompletedEntryFlowKey = 'has_completed_entry_flow';
 
+  static const String hasSeenOnboardingKey = 'has_seen_onboarding';
   // ==========================
   // HELPERS FLOW D'ENTRÉE
   // ==========================
@@ -43,5 +44,32 @@ class SecureStorageService {
   /// Supprime uniquement ce flag si besoin de reset onboarding/auth local.
   static Future<void> clearEntryFlowFlag() async {
     await instance.delete(key: hasCompletedEntryFlowKey);
+  }
+
+  // ==========================
+ // ONBOARDING
+ // ==========================
+
+  static Future<bool> hasSeenOnboarding() async {
+    final value = await instance.read(
+      key: hasSeenOnboardingKey,
+    );
+
+    return value == 'true';
+  }
+
+  static Future<void> setHasSeenOnboarding(
+    bool value,
+  ) async {
+    await instance.write(
+      key: hasSeenOnboardingKey,
+      value: value.toString(),
+    );
+  }
+
+  static Future<void> clearOnboardingFlag() async {
+    await instance.delete(
+      key: hasSeenOnboardingKey,
+    );
   }
 }

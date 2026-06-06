@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:thielal/features/onboarding/presentation/onboarding_screen.dart';
 
 // CHAT
 import '../../features/chat/presentation/screens/chat_screen.dart';
@@ -37,7 +38,6 @@ import '../../features/notifications/presentation/screens/notifications_list_scr
 
 // SPLASH
 import '../../features/splash/presentation/splash_screen.dart';
-
 import '../../core/navigation/main_navigation.dart';
 import 'route_names.dart';
 
@@ -95,9 +95,7 @@ class AppRouter {
           if (path == RouteNames.otpVerification ||
               path == RouteNames.register ||
               path == RouteNames.setPassword) {
-            return isInRegistrationFlow
-                ? null
-                : RouteNames.loginUser;
+            return isInRegistrationFlow ? null : RouteNames.loginUser;
           }
 
           if (isPublic) return null;
@@ -126,17 +124,18 @@ class AppRouter {
           builder: (_, __) => const SplashScreen(),
         ),
 
+        GoRoute(
+          path: RouteNames.onboarding,
+          builder: (context, state) => const OnboardingScreen(),
+        ),
+
         // ================= AUTH =================
         GoRoute(
           path: RouteNames.loginUser,
           builder: (_, __) => const LoginUserScreen(),
         ),
 
-        GoRoute(
-          path: RouteNames.onboarding,
-          builder: (_, __) =>
-              const _PlaceholderScreen(title: 'Onboarding'),
-        ),
+        
 
         GoRoute(
           path: RouteNames.entryIdentity,
@@ -145,8 +144,8 @@ class AppRouter {
 
         GoRoute(
           path: RouteNames.otpVerification,
-          builder: (_, __) =>
-              const _PlaceholderScreen(title: 'OTP Verification'),
+          builder:
+              (_, __) => const _PlaceholderScreen(title: 'OTP Verification'),
         ),
 
         GoRoute(
@@ -194,12 +193,9 @@ class AppRouter {
             GoRoute(
               path: '${RouteNames.publicProfile}/:id',
               builder: (context, state) {
-                final userId =
-                    int.parse(state.pathParameters['id']!);
+                final userId = int.parse(state.pathParameters['id']!);
 
-                return PublicUserProfileScreen(
-                  userId: userId,
-                );
+                return PublicUserProfileScreen(userId: userId);
               },
             ),
 
@@ -211,28 +207,23 @@ class AppRouter {
             GoRoute(
               path: RouteNames.map,
               builder: (context, state) {
-                return CentersMapScreen(
-                  initialSearch: state.extra as String?,
-                );
+                return CentersMapScreen(initialSearch: state.extra as String?);
               },
             ),
 
             GoRoute(
               path: '/notifications',
-              builder: (_, __) =>
-                  const NotificationsListScreen(),
+              builder: (_, __) => const NotificationsListScreen(),
             ),
 
             GoRoute(
               path: RouteNames.donations,
-              builder: (_, __) =>
-                  const DonationHistoryScreen(),
+              builder: (_, __) => const DonationHistoryScreen(),
             ),
 
             GoRoute(
               path: RouteNames.demandeSang,
-              builder: (_, __) =>
-                  const DemandeSangScreen(),
+              builder: (_, __) => const DemandeSangScreen(),
             ),
           ],
         ),
@@ -240,8 +231,7 @@ class AppRouter {
         // ================= CHAT =================
         GoRoute(
           path: RouteNames.conversations,
-          builder: (_, __) =>
-              const ConversationsScreen(),
+          builder: (_, __) => const ConversationsScreen(),
         ),
 
         GoRoute(
@@ -251,15 +241,12 @@ class AppRouter {
               state.pathParameters['conversationId']!,
             );
 
-            final extra =
-                state.extra as Map<String, dynamic>?;
+            final extra = state.extra as Map<String, dynamic>?;
 
             return ChatScreen(
               conversationId: conversationId,
-              fullName:
-                  extra?["fullName"] ?? "Discussion",
-              otherUserId:
-                  extra?["otherUserId"],
+              fullName: extra?["fullName"] ?? "Discussion",
+              otherUserId: extra?["otherUserId"],
             );
           },
         ),
@@ -267,70 +254,57 @@ class AppRouter {
         // ================= STAFF =================
         GoRoute(
           path: RouteNames.staffDashboard,
-          builder: (_, __) =>
-              const StaffDashboardScreen(),
+          builder: (_, __) => const StaffDashboardScreen(),
         ),
 
         GoRoute(
           path: RouteNames.staffRequests,
-          builder: (_, __) =>
-              const BloodRequestsScreen(),
+          builder: (_, __) => const BloodRequestsScreen(),
         ),
 
         GoRoute(
           path: RouteNames.staffDonors,
-          builder: (_, __) =>
-              const NearbyDonorsScreen(),
+          builder: (_, __) => const NearbyDonorsScreen(),
         ),
 
         GoRoute(
           path: RouteNames.bloodStock,
-          builder: (_, __) =>
-              const BloodStockScreen(),
+          builder: (_, __) => const BloodStockScreen(),
         ),
 
         GoRoute(
           path: RouteNames.qrScan,
-          builder: (_, __) =>
-              const QrScanScreen(),
+          builder: (_, __) => const QrScanScreen(),
         ),
 
         GoRoute(
           path: RouteNames.qrGenerate,
-          builder: (_, __) =>
-              const QrGenerateScreen(),
+          builder: (_, __) => const QrGenerateScreen(),
         ),
 
         // ================= DIRECTOR =================
         GoRoute(
           path: RouteNames.directorDashboard,
-          builder: (_, __) =>
-              const DirectorDashboardScreen(),
+          builder: (_, __) => const DirectorDashboardScreen(),
         ),
 
         GoRoute(
           path: RouteNames.createStaff,
-          builder: (_, __) =>
-              const CreateStaffScreen(),
+          builder: (_, __) => const CreateStaffScreen(),
         ),
 
         // ================= ADMIN =================
         GoRoute(
           path: RouteNames.adminDashboard,
-          builder: (_, __) =>
-              const _PlaceholderScreen(
-                title: 'Admin Dashboard',
-              ),
+          builder:
+              (_, __) => const _PlaceholderScreen(title: 'Admin Dashboard'),
         ),
       ],
 
-      errorBuilder: (_, state) => Scaffold(
-        body: Center(
-          child: Text(
-            'Route introuvable : ${state.uri.path}',
+      errorBuilder:
+          (_, state) => Scaffold(
+            body: Center(child: Text('Route introuvable : ${state.uri.path}')),
           ),
-        ),
-      ),
     );
   }
 }
@@ -338,23 +312,14 @@ class AppRouter {
 class _PlaceholderScreen extends StatelessWidget {
   final String title;
 
-  const _PlaceholderScreen({
-    required this.title,
-  });
+  const _PlaceholderScreen({required this.title});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
+      appBar: AppBar(title: Text(title)),
       body: Center(
-        child: Text(
-          title,
-          style: Theme.of(context)
-              .textTheme
-              .titleLarge,
-        ),
+        child: Text(title, style: Theme.of(context).textTheme.titleLarge),
       ),
     );
   }
