@@ -188,19 +188,20 @@ class MainNavigation extends ConsumerWidget {
                                     ),
 
                                     child:
-                                        index == 4
-                                            ? Stack(
-                                              clipBehavior: Clip.none,
-                                              children: [
-                                                Icon(
-                                                  item['icon'] as IconData,
-                                                  color:
-                                                      isSelected
-                                                          ? Colors.white
-                                                          : Colors
-                                                              .grey
-                                                              .shade500,
-                                                ),
+    index == 4
+        ? Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            Center(
+              child: Icon(
+                item['icon'] as IconData,
+                color:
+                    isSelected
+                        ? Colors.white
+                        : Colors.grey.shade500,
+              ),
+            ),
 
                                                 unreadCountAsync.when(
                                                   data: (count) {
@@ -209,8 +210,8 @@ class MainNavigation extends ConsumerWidget {
                                                     }
 
                                                     return Positioned(
-                                                      right: -6,
-                                                      top: -6,
+                                                      top: 2,
+  right: 2,
                                                       child: Container(
                                                         padding:
                                                             const EdgeInsets.all(

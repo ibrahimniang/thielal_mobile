@@ -20,9 +20,14 @@ class NotificationRepository {
       final List list = data["data"];
 
       /// conversion JSON -> NotificationModel
-      return list
-          .map((e) => NotificationModel.fromJson(e))
-          .toList();
+      final notifications =
+          list.map((e) => NotificationModel.fromJson(e)).toList();
+
+      for (final n in notifications) {
+        print("TYPE=${n.type} | DEMANDE=${n.demandeId}");
+      }
+
+      return notifications;
     }
 
     /// si aucune notification
@@ -39,21 +44,18 @@ class NotificationRepository {
   /// ===============================
   /// récupérer nombre notifications non lues
   /// ===============================
- Future<int> fetchUnreadCount() async {
-  final response = await service.getUnreadCount();
+  Future<int> fetchUnreadCount() async {
+    final response = await service.getUnreadCount();
 
-  print("🔔 UNREAD RESPONSE:");
-  print(response.data);
+    print("🔔 UNREAD RESPONSE:");
+    print(response.data);
 
-  final data = response.data;
+    final data = response.data;
 
-  if (data["success"] == true) {
-    return int.tryParse(
-  data["count"].toString(),
-) ?? 0;
+    if (data["success"] == true) {
+      return int.tryParse(data["count"].toString()) ?? 0;
+    }
+
+    return 0;
   }
-
-  return 0;
-}
-  
 }
