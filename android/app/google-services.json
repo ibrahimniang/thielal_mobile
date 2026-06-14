@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "220814183760",
+    "project_id": "thielal",
+    "storage_bucket": "thielal.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:220814183760:android:940efc521c049f2872f055",
+        "android_client_info": {
+          "package_name": "com.example.thielal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBoaDO_quUfvtuFMQr-h3q2K8s8SOWqXI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

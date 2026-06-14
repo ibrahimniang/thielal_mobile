@@ -765,6 +765,7 @@ if (_dateNaissanceController
     required ValueChanged<bool?> onChanged,
     required String title,
     required Color accent,
+    required VoidCallback onTap,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -776,7 +777,16 @@ if (_dateNaissanceController
       child: CheckboxListTile(
         value: value,
         onChanged: onChanged,
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+       title: GestureDetector(
+        onTap: onTap,
+        child: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            decoration: TextDecoration.underline,
+          ),
+        ),
+      ),
         activeColor: accent,
         contentPadding: const EdgeInsets.symmetric(horizontal: 10),
         controlAffinity: ListTileControlAffinity.leading,
@@ -1064,6 +1074,9 @@ DropdownButtonFormField<String>(
             },
             title: l10n.acceptConditions,
             accent: Colors.red.shade600,
+            onTap: () {
+              context.push(RouteNames.terms);
+            },
           ),
           _buildConsentTile(
             value: _acceptePolitique,
@@ -1072,6 +1085,9 @@ DropdownButtonFormField<String>(
             },
             title: l10n.acceptPrivacy,
             accent: Colors.blue.shade600,
+            onTap: () {
+              context.push(RouteNames.privacy);
+            },
           ),
         ],
       ),

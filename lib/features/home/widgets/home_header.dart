@@ -19,6 +19,7 @@ class HomeHeader extends StatefulWidget {
 
   final VoidCallback? onMenuTap;
   final VoidCallback? onChatTap;
+  final int unreadMessages;
   final VoidCallback? onProfileTap;
 
   const HomeHeader({
@@ -31,6 +32,7 @@ class HomeHeader extends StatefulWidget {
     this.onMenuTap,
     this.onChatTap,
     this.onProfileTap,
+    this.unreadMessages = 0,
   });
 
   @override
@@ -181,16 +183,14 @@ class _HomeHeaderState
 
                 const SizedBox(width: 2),
 
-                /// ==========================================
-                /// CHAT
-                /// ==========================================
-                _iconButton(
-                  icon: Icons
-                      .chat_bubble_outline_rounded,
+                      /// =====================================================
+                      /// CHAT
+                      /// =====================================================
+                      _iconButton(
+                        icon: Icons.chat_bubble_outline_rounded,
 
-                  onTap:
-                      widget.onChatTap,
-                ),
+                        onTap: widget.onChatTap,
+                      ),
 
                 const SizedBox(width: 2),
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:thielal/features/onboarding/presentation/onboarding_screen.dart';
 
 // CHAT
 import '../../features/chat/presentation/screens/chat_screen.dart';
@@ -38,9 +39,12 @@ import '../../features/alerts/data/models/alert_model.dart';
 
 // SPLASH
 import '../../features/splash/presentation/splash_screen.dart';
-
 import '../../core/navigation/main_navigation.dart';
 import 'route_names.dart';
+
+// acceptation des condistion
+import '../../features/auth/presentation/screens/terms_screen.dart';
+import '../../features/auth/presentation/screens/privacy_screen.dart';
 
 class AppRouter {
   static GoRouter router(WidgetRef ref) {
@@ -65,6 +69,9 @@ class AppRouter {
           RouteNames.forgotPassword,
           RouteNames.resetPassword,
           RouteNames.onboarding,
+
+          RouteNames.terms,
+          RouteNames.privacy,
         };
 
         final registrationRoutes = <String>{
@@ -125,6 +132,11 @@ class AppRouter {
           builder: (_, __) => const SplashScreen(),
         ),
 
+        GoRoute(
+          path: RouteNames.onboarding,
+          builder: (context, state) => const OnboardingScreen(),
+        ),
+
         // ================= AUTH =================
         GoRoute(
           path: RouteNames.loginUser,
@@ -150,6 +162,16 @@ class AppRouter {
         GoRoute(
           path: RouteNames.register,
           builder: (_, __) => const RegisterScreen(),
+        ),
+
+        GoRoute(
+          path: RouteNames.terms,
+          builder: (_, __) => const TermsScreen(),
+        ),
+
+        GoRoute(
+          path: RouteNames.privacy,
+          builder: (_, __) => const PrivacyScreen(),
         ),
 
         GoRoute(
@@ -206,8 +228,13 @@ class AppRouter {
             GoRoute(
               path: RouteNames.map,
               builder: (context, state) {
+                final extra = state.extra;
+
+                debugPrint('MAP EXTRA => ${extra.runtimeType}');
+
                 return CentersMapScreen(
-                  initialCenter: state.extra as AlertCenterModel?,
+                  initialSearch: extra is String ? extra : null,
+                  initialCenter: extra is AlertCenterModel ? extra : null,
                 );
               },
             ),

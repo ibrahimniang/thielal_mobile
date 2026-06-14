@@ -9,6 +9,7 @@ import '../widgets/contact_change_dialog.dart';
 import '../../../../shared/widgets/app_loading_view.dart';
 import '../../../auth/application/auth_controller.dart';
 import '../../../../l10n/app_localizations.dart';
+import 'package:thielal/core/constants/mauritania_locations.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -25,6 +26,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _villeController = TextEditingController();
   final _quartierController = TextEditingController();
 
+  String? _selectedVille;
+
   bool _initialized = false;
   bool _saving = false;
 
@@ -33,7 +36,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     _nomController.text = user.nom ?? '';
     _prenomController.text = user.prenom ?? '';
-    _villeController.text = user.ville ?? '';
+
+    final ville = user.ville?.trim();
+
+    _selectedVille =
+        (ville != null && mauritaniaLocations.containsKey(ville))
+            ? ville
+            : null;
+
+    _villeController.text = _selectedVille ?? '';
     _quartierController.text = user.quartier ?? '';
 
     _initialized = true;
@@ -226,38 +237,37 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
-      builder:
-          (_) => ContactChangeDialog(
-            title: l10n.changeAddEmail,
-            valueLabel: l10n.email,
-            keyboardType: TextInputType.emailAddress,
-            onRequestCode: (ref, value) async {
-              await ref
-                  .read(profileControllerProvider.notifier)
-                  .requestEmail(value);
+      builder: (_) => ContactChangeDialog(
+        title: l10n.changeAddEmail,
+        valueLabel: l10n.email,
+        keyboardType: TextInputType.emailAddress,
+        onRequestCode: (ref, value) async {
+          await ref
+              .read(profileControllerProvider.notifier)
+              .requestEmail(value);
 
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.codeSentByEmail),
-                  backgroundColor: Colors.blue,
-                ),
-              );
-            },
-            onVerify: (ref, value, code) async {
-              await ref
-                  .read(profileControllerProvider.notifier)
-                  .verifyEmail(value, code);
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.codeSentByEmail),
+              backgroundColor: Colors.blue,
+            ),
+          );
+        },
+        onVerify: (ref, value, code) async {
+          await ref
+              .read(profileControllerProvider.notifier)
+              .verifyEmail(value, code);
 
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.emailUpdatedSuccessfully),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            },
-          ),
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.emailUpdatedSuccessfully),
+              backgroundColor: Colors.green,
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -265,38 +275,37 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
-      builder:
-          (_) => ContactChangeDialog(
-            title: l10n.changePhone,
-            valueLabel: l10n.phone,
-            keyboardType: TextInputType.phone,
-            onRequestCode: (ref, value) async {
-              await ref
-                  .read(profileControllerProvider.notifier)
-                  .requestPhone(value);
+      builder: (_) => ContactChangeDialog(
+        title: l10n.changePhone,
+        valueLabel: l10n.phone,
+        keyboardType: TextInputType.phone,
+        onRequestCode: (ref, value) async {
+          await ref
+              .read(profileControllerProvider.notifier)
+              .requestPhone(value);
 
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.codeSentBySms),
-                  backgroundColor: Colors.blue,
-                ),
-              );
-            },
-            onVerify: (ref, value, code) async {
-              await ref
-                  .read(profileControllerProvider.notifier)
-                  .verifyPhone(value, code);
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.codeSentBySms),
+              backgroundColor: Colors.blue,
+            ),
+          );
+        },
+        onVerify: (ref, value, code) async {
+          await ref
+              .read(profileControllerProvider.notifier)
+              .verifyPhone(value, code);
 
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.phoneUpdatedSuccessfully),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            },
-          ),
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.phoneUpdatedSuccessfully),
+              backgroundColor: Colors.green,
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -376,20 +385,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         ),
         child: state.when(
           loading: () => AppLoadingView(message: l10n.loadingProfile),
-          error:
-              (e, _) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    "${l10n.error}: $e",
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+          error: (e, _) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                "${l10n.error}: $e",
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
+            ),
+          ),
           data: (user) {
             _init(user);
 
@@ -415,12 +423,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                 filled: true,
                                 fillColor: Colors.white,
                               ),
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return l10n.lastNameRequired;
-                                }
-                                return null;
-                              },
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
@@ -433,16 +435,28 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                 filled: true,
                                 fillColor: Colors.white,
                               ),
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return l10n.firstNameRequired;
-                                }
-                                return null;
-                              },
                             ),
                             const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _villeController,
+
+                            /// VILLE (FIX SAFE)
+                            DropdownButtonFormField<String>(
+                              value: (mauritaniaLocations.keys
+                                      .contains(_selectedVille))
+                                  ? _selectedVille
+                                  : null,
+                              items: mauritaniaLocations.keys
+                                  .map((v) => DropdownMenuItem(
+                                        value: v,
+                                        child: Text(v),
+                                      ))
+                                  .toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedVille = value;
+                                  _villeController.text = value ?? '';
+                                  _quartierController.clear();
+                                });
+                              },
                               decoration: InputDecoration(
                                 labelText: l10n.city,
                                 border: OutlineInputBorder(
@@ -452,9 +466,29 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                 fillColor: Colors.white,
                               ),
                             ),
+
                             const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _quartierController,
+
+                            /// QUARTIER (FIX SAFE)
+                            DropdownButtonFormField<String>(
+                              value: (_selectedVille != null &&
+                                      mauritaniaLocations[_selectedVille!]!
+                                          .contains(_quartierController.text))
+                                  ? _quartierController.text
+                                  : null,
+                              items: (_selectedVille != null)
+                                  ? mauritaniaLocations[_selectedVille!]!
+                                      .map((q) => DropdownMenuItem(
+                                            value: q,
+                                            child: Text(q),
+                                          ))
+                                      .toList()
+                                  : [],
+                              onChanged: (value) {
+                                setState(() {
+                                  _quartierController.text = value ?? '';
+                                });
+                              },
                               decoration: InputDecoration(
                                 labelText: l10n.district,
                                 border: OutlineInputBorder(
@@ -550,20 +584,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         children: [
           Icon(icon, color: Colors.red.shade600),
           const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              title,
-              style: TextStyle(
-                color: Colors.grey.shade700,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+          Expanded(child: Text(title)),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
         ],

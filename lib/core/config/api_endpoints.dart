@@ -72,6 +72,7 @@ class ApiEndpoints {
   static const String myDons = '/dons/my-dons';
   static const String demandeSang = '/dons/demande-sang';
   static const String demandes = '/dons/demandes';
+  static String demandeById(int id) => "/dons/demandes/$id";
   static const String generateQr = '/dons/generate-qr';
 
   static const String nearbyDonors = '/nearby-donors';
@@ -95,9 +96,15 @@ class ApiEndpoints {
 
   static const String notifications = '/notifications';
 
-  static const String unreadCount = '/notifications/unread-count';
+  static const unreadCount = "/notifications/unread-count";
+
+  //static const String unreadCount = '/notifications/unread-count';
 
   /// Marquer notification comme lue
+
+  /// static String markAsRead(dynamic id) => '/$id/read';
+  ///static String markAsRead(int id) => "/notifications/$id/read";
+
   static String markAsRead(dynamic id) {
     return '/notifications/$id/read';
   }
