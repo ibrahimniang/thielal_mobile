@@ -112,7 +112,10 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF1B1F24),
+            color: Theme.of(context).brightness ==
+                Brightness.dark
+            ? Colors.white
+            : const Color(0xFF1B1F24),
           ),
         ),
         const SizedBox(height: 8),
@@ -121,7 +124,10 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 14,
-            color: Colors.grey.shade700,
+                    color: Theme.of(context).brightness ==
+                Brightness.dark
+            ? Colors.white70
+            : Colors.grey.shade700,
             height: 1.4,
           ),
         ),
@@ -135,6 +141,9 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
     required AuthController auth,
   }) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark =
+    Theme.of(context).brightness ==
+    Brightness.dark;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(28),
@@ -146,11 +155,17 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(28),
             gradient: LinearGradient(
-              colors: [
-                Colors.white.withOpacity(0.92),
-                Colors.red.shade50.withOpacity(0.86),
-                Colors.blue.shade50.withOpacity(0.72),
-              ],
+          colors: isDark
+              ? [
+                  const Color(0xFF1B1B1B),
+                  const Color(0xFF232323),
+                  const Color(0xFF2A2A2A),
+                ]
+              : [
+                  Colors.white.withOpacity(0.92),
+                  Colors.red.shade50.withOpacity(0.86),
+                  Colors.blue.shade50.withOpacity(0.72),
+                ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -312,13 +327,17 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
     final auth = ref.read(authControllerProvider.notifier);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FC),
-      appBar: AppBar(
+      backgroundColor:
+        Theme.of(context).brightness ==
+                Brightness.dark
+            ? const Color(0xFF121212)
+            : const Color(0xFFF7F9FC),
+      /*appBar: AppBar(
         title: Text(l10n.login),
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,
         elevation: 0,
-      ),
+      ),*/
       body: Container(
         width: double.infinity,
         decoration: BoxDecoration(
@@ -338,7 +357,34 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
             padding: const EdgeInsets.all(AppSpacing.screenPadding),
             child: Column(
               children: [
-                const SizedBox(height: 18),
+                /// BOUTON THEME
+    Align(
+      alignment: Alignment.topRight,
+      child: Container(
+        height: 48,
+        width: 48,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 12,
+            ),
+          ],
+        ),
+        child: IconButton(
+          onPressed: () {
+            // toggle theme
+          },
+          icon: const Icon(
+            Icons.dark_mode_rounded,
+          ),
+        ),
+      ),
+    ),
+
+                const SizedBox(height: 20),
                 _buildHeader(context),
                 const SizedBox(height: 28),
                 _buildFormCard(
