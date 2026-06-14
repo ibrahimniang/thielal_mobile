@@ -7,6 +7,9 @@ import '../data/repositories/auth_repository.dart';
 import 'auth_state.dart';
 import '../../../core/storage/secure_storage_service.dart';
 import '../../../core/storage/session_storage.dart';
+//firebase
+import '../../../core/network/api_client.dart';
+import '../../../core/services/firebase_messaging_service.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository();
@@ -221,13 +224,14 @@ class AuthController extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: false, errorMessage: _mapError(e));
     }
   }
-void clearPendingUser() {
-  state = state.copyWith(
-    clearPendingPhone: true,
-    clearPendingEmail: true,
-    clearPendingUserId: true,
-  );
-}
+
+  void clearPendingUser() {
+    state = state.copyWith(
+      clearPendingPhone: true,
+      clearPendingEmail: true,
+      clearPendingUserId: true,
+    );
+  }
 
   // ==========================
   // LOGIN USER
@@ -272,6 +276,12 @@ void clearPendingUser() {
       /// ======================================
 
       await loadCurrentUser();
+
+      try {
+        await FirebaseMessagingService(ApiClient().dio).initialize();
+      } catch (e) {
+        print("FCM INIT ERROR => $e");
+      }
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -326,6 +336,12 @@ void clearPendingUser() {
       /// ======================================
 
       await loadCurrentUser();
+
+      try {
+        await FirebaseMessagingService(ApiClient().dio).initialize();
+      } catch (e) {
+        print("FCM INIT ERROR => $e");
+      }
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -387,6 +403,12 @@ void clearPendingUser() {
       /// ======================================
 
       await loadCurrentUser();
+
+      try {
+        await FirebaseMessagingService(ApiClient().dio).initialize();
+      } catch (e) {
+        print("FCM INIT ERROR => $e");
+      }
 
       await SecureStorageService.setHasCompletedEntryFlow(true);
       final saved = await SecureStorageService.hasCompletedEntryFlow();

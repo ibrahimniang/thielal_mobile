@@ -3,8 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-
+import '../../donations/presentation/screens/donation_details_screen.dart';
 import '../../../app/router/route_names.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
@@ -18,7 +17,6 @@ import '../../donations/application/donation_controller.dart';
 import '../../donors/presentation/providers/nearby_donors_provider.dart';
 
 import '../../donations/presentation/screens/demande_sang_screen.dart';
-import '../../donations/presentation/screens/donation_details_screen.dart';
 import '../../../l10n/app_localizations.dart';
 
 import '../widgets/home_drawer.dart';
@@ -44,26 +42,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int unreadCount = 0;
   bool passwordModalShown = false;
 
-@override
-void initState() {
-  super.initState();
-  loadUnreadCount();
-}
-
-Future<void> loadUnreadCount() async {
-  try {
-    setState(() {
-      unreadCount = 0;
-    });
-
-    debugPrint('💬 unreadCount => $unreadCount');
-  } catch (e) {
-    debugPrint('❌ loadUnreadCount error => $e');
+  @override
+  void initState() {
+    super.initState();
+    loadUnreadCount();
   }
-}
+
+  Future<void> loadUnreadCount() async {
+    try {
+      setState(() {
+        unreadCount = 0;
+      });
+
+      debugPrint('💬 unreadCount => $unreadCount');
+    } catch (e) {
+      debugPrint('❌ loadUnreadCount error => $e');
+    }
+  }
 
   String selectedGroup = 'Tous';
-
 
   final List<String> bloodFilters = ['Tous', 'O+', 'O-', 'A+', 'B+', 'AB+'];
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -71,63 +68,53 @@ Future<void> loadUnreadCount() async {
   final searchController = TextEditingController();
   String searchQuery = '';
 
-  
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authControllerProvider);
 
     final user = authState.currentUser;
-  /// ======================================
-/// PASSWORD REQUIRED MODAL
-/// ======================================
 
-WidgetsBinding.instance.addPostFrameCallback((_) {
-  if (!mounted) return;
+    /// ======================================
+    /// PASSWORD REQUIRED MODAL
+    /// ======================================
 
-  /// déjà affiché
-  if (passwordModalShown) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
 
-  final pendingUserId =
-      authState.pendingUserId;
+      /// déjà affiché
+      if (passwordModalShown) return;
 
-  /// pas onboarding
-  if (pendingUserId == null) return;
+      final pendingUserId = authState.pendingUserId;
 
-  passwordModalShown = true;
+      /// pas onboarding
+      if (pendingUserId == null) return;
 
-  showDialog(
-    context: context,
+      passwordModalShown = true;
 
-    barrierDismissible: false,
+      showDialog(
+        context: context,
 
-    builder: (_) {
-      return SetPasswordModal(
-        onSuccess: () async {
-          /// CLEAR PENDING
-          ref
-              .read(
-                authControllerProvider
-                    .notifier,
-              )
-              .clearPendingUser();
+        barrierDismissible: false,
 
-          if (!mounted) return;
+        builder: (_) {
+          return SetPasswordModal(
+            onSuccess: () async {
+              /// CLEAR PENDING
+              ref.read(authControllerProvider.notifier).clearPendingUser();
 
-          ScaffoldMessenger.of(context)
-              .showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Compte sécurisé avec succès 🔐',
-              ),
-            ),
+              if (!mounted) return;
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Compte sécurisé avec succès 🔐')),
+              );
+            },
           );
         },
       );
-    },
-  );
-});
+    });
+
+  
 
     final alertsAsync = ref.watch(alertsProvider);
 
@@ -290,14 +277,13 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
                         Scaffold.of(context).openDrawer();
                       },
 
-                      
                       onChatTap: () async {
-                          await context.push('/conversations');
+                        await context.push('/conversations');
 
-                          if (mounted) {
-                            loadUnreadCount();
-                          }
-                        },
+                        if (mounted) {
+                          loadUnreadCount();
+                        }
+                      },
 
                       /// 🔥 PROFILE
                       onProfileTap: () {
@@ -434,7 +420,7 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
 
                         const SizedBox(width: 18),
 
-                         Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
 
@@ -524,7 +510,7 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                           children: [
-                             Text(
+                            Text(
                               l10n.urgentRequests,
 
                               style: TextStyle(
@@ -539,7 +525,7 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
                                 context.push(RouteNames.alerts);
                               },
 
-                              child:  Text(l10n.seeAll),
+                              child: Text(l10n.seeAll),
                             ),
                           ],
                         ),
@@ -704,7 +690,7 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
                     /// ==========================================
 
                     if (filteredAlerts.isEmpty) {
-                      return  Center(
+                      return Center(
                         child: Padding(
                           padding: EdgeInsets.all(20),
 
@@ -717,13 +703,13 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
                     /// ALERTES BACKEND
                     /// ==========================================
 
+                    /// ALERTES BACKEND
                     return Column(
                       children:
                           filteredAlerts
                               .take(3)
                               .map(
                                 (alert) => UrgentRequestCard(
-                                  /// 🔥 BACKEND
                                   hospital: alert.center?.name ?? alert.city,
 
                                   bloodGroup: alert.bloodGroup,
@@ -741,12 +727,7 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
                                   critical:
                                       alert.type.toLowerCase() == 'urgent',
 
-                                  /// 🔥 ACTION
                                   onTap: () {
-                                    /// ==========================================
-                                    /// MESSAGE INDISPONIBILITÉ
-                                    /// ==========================================
-
                                     if (user?.dateProchainDon != null) {
                                       final unavailable = DateTime.now()
                                           .isBefore(user!.dateProchainDon!);
@@ -776,10 +757,6 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
                                         );
                                       }
                                     }
-
-                                    /// ==========================================
-                                    /// OUVERTURE ÉCRAN DÉTAIL
-                                    /// ==========================================
 
                                     Navigator.push(
                                       context,
@@ -1016,7 +993,6 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
                 },
               ),
 
-              
               /// =====================================================
               /// INFORMATIONS
               /// =====================================================
@@ -1053,11 +1029,9 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
 
               const SizedBox(height: 21),
             ],
-            
           ),
         ),
       ),
     );
   }
 }
-

@@ -114,4 +114,22 @@ class ChatRepository {
 
     return data["data"]["id_conversation"];
   }
+
+  Future<Map<String, dynamic>> getDemandeById(int demandeId) async {
+  final res = await http.get(
+    Uri.parse("${Env.baseUrl}/dons/demandes/$demandeId"),
+    headers: {
+      "Authorization": "Bearer $token",
+      "Content-Type": "application/json",
+    },
+  );
+
+  final data = jsonDecode(res.body);
+
+  if (res.statusCode != 200) {
+    throw Exception("Erreur demande");
+  }
+
+  return data["data"];
+}
 }
