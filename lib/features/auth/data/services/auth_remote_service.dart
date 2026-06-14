@@ -132,18 +132,28 @@ class AuthRemoteService {
   }
 
   Future<Response<dynamic>> loginUser({
-    required String identifier,
-    required String password,
-  }) async {
-    return _dio.post(
-      ApiEndpoints.loginUser,
-      data:
-          _isEmail(identifier)
-              ? {'email': identifier, 'password': password}
-              : {'telephone': identifier, 'password': password},
-    );
-  }
-
+  required String identifier,
+  required String password,
+  double? latitude,
+  double? longitude,
+}) async {
+  return _dio.post(
+    ApiEndpoints.loginUser,
+    data: _isEmail(identifier)
+        ? {
+            'email': identifier,
+            'password': password,
+            'latitude': latitude,
+            'longitude': longitude,
+          }
+        : {
+            'telephone': identifier,
+            'password': password,
+            'latitude': latitude,
+            'longitude': longitude,
+          },
+  );
+}
   Future<Response<dynamic>> loginOffice({
     required String identifier,
     required String password,

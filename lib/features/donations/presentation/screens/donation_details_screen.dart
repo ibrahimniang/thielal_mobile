@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../auth/application/auth_controller.dart';
+
+import '../../../participation/data/repositories/participation_repository.dart';
 import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
@@ -11,7 +15,7 @@ import '../../../alerts/data/models/alert_model.dart';
 import '../../../auth/data/models/user_model.dart';
 import '../../../../l10n/app_localizations.dart';
 
-class DonationDetailsScreen extends StatelessWidget {
+class DonationDetailsScreen extends ConsumerWidget {
   final AlertModel alert;
 
   final UserModel? user;
@@ -31,7 +35,7 @@ class DonationDetailsScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final center = alert.center;
 
@@ -196,10 +200,11 @@ class DonationDetailsScreen extends StatelessWidget {
 
                     Expanded(
                       child: Text(
-                        '${l10n.recoveryPeriod}\n\n${l10n.nextDonationDate} : ',
+                        '${l10n.recoveryPeriod}\n\n'
+                        '${l10n.nextDonationDate} : '
+                        '${user!.dateProchainDon!.day}/${user!.dateProchainDon!.month}/${user!.dateProchainDon!.year}',
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
-
                           height: 1.5,
                         ),
                       ),
@@ -211,7 +216,7 @@ class DonationDetailsScreen extends StatelessWidget {
             /// ==========================================
             /// INFOS
             /// ==========================================
-             Text(
+            Text(
               l10n.centerInformation,
 
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
@@ -264,7 +269,13 @@ class DonationDetailsScreen extends StatelessWidget {
 
               child: ElevatedButton.icon(
                 onPressed: () {
-                  context.push(RouteNames.map);
+                  debugPrint('CENTER NAME => ${center?.name}');
+
+                  debugPrint('CENTER LAT => ${center?.latitude}');
+
+                  debugPrint('CENTER LNG => ${center?.longitude}');
+
+                  context.push(RouteNames.map, extra: center);
                 },
 
                 style: ElevatedButton.styleFrom(
@@ -277,7 +288,7 @@ class DonationDetailsScreen extends StatelessWidget {
 
                 icon: const Icon(Icons.map_rounded),
 
-                label:  Text(l10n.viewDirections),
+                label: Text(l10n.viewDirections),
               ),
             ),
 
@@ -289,8 +300,76 @@ class DonationDetailsScreen extends StatelessWidget {
               height: 58,
 
               child: OutlinedButton.icon(
-                onPressed: () {
-                  context.push(RouteNames.donations);
+                onPressed: () async {
+                  if (isUnavailable) {
+                    showDialog(
+                      context: context,
+                      builder: (dialogContext) {
+                        return AlertDialog(
+                          title: const Text('Don temporairement indisponible'),
+                          content: Text(
+                            'Vous ne pouvez pas encore effectuer un don.\n\n'
+                            'Votre prochaine date de don autorisée est le '
+                            '${user!.dateProchainDon!.day}/${user!.dateProchainDon!.month}/${user!.dateProchainDon!.year}.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(dialogContext),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    return;
+                  }
+                  try {
+                    final token = ref.read(authControllerProvider).accessToken;
+
+                    final participationRepo = ParticipationRepository(
+                      token: token,
+                    );
+
+                    debugPrint('ALERT ID => ${alert.id}');
+                    await participationRepo.participer(alert.demandeId!);
+
+                    if (context.mounted) {
+                      showDialog(
+                        context: context,
+                        builder: (dialogContext) {
+                          return AlertDialog(
+                            title: const Text('Participation enregistrée'),
+
+                            content: Text(
+                              'Vous participez maintenant à cette demande.\n\n'
+                              'Centre : ${center?.name ?? "Centre médical"}\n\n'
+                              'Veuillez contacter le centre ou vous y rendre pour effectuer votre don.',
+                            ),
+
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(dialogContext).pop();
+                                },
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            e.toString().replaceFirst('Exception: ', ''),
+                          ),
+                        ),
+                      );
+                    }
+                  }
                 },
 
                 style: OutlinedButton.styleFrom(
@@ -303,9 +382,10 @@ class DonationDetailsScreen extends StatelessWidget {
 
                 icon: const Icon(Icons.favorite_rounded),
 
-                label: Text(l10n.respondUrgency),
+                label: const Text('Je participe'),
               ),
             ),
+            const SizedBox(height: 140),
           ],
         ),
       ),
@@ -417,7 +497,7 @@ class DonationDetailsScreen extends StatelessWidget {
                   onPressed: () async {
                     await Clipboard.setData(ClipboardData(text: value));
 
-                   debugPrint(l10n.phoneCopied);
+                    debugPrint(l10n.phoneCopied);
                   },
 
                   icon: const Icon(Icons.copy_rounded),

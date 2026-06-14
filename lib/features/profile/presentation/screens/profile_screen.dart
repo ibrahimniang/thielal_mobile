@@ -244,7 +244,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           const SizedBox(height: 24),
 
           /// NEXT DONATION
-          NextDonationCard(nextDonationDate: null),
+          NextDonationCard(nextDonationDate: user.dateProchainDon),
 
           const SizedBox(height: 20),
 
@@ -525,6 +525,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             value: user.groupeSanguin ?? '--',
 
             iconColor: AppColors.primaryRed,
+          ),
+          MedicalInfoTile(
+            icon: Icons.volunteer_activism_rounded,
+            label: "Prochain don",
+            value:
+                user.dateProchainDon == null
+                    ? "Apte à donner"
+                    : "${user.dateProchainDon!.day}/${user.dateProchainDon!.month}/${user.dateProchainDon!.year}",
+            iconColor: Colors.green,
           ),
 
           MedicalInfoTile(

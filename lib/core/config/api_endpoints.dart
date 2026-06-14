@@ -28,7 +28,7 @@ class ApiEndpoints {
       '/auth/forgot-password/verify-code';
 
   static const String forgotPasswordResetPassword =
-      '/forgot-password/reset-password';
+      '/auth/forgot-password/reset-password';
 
   /// Inscription par étapes
   static const String registerStep1 = '/auth/register/step-1';

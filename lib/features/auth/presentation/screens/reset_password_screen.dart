@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../app/theme/app_spacing.dart';
+import '../../../../app/router/route_names.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
@@ -112,6 +114,21 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                           telephone: widget.telephone!.trim(),
                           password: _passwordController.text.trim(),
                         );
+
+                    if (!mounted) return;
+
+                    final state = ref.read(authControllerProvider);
+
+                    if (state.errorMessage == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          backgroundColor: Colors.green,
+                          content: Text("Mot de passe modifié avec succès"),
+                        ),
+                      );
+
+                      context.go(RouteNames.loginUser);
+                    }
                   },
                 ),
               ],

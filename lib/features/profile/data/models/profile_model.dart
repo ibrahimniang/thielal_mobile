@@ -14,6 +14,7 @@ class ProfileModel {
   final String? statutGroupeSanguin;
 
   final bool profilComplet;
+  final DateTime? dateProchainDon;
   final String? qrCode;
   final int? points;
 
@@ -30,6 +31,7 @@ class ProfileModel {
     this.groupeSanguin,
     this.statutGroupeSanguin,
     this.profilComplet = false,
+    this.dateProchainDon,
     this.qrCode,
     this.points,
   });
@@ -59,6 +61,7 @@ class ProfileModel {
 
       // ✅ règle métier du projet
       profilComplet: isBloodGroupVerified,
+      dateProchainDon: _toDateTime(json['date_prochain_don']),
 
       qrCode: json['qr_code']?.toString(),
       points: _toInt(json['points']),
@@ -73,5 +76,10 @@ class ProfileModel {
   static double? _toDouble(dynamic value) {
     if (value == null) return null;
     return double.tryParse(value.toString());
+  }
+
+  static DateTime? _toDateTime(dynamic value) {
+    if (value == null) return null;
+    return DateTime.tryParse(value.toString());
   }
 }

@@ -1,6 +1,8 @@
 class AlertModel {
   final int id;
 
+  final int? demandeId;
+
   final String title;
 
   final String message;
@@ -23,21 +25,34 @@ class AlertModel {
 
   AlertModel({
     required this.id,
+
+    this.demandeId,
+
     required this.title,
+
     required this.message,
+
     required this.type,
+
     required this.bloodGroup,
+
     required this.city,
+
     required this.quantity,
+
     required this.status,
+
     required this.createdAt,
+
     this.center,
   });
 
   factory AlertModel.fromJson(Map<String, dynamic> json) {
     return AlertModel(
       /// 🔥 backend demandes
-      id: json['id_demande'] ?? json['id_alerte'] ?? 0,
+      id: json['id_alerte'] ?? 0,
+
+      demandeId: json['demande_id'],
 
       /// 🔥 fallback
       title: json['titre'] ?? 'Urgence sanguine',

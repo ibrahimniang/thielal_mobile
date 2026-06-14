@@ -95,23 +95,35 @@ class ChatRepository {
   // =========================
 
   Future<int> createConversation(int user2Id) async {
-    final res = await http.post(
-      Uri.parse("${Env.baseUrl}${ApiEndpoints.createConversation}"),
-      headers: {
-        "Authorization": "Bearer $token",
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode({
-        "user2": user2Id,
-      }),
+  final res = await http.post(
+    Uri.parse(
+      "${Env.baseUrl}${ApiEndpoints.createConversation}",
+    ),
+    headers: {
+      "Authorization": "Bearer $token",
+      "Content-Type": "application/json",
+    },
+    body: jsonEncode({
+      "user2": user2Id,
+    }),
+  );
+
+  print(
+  "CREATE CONVERSATION STATUS => ${res.statusCode}",
+);
+
+print(
+  "CREATE CONVERSATION BODY => ${res.body}",
+);
+  final data = jsonDecode(res.body);
+
+  if (res.statusCode != 200) {
+    throw Exception(
+      data["message"] ??
+      "Erreur conversation",
     );
-
-    final data = jsonDecode(res.body);
-
-    if (res.statusCode != 200) {
-      throw Exception("Erreur conversation");
-    }
-
-    return data["data"]["id_conversation"];
   }
+
+  return data["data"]["id_conversation"];
+}
 }

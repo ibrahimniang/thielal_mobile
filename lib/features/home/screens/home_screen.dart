@@ -1,9 +1,9 @@
-import 'dart:math';
+// import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 import '../../../app/router/route_names.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_spacing.dart';
@@ -18,6 +18,8 @@ import '../../donors/presentation/providers/nearby_donors_provider.dart';
 
 import '../../donations/presentation/screens/demande_sang_screen.dart';
 import '../../donations/presentation/screens/donation_details_screen.dart';
+import '../../chat/data/repositories/chat_repository.dart';
+import '../../chat/presentation/screens/chat_screen.dart';
 import '../../../l10n/app_localizations.dart';
 
 import '../widgets/home_drawer.dart';
@@ -63,7 +65,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   String selectedGroup = 'Tous';
 
-  final List<String> bloodFilters = ['Tous', 'O+', 'O-', 'A+', 'B+', 'AB+'];
+  final List<String> bloodFilters = ['Tous', 'O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   final searchController = TextEditingController();
@@ -186,23 +188,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       /// 🔥 suggestions live
                       suggestions:
                           <String>[
-                                /// ======================================
-                                /// DONNEURS PROCHES
-                                /// ======================================
-                                ...nearbyDonorsAsync?.maybeWhen(
-                                      data: (donors) {
-                                        return donors
-                                            .map(
-                                              (d) =>
-                                                  '🩸 ${d.prenom} ${d.nom} • ${d.groupeSanguin} • ${d.distance} km',
-                                            )
-                                            .cast<String>()
-                                            .toList();
-                                      },
+                                // /// ======================================
+                                // /// DONNEURS PROCHES
+                                // /// ======================================
+                                // ...nearbyDonorsAsync?.maybeWhen(
+                                //       data: (donors) {
+                                //         return donors
+                                //             .map(
+                                //               (d) =>
+                                //                   '🩸 ${d.prenom} ${d.nom} • ${d.groupeSanguin} • ${d.distance} km',
+                                //             )
+                                //             .cast<String>()
+                                //             .toList();
+                                //       },
 
-                                      orElse: () => <String>[],
-                                    ) ??
-                                    [],
+                                //       orElse: () => <String>[],
+                                //     ) ??
+                                //     [],
 
                                 /// ======================================
                                 /// CENTRES
@@ -294,6 +296,115 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
 
               const SizedBox(height: 24),
+
+              const SizedBox(height: 24),
+
+              if (nearbyDonorsAsync != null)
+                nearbyDonorsAsync.when(
+                  data: (donors) {
+                    if (donors.isEmpty) {
+                      return const SizedBox();
+                    }
+
+                    final topDonors = donors.take(3).toList();
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.screenPadding,
+                      ),
+                      child: Column(
+                        children:
+                            topDonors.map((donor) {
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '🩸 ${donor.prenom} ${donor.nom} • ${donor.groupeSanguin} • ${donor.distance?.toStringAsFixed(1)} km',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.chat_bubble_outline_rounded,
+                                        size: 20,
+                                      ),
+                                      onPressed: () async {
+                                        try {
+                                          final auth = ref.read(
+                                            authControllerProvider,
+                                          );
+
+                                          final repository = ChatRepository(
+                                            token: auth.accessToken,
+                                          );
+
+                                          final conversationId =
+                                              await repository
+                                                  .createConversation(donor.id);
+
+                                          if (!context.mounted) return;
+
+                                          context.push(
+                                            '/chat/$conversationId',
+                                            extra: {
+                                              "fullName": donor.fullName,
+                                              "otherUserId": donor.id,
+                                            },
+                                          );
+                                        } catch (e) {
+                                          debugPrint("❌ ouverture chat => $e");
+                                        }
+                                      },
+                                    ),
+
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.call_outlined,
+                                        size: 20,
+                                      ),
+                                      onPressed: () async {
+                                        final phone = donor.telephone?.trim();
+
+                                        if (phone == null || phone.isEmpty) {
+                                          return;
+                                        }
+
+                                        final uri = Uri.parse('tel:$phone');
+
+                                        if (await canLaunchUrl(uri)) {
+                                          await launchUrl(uri);
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                      ),
+                    );
+                  },
+                  loading: () => const SizedBox(),
+                  error: (_, __) => const SizedBox(),
+                ),
+
+              /// =====================================================
+              /// LIVE MAP
+              /// =====================================================
 
               /// =====================================================
               /// LIVE MAP
@@ -486,6 +597,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 loading: () => const Center(child: CircularProgressIndicator()),
 
                 error: (e, _) {
+                  print("ALERT ERROR => $e");
                   return Center(child: Text(e.toString()));
                 },
               ),
@@ -617,6 +729,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                 child: alertsAsync.when(
                   data: (alerts) {
+                    print("ALERTS COUNT => ${alerts.length}");
                     final infoAlerts =
                         alerts.where((a) {
                           final type = a.type.trim().toLowerCase();
@@ -634,6 +747,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     /// ALERTES DE LA VILLE UTILISATEUR
                     /// ==========================================
 
+                    for (final a in alerts) {
+                      print("========== ALERTE ==========");
+                      print("Titre: ${a.title}");
+                      print("Type: ${a.type}");
+                      print("Ville: ${a.city}");
+                      print("Status: ${a.status}");
+                      print("Blood: ${a.bloodGroup}");
+                      print("Center: ${a.center?.name}");
+                    }
                     final cityAlerts =
                         alerts.where((a) {
                           final type = a.type.trim().toLowerCase();
@@ -1002,82 +1124,63 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(height: 24),
 
-            /// =====================================================
-/// INFORMATIONS
-/// =====================================================
+              /// =====================================================
+              /// INFORMATIONS
+              /// =====================================================
+              alertsAsync.when(
+                data: (alerts) {
+                  /// ==========================================
+                  /// FILTRE ALERTES INFO
+                  /// ==========================================
 
-alertsAsync.when(
-  data: (alerts) {
-    /// ==========================================
-    /// FILTRE ALERTES INFO
-    /// ==========================================
+                  final infoAlerts =
+                      alerts.where((a) {
+                        final type = a.type.trim().toLowerCase();
 
-    final infoAlerts = alerts.where((a) {
-      final type =
-          a.type.trim().toLowerCase();
+                        return type == 'info' || type == 'information';
+                      }).toList();
 
-      return type == 'info' ||
-          type == 'information';
-    }).toList();
+                  /// ==========================================
+                  /// AUCUNE INFO
+                  /// ==========================================
 
-    /// ==========================================
-    /// AUCUNE INFO
-    /// ==========================================
+                  if (infoAlerts.isEmpty) {
+                    return const SizedBox();
+                  }
 
-    if (infoAlerts.isEmpty) {
-      return const SizedBox();
-    }
+                  /// ==========================================
+                  /// CONSTRUCTION TEXTE TICKER
+                  /// ==========================================
 
-    /// ==========================================
-    /// CONSTRUCTION TEXTE TICKER
-    /// ==========================================
+                  final tickerText = infoAlerts
+                      .map((a) => '🚨 ${a.message.trim()}')
+                      .join('     •••     ');
 
-    final tickerText = infoAlerts
-        .map(
-          (a) =>
-              '🚨 ${a.message.trim()}',
-        )
-        .join(
-          '     •••     ',
-        );
+                  debugPrint('📢 INFO ALERTS => $tickerText');
 
-    debugPrint(
-      '📢 INFO ALERTS => $tickerText',
-    );
+                  /// ==========================================
+                  /// TICKER
+                  /// ==========================================
 
-    /// ==========================================
-    /// TICKER
-    /// ==========================================
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8),
 
-    return Padding(
-      padding:
-          const EdgeInsets.only(
-        top: 8,
-      ),
+                    child: InformationTicker(text: '$tickerText     •••     '),
+                  );
+                },
 
-      child: InformationTicker(
-        text:
-            '$tickerText     •••     ',
-      ),
-    );
-  },
+                /// ==========================================
+                /// LOADING
+                /// ==========================================
+                loading: () => const SizedBox(),
 
-  /// ==========================================
-  /// LOADING
-  /// ==========================================
+                /// ==========================================
+                /// ERROR
+                /// ==========================================
+                error: (_, __) => const SizedBox(),
+              ),
 
-  loading: () =>
-      const SizedBox(),
-
-  /// ==========================================
-  /// ERROR
-  /// ==========================================
-
-  error: (_, __) =>
-      const SizedBox(),
-),
-
-const SizedBox(height: 24),
+              const SizedBox(height: 24),
             ],
           ),
         ),

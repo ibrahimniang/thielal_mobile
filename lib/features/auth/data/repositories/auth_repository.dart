@@ -118,10 +118,14 @@ class AuthRepository {
   Future<(UserModel user, AuthTokensModel tokens)> loginUser({
     required String identifier,
     required String password,
+    double? latitude,
+    double? longitude,
   }) async {
     final response = await _remoteService.loginUser(
       identifier: identifier,
       password: password,
+      latitude: latitude,
+      longitude: longitude,
     );
 
     final raw = response.data;

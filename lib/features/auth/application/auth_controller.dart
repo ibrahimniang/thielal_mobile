@@ -1,12 +1,16 @@
 //lib/features/auth/application/auth_controller.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../../../../core/network/network_exceptions.dart';
 import '../data/repositories/auth_repository.dart';
 import 'auth_state.dart';
 import '../../../core/storage/secure_storage_service.dart';
 import '../../../core/storage/session_storage.dart';
+import '../../../core/services/device_service.dart';
+
+import '../../devices/data/device_repository.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository();
@@ -221,13 +225,14 @@ class AuthController extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: false, errorMessage: _mapError(e));
     }
   }
-void clearPendingUser() {
-  state = state.copyWith(
-    clearPendingPhone: true,
-    clearPendingEmail: true,
-    clearPendingUserId: true,
-  );
-}
+
+  void clearPendingUser() {
+    state = state.copyWith(
+      clearPendingPhone: true,
+      clearPendingEmail: true,
+      clearPendingUserId: true,
+    );
+  }
 
   // ==========================
   // LOGIN USER
@@ -272,6 +277,13 @@ void clearPendingUser() {
       /// ======================================
 
       await loadCurrentUser();
+      try {
+        final device = await DeviceService.getDeviceInfo();
+
+        await DeviceRepository().registerDevice(device);
+      } catch (e) {
+        print("DEVICE REGISTER ERROR => $e");
+      }
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -354,6 +366,13 @@ void clearPendingUser() {
       );
 
       final bool isEmail = identifier.contains('@');
+      Position? position;
+
+      try {
+        position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
+      } catch (_) {}
 
       final result =
           isEmail
@@ -364,8 +383,9 @@ void clearPendingUser() {
               : await _repository.loginUser(
                 identifier: identifier,
                 password: password,
+                latitude: position?.latitude,
+                longitude: position?.longitude,
               );
-
       await SessionStorage.saveSessionExpiry(
         DateTime.now().add(const Duration(minutes: 10)),
       );
@@ -387,6 +407,13 @@ void clearPendingUser() {
       /// ======================================
 
       await loadCurrentUser();
+      try {
+        final device = await DeviceService.getDeviceInfo();
+
+        await DeviceRepository().registerDevice(device);
+      } catch (e) {
+        print("DEVICE REGISTER ERROR => $e");
+      }
 
       await SecureStorageService.setHasCompletedEntryFlow(true);
       final saved = await SecureStorageService.hasCompletedEntryFlow();

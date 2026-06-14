@@ -20,7 +20,7 @@ class NextDonationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final hasDate = nextDonationDate != null;
+    final bool isEligible = nextDonationDate == null;
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -77,10 +77,9 @@ class NextDonationCard extends StatelessWidget {
 
           /// DATE
           Text(
-            hasDate
-                ? DateFormat('dd MMMM yyyy').format(nextDonationDate!)
-                : l10n.noDateAvailable,
-
+            isEligible
+                ? 'Apte à donner'
+                : DateFormat('dd MMMM yyyy').format(nextDonationDate!),
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w900,
@@ -91,9 +90,9 @@ class NextDonationCard extends StatelessWidget {
           const SizedBox(height: 12),
 
           Text(
-            hasDate
-                ? l10n.newDonationAvailableDate
-                : l10n.nextDonationDateSoon,
+            isEligible
+                ? 'Vous pouvez effectuer un nouveau don de sang dès maintenant.'
+                : 'Vous serez automatiquement notifié lorsque vous redeviendrez apte.',
 
             style: TextStyle(
               color: Colors.white.withOpacity(0.82),
@@ -106,37 +105,38 @@ class NextDonationCard extends StatelessWidget {
 
           const SizedBox(height: 28),
 
-          /// BUTTON
-          GestureDetector(
-            onTap: onReminderTap,
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 18),
 
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 18),
+            decoration: BoxDecoration(
+              color: isEligible ? Colors.green : AppColors.primaryRed,
 
-              decoration: BoxDecoration(
-                color: AppColors.primaryRed,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+            ),
 
-                borderRadius: BorderRadius.circular(AppRadius.xl),
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
 
-              child:  Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  isEligible
+                      ? Icons.check_circle_rounded
+                      : Icons.notifications_active_rounded,
+                  color: Colors.white,
+                ),
 
-                children: [
-                  Icon(Icons.notifications_active_rounded, color: Colors.white),
+                const SizedBox(width: 10),
 
-                  SizedBox(width: 10),
-
-                  Text(
-                    l10n.receiveReminder,
-
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
+                Text(
+                  isEligible
+                      ? 'Disponible maintenant'
+                      : 'Notification automatique activée',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],

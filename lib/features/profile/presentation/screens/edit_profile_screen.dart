@@ -7,6 +7,7 @@ import '../widgets/profile_section_card.dart';
 import '../widgets/profile_action_button.dart';
 import '../widgets/contact_change_dialog.dart';
 import '../../../../shared/widgets/app_loading_view.dart';
+import '../../../auth/application/auth_controller.dart';
 import '../../../../l10n/app_localizations.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -36,6 +37,131 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _quartierController.text = user.quartier ?? '';
 
     _initialized = true;
+  }
+
+  void _openNewPasswordDialog(String telephone) {
+    final passwordController = TextEditingController();
+
+    final confirmController = TextEditingController();
+
+    final authController = ref.read(authControllerProvider.notifier);
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text("Nouveau mot de passe"),
+
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: "Nouveau mot de passe",
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              TextField(
+                controller: confirmController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: "Confirmer le mot de passe",
+                ),
+              ),
+            ],
+          ),
+
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text("Annuler"),
+            ),
+
+            ElevatedButton(
+              onPressed: () async {
+                if (passwordController.text != confirmController.text) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Les mots de passe ne correspondent pas"),
+                    ),
+                  );
+                  return;
+                }
+
+                await authController.forgotPasswordResetPassword(
+                  telephone: telephone,
+                  password: passwordController.text,
+                );
+
+                if (!mounted) return;
+
+                Navigator.pop(dialogContext);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    backgroundColor: Colors.green,
+                    content: Text("Mot de passe modifié avec succès"),
+                  ),
+                );
+              },
+              child: const Text("Modifier"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _openOtpResetDialog(String telephone) {
+    final otpController = TextEditingController();
+
+    final rootContext = context;
+
+    final authController = ref.read(authControllerProvider.notifier);
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text("Vérification OTP"),
+
+          content: TextField(
+            controller: otpController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(labelText: "Code OTP"),
+          ),
+
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text("Annuler"),
+            ),
+
+            ElevatedButton(
+              onPressed: () async {
+                await authController.forgotPasswordVerifyCode(
+                  telephone: telephone,
+                  code: otpController.text.trim(),
+                );
+
+                Navigator.pop(dialogContext);
+
+                Future.delayed(const Duration(milliseconds: 200), () {
+                  if (mounted) {
+                    _openNewPasswordDialog(telephone);
+                  }
+                });
+              },
+              child: const Text("Vérifier"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -174,6 +300,55 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 
+  void _openResetPasswordDialog() {
+    final phoneController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text("Changer le mot de passe"),
+
+          content: TextField(
+            controller: phoneController,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(labelText: "Téléphone"),
+          ),
+
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text("Annuler"),
+            ),
+
+            ElevatedButton(
+              onPressed: () async {
+                final authController = ref.read(
+                  authControllerProvider.notifier,
+                );
+
+                await authController.forgotPasswordSendCode(
+                  telephone: phoneController.text.trim(),
+                );
+
+                Navigator.pop(dialogContext);
+
+                Future.delayed(const Duration(milliseconds: 200), () {
+                  if (mounted) {
+                    _openOtpResetDialog(phoneController.text.trim());
+                  }
+                });
+              },
+              child: const Text("Envoyer"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -308,7 +483,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             const SizedBox(height: 12),
                             _contactTile(
                               icon: Icons.phone_rounded,
-                             title: l10n.currentPhone,
+                              title: l10n.currentPhone,
                               value: user?.telephone ?? "--",
                             ),
                           ],
@@ -323,17 +498,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         child: Column(
                           children: [
                             ProfileActionButton(
-                              text: l10n.changeAddEmail,
-                              icon: Icons.mark_email_read_rounded,
-                              color: Colors.blue,
-                              onPressed: _openEmailDialog,
-                            ),
-                            const SizedBox(height: 12),
-                            ProfileActionButton(
                               text: l10n.changePhone,
                               icon: Icons.phone_android_rounded,
                               color: Colors.green,
                               onPressed: _openPhoneDialog,
+                            ),
+                            const SizedBox(height: 12),
+
+                            ProfileActionButton(
+                              text: "Changer le mot de passe",
+                              icon: Icons.lock_reset_rounded,
+                              color: Colors.orange,
+                              onPressed: _openResetPasswordDialog,
                             ),
                           ],
                         ),

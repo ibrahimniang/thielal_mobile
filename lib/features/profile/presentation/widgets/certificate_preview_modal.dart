@@ -1,8 +1,10 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/app_colors.dart';
 // import '../../../../app/theme/app_spacing.dart';
@@ -18,6 +20,8 @@ class CertificatePreviewModal extends StatelessWidget {
   final String donationDate;
 
   final String certificateUrl;
+
+  static const String appLink = "#########";
 
   const CertificatePreviewModal({
     super.key,
@@ -64,15 +68,25 @@ class CertificatePreviewModal extends StatelessWidget {
 
   Future<void> _shareCertificate(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
+
     await Share.share('''
 🩸 ${l10n.lifelinkDonationCertificate}
 
-${l10n.donor} : $donorName
-${l10n.bloodGroup} : $bloodGroup
-${l10n.center} : $hospitalName
-${l10n.date} : $donationDate
+${l10n.donor}: $donorName
+${l10n.bloodGroup}: $bloodGroup
+${l10n.center}: $hospitalName
+${l10n.date}: $donationDate
 
+ Certificat :
 $certificateUrl
+
+ Réalisé via LifeLink Mauritanie
+
+ Téléchargez l'application :
+$appLink
+
+#LifeLink
+#DonDeSang
 ''');
   }
 
@@ -82,6 +96,7 @@ $certificateUrl
 
   Future<void> _openCertificate() async {
     final uri = Uri.parse(certificateUrl);
+    print("CERTIFICATE URL => $certificateUrl");
 
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -95,6 +110,9 @@ $certificateUrl
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final formattedDate = DateFormat(
+      'dd/MM/yyyy • HH:mm',
+    ).format(DateTime.parse(donationDate));
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
 
@@ -163,7 +181,7 @@ $certificateUrl
                   const SizedBox(width: 18),
 
                   /// TEXT
-                   Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
 
@@ -260,8 +278,8 @@ $certificateUrl
                           const SizedBox(height: 22),
 
                           /// TITLE
-                           Text(
-                           l10n.donationCertificate.toUpperCase(),
+                          Text(
+                            l10n.donationCertificate.toUpperCase(),
 
                             textAlign: TextAlign.center,
 
@@ -301,7 +319,7 @@ $certificateUrl
 
                           const SizedBox(height: 18),
 
-                          _infoRow(label: l10n.date, value: donationDate),
+                          _infoRow(label: l10n.date, value: formattedDate),
 
                           const SizedBox(height: 34),
 
@@ -318,7 +336,7 @@ $certificateUrl
                               borderRadius: BorderRadius.circular(30),
                             ),
 
-                            child:  Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
 
                               children: [
@@ -403,11 +421,12 @@ $certificateUrl
                       children: [
                         Expanded(
                           child: _socialButton(
-                            icon: Icons.chat,
+                            icon: FontAwesomeIcons.whatsapp,
 
                             text: 'WhatsApp',
 
                             color: Colors.green,
+                            onTap: () => _shareCertificate(context),
                           ),
                         ),
 
@@ -415,11 +434,12 @@ $certificateUrl
 
                         Expanded(
                           child: _socialButton(
-                            icon: Icons.facebook_rounded,
+                            icon: FontAwesomeIcons.facebook,
 
                             text: 'Facebook',
 
                             color: Colors.blue,
+                            onTap: () => _shareCertificate(context),
                           ),
                         ),
                       ],
@@ -431,11 +451,12 @@ $certificateUrl
                       children: [
                         Expanded(
                           child: _socialButton(
-                            icon: Icons.camera_alt_rounded,
+                            icon: FontAwesomeIcons.snapchat,
 
                             text: 'Snapchat',
 
                             color: Colors.orange,
+                            onTap: () => _shareCertificate(context),
                           ),
                         ),
 
@@ -443,11 +464,12 @@ $certificateUrl
 
                         Expanded(
                           child: _socialButton(
-                            icon: Icons.email_rounded,
+                            icon: FontAwesomeIcons.google,
 
                             text: 'Email',
 
                             color: AppColors.primaryRed,
+                            onTap: () => _shareCertificate(context),
                           ),
                         ),
                       ],
@@ -551,30 +573,35 @@ $certificateUrl
     required IconData icon,
     required String text,
     required Color color,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+    return GestureDetector(
+      onTap: onTap,
 
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
 
-        borderRadius: BorderRadius.circular(20),
-      ),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.12),
 
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+          borderRadius: BorderRadius.circular(20),
+        ),
 
-        children: [
-          Icon(icon, color: color),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
 
-          const SizedBox(width: 8),
+          children: [
+            Icon(icon, color: color),
 
-          Text(
-            text,
+            const SizedBox(width: 8),
 
-            style: TextStyle(color: color, fontWeight: FontWeight.w700),
-          ),
-        ],
+            Text(
+              text,
+
+              style: TextStyle(color: color, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
       ),
     );
   }

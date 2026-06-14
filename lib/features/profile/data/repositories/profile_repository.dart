@@ -12,6 +12,8 @@ class ProfileRepository {
   Future<ProfileModel> getProfile() async {
     final res = await _service.getProfile();
 
+    print("PROFILE DATA => ${res.data}");
+
     final data = _extractPayload(res.data);
     return ProfileModel.fromJson(data);
   }

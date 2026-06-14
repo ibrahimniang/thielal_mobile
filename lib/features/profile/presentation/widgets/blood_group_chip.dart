@@ -39,7 +39,7 @@ class BloodGroupChip extends StatelessWidget {
           Icon(
             Icons.bloodtype_rounded,
             size: large ? 20 : 16,
-            color: AppColors.primaryRed,
+            color: const Color.fromARGB(255, 244, 239, 239),
           ),
 
           SizedBox(width: large ? 8 : 6),
@@ -47,7 +47,7 @@ class BloodGroupChip extends StatelessWidget {
           Text(
             bloodGroup,
             style: TextStyle(
-              color: AppColors.primaryRed,
+              color: const Color.fromARGB(255, 244, 239, 239),
               fontWeight: FontWeight.w800,
               fontSize: large ? 16 : 13,
             ),
