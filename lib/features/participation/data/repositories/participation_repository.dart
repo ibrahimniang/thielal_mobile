@@ -15,11 +15,14 @@ class ParticipationRepository {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",
       },
+
       body: jsonEncode({
         "demande_id": demandeId,
       }),
-    );
 
+      // body: jsonEncode({"demande_id": demandeId}),
+
+    );
     final data = jsonDecode(res.body);
 
     if (res.statusCode != 200 ||
@@ -29,9 +32,15 @@ class ParticipationRepository {
           data["data"]?["message"] ??
           "Erreur participation";
 
+    if (res.statusCode != 200 || data["success"] != true) {
+      final message =
+          data["message"] ?? data["data"]?["message"] ?? "Erreur participation";
+
+
       throw Exception(message);
     }
   }
+
 
   Future<bool> estParticipant(
     int demandeId,
@@ -55,3 +64,28 @@ class ParticipationRepository {
     return data["data"]["participant"] == true;
   }
 }
+
+ 
+  Future<bool> estParticipant(
+  int demandeId,
+  ) async {
+  final res = await http.get(
+    Uri.parse(
+      "${Env.baseUrl}/dons/$demandeId/est-participant",
+    ),
+    headers: {
+      "Authorization": "Bearer $token",
+      "Content-Type": "application/json",
+    },
+  );
+
+  final data = jsonDecode(res.body);
+
+  if (res.statusCode != 200) {
+    return false;
+  }
+
+  return data["data"]["participant"] == true;
+}
+}
+

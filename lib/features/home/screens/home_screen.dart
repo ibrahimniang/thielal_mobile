@@ -5,6 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../donations/presentation/screens/donation_details_screen.dart';
+
+
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+import '../../../core/config/env.dart';
+import '../../../core/config/api_endpoints.dart';
 
 import '../../../app/router/route_names.dart';
 import '../../../app/theme/app_colors.dart';
@@ -47,6 +55,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int unreadCount = 0;
   int unreadMessages = 0;
   bool passwordModalShown = false;
+
 
 @override
 void initState() {
@@ -119,6 +128,7 @@ void initState() {
         },
       );
     });
+
 
     final alertsAsync = ref.watch(alertsProvider);
 
@@ -828,13 +838,13 @@ void initState() {
                     /// ALERTES BACKEND
                     /// ==========================================
 
+                    /// ALERTES BACKEND
                     return Column(
                       children:
                           filteredAlerts
                               .take(3)
                               .map(
                                 (alert) => UrgentRequestCard(
-                                  /// 🔥 BACKEND
                                   hospital: alert.center?.name ?? alert.city,
 
                                   bloodGroup: alert.bloodGroup,
@@ -852,12 +862,7 @@ void initState() {
                                   critical:
                                       alert.type.toLowerCase() == 'urgent',
 
-                                  /// 🔥 ACTION
                                   onTap: () {
-                                    /// ==========================================
-                                    /// MESSAGE INDISPONIBILITÉ
-                                    /// ==========================================
-
                                     if (user?.dateProchainDon != null) {
                                       final unavailable = DateTime.now()
                                           .isBefore(user!.dateProchainDon!);
@@ -887,10 +892,6 @@ void initState() {
                                         );
                                       }
                                     }
-
-                                    /// ==========================================
-                                    /// OUVERTURE ÉCRAN DÉTAIL
-                                    /// ==========================================
 
                                     Navigator.push(
                                       context,

@@ -11,6 +11,9 @@ import '../../../core/storage/session_storage.dart';
 import '../../../core/services/device_service.dart';
 
 import '../../devices/data/device_repository.dart';
+//firebase
+import '../../../core/network/api_client.dart';
+import '../../../core/services/firebase_messaging_service.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository();
@@ -283,8 +286,13 @@ class AuthController extends StateNotifier<AuthState> {
         await DeviceRepository().registerDevice(device);
       } catch (e) {
         print("DEVICE REGISTER ERROR => $e");
+
+      try {
+        await FirebaseMessagingService(ApiClient().dio).initialize();
+      } catch (e) {
+        print("FCM INIT ERROR => $e");
       }
-    } catch (e) {
+    }} catch (e) {
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: false,
@@ -338,6 +346,12 @@ class AuthController extends StateNotifier<AuthState> {
       /// ======================================
 
       await loadCurrentUser();
+
+      try {
+        await FirebaseMessagingService(ApiClient().dio).initialize();
+      } catch (e) {
+        print("FCM INIT ERROR => $e");
+      }
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -413,6 +427,12 @@ class AuthController extends StateNotifier<AuthState> {
         await DeviceRepository().registerDevice(device);
       } catch (e) {
         print("DEVICE REGISTER ERROR => $e");
+      }
+
+      try {
+        await FirebaseMessagingService(ApiClient().dio).initialize();
+      } catch (e) {
+        print("FCM INIT ERROR => $e");
       }
 
       await SecureStorageService.setHasCompletedEntryFlow(true);

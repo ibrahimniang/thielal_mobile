@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:thielal/features/home/widgets/blood_request_notification_card.dart';
+import 'package:thielal/features/participation/data/repositories/participation_repository.dart';
 
 import '../controllers/notification_controller.dart';
 import '../../data/models/notification_model.dart';
@@ -54,16 +55,7 @@ class NotificationsListScreen extends ConsumerWidget {
   }
 
   String _extractBloodGroup(String message) {
-    final groups = [
-      'O+',
-      'O-',
-      'A+',
-      'A-',
-      'B+',
-      'B-',
-      'AB+',
-      'AB-',
-    ];
+    final groups = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
 
     for (final g in groups) {
       if (message.contains(g)) {
@@ -86,97 +78,257 @@ class NotificationsListScreen extends ConsumerWidget {
     return 'Mauritanie';
   }
 
-  void _showDemandeModal(
+  Future<void> _showDemandeModal(
     BuildContext context,
     WidgetRef ref, // ✅ AJOUT MINIMAL ICI
     NotificationModel notification,
-  ) {
+  ) async {
+    String demandeurNom = notification.fullName;
+    final token = ref.read(authControllerProvider).accessToken;
+
+    final participationRepo = ParticipationRepository(token: token);
+
+    bool estParticipant = false;
+
+    if (notification.demandeId != null) {
+      estParticipant = await participationRepo.estParticipant(
+        notification.demandeId!,
+      );
+    }
+
+    print("demandeId = ${notification.demandeId}");
+    print("nom = ${notification.nom}");
+    print("prenom = ${notification.prenom}");
+
+    if (notification.demandeId != null) {
+      try {
+        final token = ref.read(authControllerProvider).accessToken;
+
+        final repo = ChatRepository(token: token);
+
+        final demande = await repo.getDemandeById(notification.demandeId!);
+
+        print("DEMANDE = $demande");
+
+        demandeurNom =
+            "${demande["utilisateur"]["prenom"]} ${demande["utilisateur"]["nom"]}"
+                .split(' ')
+                .map(
+                  (e) =>
+                      e.isEmpty
+                          ? e
+                          : e[0].toUpperCase() + e.substring(1).toLowerCase(),
+                )
+                .join(' ');
+        print("DEMANDEUR = $demandeurNom");
+      } catch (e) {
+        print("ERREUR DEMANDE = $e");
+      }
+    }
     showDialog(
       context: context,
-      builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                "🚨 Demande de sang",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
+      builder:
+          (dialogContext) => Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "🚨 Demande de sang",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  CircleAvatar(
+                    radius: 32,
+                    backgroundColor: Colors.red.shade100,
+                    child: const Icon(
+                      Icons.person,
+                      size: 36,
+                      color: Colors.red,
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Text(
+                    demandeurNom.isEmpty ? "Demandeur" : demandeurNom,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  Text(
+                    notification.message,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.local_hospital,
+                          color: Colors.red,
+                          size: 18,
+                        ),
+
+                        const SizedBox(width: 8),
+
+                        Flexible(
+                          child: Text(
+                            notification.centreNom,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.message),
+                      label: const Text("Message"),
+                      onPressed: () async {
+                        context.pop();
+
+                        final token =
+                            ref.read(authControllerProvider).accessToken;
+                        final chatRepo = ChatRepository(token: token);
+
+                        final demandeId = notification.demandeId;
+                        final user2Id = notification.utilisateurId;
+
+                        if (demandeId == null || user2Id == null) return;
+
+                        final conversations = await chatRepo.getConversations();
+
+                        int? conversationId;
+
+                        for (final c in conversations) {
+                          if (c.demandeId == demandeId) {
+                            conversationId = c.idConversation;
+                            break;
+                          }
+                        }
+
+                        conversationId ??= await chatRepo.createConversation(
+                          user2Id,
+                        );
+
+                        if (context.mounted) {
+                          context.push(
+                            '/chat/$conversationId',
+                            extra: {
+                              "fullName": demandeurNom,
+                              "otherUserId": user2Id,
+                            },
+                          );
+                        }
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      icon: Icon(
+                        estParticipant ? Icons.check_circle : Icons.bloodtype,
+                      ),
+                      label: Text(
+                        estParticipant ? "Déjà participant" : "Je participe",
+                      ),
+                      onPressed:
+                          estParticipant
+                              ? null
+                              : () async {
+                                try {
+                                  await participationRepo.participer(
+                                    notification.demandeId!,
+                                  );
+
+                                  if (context.mounted) {
+                                    // Fermer le modal principal
+                                    Navigator.of(dialogContext).pop();
+
+                                    showDialog(
+                                      context: context,
+
+                                      builder: (successDialogContext) {
+                                        return AlertDialog(
+                                          title: const Text(
+                                            'Participation enregistrée',
+                                          ),
+
+                                          content: Text(
+                                            'Vous participez maintenant à cette demande.\n\n'
+                                            'Veuillez contacter le centre ou vous y rendre pour effectuer votre don.',
+                                          ),
+
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.of(
+                                                  successDialogContext,
+                                                ).pop();
+                                              },
+
+                                              child: const Text('OK'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  }
+
+                                  ref.invalidate(
+                                    notificationControllerProvider,
+                                  );
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          e.toString().replaceFirst(
+                                            "Exception: ",
+                                            "",
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                    ),
+                  ),
+                ],
               ),
-
-              const SizedBox(height: 16),
-
-              Text(
-                notification.message,
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: 24),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.message),
-                  label: const Text("Message"),
-                 onPressed: () async {
-  context.pop();
-
-  final token = ref.read(authControllerProvider).accessToken;
-  final chatRepo = ChatRepository(token: token);
-
-  final demandeId = notification.demandeId;
-  final user2Id = notification.utilisateurId;
-
-  if (demandeId == null || user2Id == null) return;
-
-  final conversations = await chatRepo.getConversations();
-
-  int? conversationId;
-
-  for (final c in conversations) {
-    if (c.demandeId == demandeId) {
-      conversationId = c.idConversation;
-      break;
-    }
-  }
-
-  conversationId ??= await chatRepo.createConversation(user2Id);
-
-  if (context.mounted) {
-    context.push(
-      '/chat/$conversationId',
-      extra: {
-        "fullName": notification.fullName,
-        "otherUserId": user2Id,
-      },
-    );
-  }
-}
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.bloodtype),
-                  label: const Text("J'y vais"),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
     );
   }
 
@@ -220,17 +372,19 @@ class NotificationsListScreen extends ConsumerWidget {
               return Container(
                 margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: notification.lu
-                      ? Colors.grey.shade100
-                      : const Color(0xFFE3F2FD),
+                  color:
+                      notification.lu
+                          ? Colors.grey.shade100
+                          : const Color(0xFFE3F2FD),
                   borderRadius: BorderRadius.circular(12),
                 ),
 
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: notification.lu
-                        ? Colors.grey.shade400
-                        : const Color(0xFF4FC3F7),
+                    backgroundColor:
+                        notification.lu
+                            ? Colors.grey.shade400
+                            : const Color(0xFF4FC3F7),
                     child: const Icon(Icons.notifications, color: Colors.white),
                   ),
 
