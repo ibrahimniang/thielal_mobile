@@ -41,6 +41,9 @@ import '../../features/splash/presentation/splash_screen.dart';
 import '../../core/navigation/main_navigation.dart';
 import 'route_names.dart';
 
+// acceptation des condistion 
+import '../../features/auth/presentation/screens/terms_screen.dart';
+import '../../features/auth/presentation/screens/privacy_screen.dart';
 class AppRouter {
   static GoRouter router(WidgetRef ref) {
     return GoRouter(
@@ -64,6 +67,9 @@ class AppRouter {
           RouteNames.forgotPassword,
           RouteNames.resetPassword,
           RouteNames.onboarding,
+
+          RouteNames.terms,
+          RouteNames.privacy,
         };
 
         final registrationRoutes = <String>{
@@ -153,6 +159,16 @@ class AppRouter {
           builder: (_, __) => const RegisterScreen(),
         ),
 
+        GoRoute(
+          path: RouteNames.terms,
+          builder: (_, __) => const TermsScreen(),
+        ),
+
+        GoRoute(
+          path: RouteNames.privacy,
+          builder: (_, __) => const PrivacyScreen(),
+        ),
+        
         GoRoute(
           path: RouteNames.setPassword,
           builder: (_, __) => const SetPasswordScreen(),

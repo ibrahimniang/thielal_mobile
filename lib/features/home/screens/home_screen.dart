@@ -4,6 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+import '../../../core/config/env.dart';
+import '../../../core/config/api_endpoints.dart';
+
 
 import '../../../app/router/route_names.dart';
 import '../../../app/theme/app_colors.dart';
@@ -42,13 +48,38 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   // final TextEditingController _searchController = TextEditingController();
   int unreadCount = 0;
+  int unreadMessages = 0;
   bool passwordModalShown = false;
 
 @override
 void initState() {
   super.initState();
   loadUnreadCount();
+  loadUnreadMessages();
 }
+
+Future<void> loadUnreadMessages() async {
+    try {
+      final token = ref.read(authControllerProvider).accessToken;
+
+      final res = await http.get(
+        Uri.parse("${Env.baseUrl}${ApiEndpoints.unreadMessages}"),
+        headers: {
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+
+        setState(() {
+          unreadMessages = data["count"] ?? 0;
+        });
+      }
+    } catch (e) {
+      debugPrint("❌ unread error => $e");
+    }
+  }
 
 Future<void> loadUnreadCount() async {
   try {
@@ -192,6 +223,7 @@ WidgetsBinding.instance.addPostFrameCallback((_) {
                 child: Builder(
                   builder: (context) {
                     return HomeHeader(
+                      unreadMessages: unreadMessages,
                       controller: searchController,
 
                       /// 🔥 prénom utilisateur

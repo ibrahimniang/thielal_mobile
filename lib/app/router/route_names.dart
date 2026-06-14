@@ -72,4 +72,8 @@ static const String chat = '/chat';
   static const String bloodStock = '/staff/blood-stock';
   static const String qrScan = '/staff/qr-scan';
   static const String qrGenerate = '/staff/qr-generate';
+
+  // les coditions 
+  static const terms = '/terms';
+  static const privacy = '/privacy';
 }

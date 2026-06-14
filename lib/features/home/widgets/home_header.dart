@@ -23,6 +23,7 @@ class HomeHeader extends StatefulWidget {
 
   final VoidCallback? onMenuTap;
   final VoidCallback? onChatTap;
+  final int unreadMessages;
   final VoidCallback? onProfileTap;
 
   const HomeHeader({
@@ -35,6 +36,7 @@ class HomeHeader extends StatefulWidget {
     this.onMenuTap,
     this.onChatTap,
     this.onProfileTap,
+    this.unreadMessages = 0,
   });
 
   @override
@@ -188,10 +190,44 @@ class _HomeHeaderState extends State<HomeHeader> {
                       /// =====================================================
                       /// CHAT
                       /// =====================================================
-                      _iconButton(
-                        icon: Icons.chat_bubble_outline_rounded,
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          _iconButton(
+                            icon: Icons.message_rounded,
+                            onTap: widget.onChatTap,
+                          ),
 
-                        onTap: widget.onChatTap,
+                          if (widget.unreadMessages > 0)
+                            Positioned(
+                              right: -2,
+                              top: -2,
+                              child: Container(
+                                constraints: const BoxConstraints(
+                                  minWidth: 18,
+                                  minHeight: 18,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 5,
+                                ),
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  widget.unreadMessages > 9
+                                      ? "9+"
+                                      : widget.unreadMessages.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
 
                       const SizedBox(width: 10),
