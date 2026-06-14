@@ -16,15 +16,15 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/auth/presentation/screens/set_password_screen.dart';
 
-// STAFF
-import '../../features/staff/presentation/screens/create_staff_screen.dart';
-import '../../features/staff/presentation/screens/donors_nearby_screen.dart';
-import '../../features/staff/presentation/screens/blood_stock_screen.dart';
-import '../../features/staff/presentation/screens/scan_qr_screen.dart';
-import '../../features/staff/presentation/screens/generate_qr_screen.dart';
-import '../../features/staff/presentation/screens/staff_dashboard_screen.dart';
-import '../../features/staff/presentation/screens/blood_requests_screen.dart';
-import '../../features/staff/presentation/screens/director_dashboard_screen.dart';
+// // STAFF
+// import '../../features/staff/presentation/screens/create_staff_screen.dart';
+// import '../../features/staff/presentation/screens/donors_nearby_screen.dart';
+// import '../../features/staff/presentation/screens/blood_stock_screen.dart';
+// import '../../features/staff/presentation/screens/scan_qr_screen.dart';
+// import '../../features/staff/presentation/screens/generate_qr_screen.dart';
+// import '../../features/staff/presentation/screens/staff_dashboard_screen.dart';
+// import '../../features/staff/presentation/screens/blood_requests_screen.dart';
+// import '../../features/staff/presentation/screens/director_dashboard_screen.dart';
 
 // USER
 import '../../features/home/screens/home_screen.dart';
@@ -279,47 +279,47 @@ class AppRouter {
           },
         ),
 
-        // ================= STAFF =================
-        GoRoute(
-          path: RouteNames.staffDashboard,
-          builder: (_, __) => const StaffDashboardScreen(),
-        ),
+        // // ================= STAFF =================
+        // GoRoute(
+        //   path: RouteNames.staffDashboard,
+        //   builder: (_, __) => const StaffDashboardScreen(),
+        // ),
 
-        GoRoute(
-          path: RouteNames.staffRequests,
-          builder: (_, __) => const BloodRequestsScreen(),
-        ),
+        // GoRoute(
+        //   path: RouteNames.staffRequests,
+        //   builder: (_, __) => const BloodRequestsScreen(),
+        // ),
 
-        GoRoute(
-          path: RouteNames.staffDonors,
-          builder: (_, __) => const NearbyDonorsScreen(),
-        ),
+        // GoRoute(
+        //   path: RouteNames.staffDonors,
+        //   builder: (_, __) => const NearbyDonorsScreen(),
+        // ),
 
-        GoRoute(
-          path: RouteNames.bloodStock,
-          builder: (_, __) => const BloodStockScreen(),
-        ),
+        // GoRoute(
+        //   path: RouteNames.bloodStock,
+        //   builder: (_, __) => const BloodStockScreen(),
+        // ),
 
-        GoRoute(
-          path: RouteNames.qrScan,
-          builder: (_, __) => const QrScanScreen(),
-        ),
+        // GoRoute(
+        //   path: RouteNames.qrScan,
+        //   builder: (_, __) => const QrScanScreen(),
+        // ),
 
-        GoRoute(
-          path: RouteNames.qrGenerate,
-          builder: (_, __) => const QrGenerateScreen(),
-        ),
+        // GoRoute(
+        //   path: RouteNames.qrGenerate,
+        //   builder: (_, __) => const QrGenerateScreen(),
+        // ),
 
-        // ================= DIRECTOR =================
-        GoRoute(
-          path: RouteNames.directorDashboard,
-          builder: (_, __) => const DirectorDashboardScreen(),
-        ),
+        // // ================= DIRECTOR =================
+        // GoRoute(
+        //   path: RouteNames.directorDashboard,
+        //   builder: (_, __) => const DirectorDashboardScreen(),
+        // ),
 
-        GoRoute(
-          path: RouteNames.createStaff,
-          builder: (_, __) => const CreateStaffScreen(),
-        ),
+        // GoRoute(
+        //   path: RouteNames.createStaff,
+        //   builder: (_, __) => const CreateStaffScreen(),
+        // ),
 
         // ================= ADMIN =================
         GoRoute(
