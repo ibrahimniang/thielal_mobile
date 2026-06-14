@@ -1,5 +1,5 @@
-import 'dart:async';
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,6 +23,7 @@ class ConversationsScreen extends ConsumerStatefulWidget {
 class _ConversationsScreenState
     extends ConsumerState<ConversationsScreen> {
 
+  Timer? conversationTimer;
   bool isSearching = false;
 
   List conversations = [];
@@ -147,11 +148,19 @@ class _ConversationsScreenState
         "❌ socket disconnected"
       );
     });
+
+    conversationTimer = Timer.periodic(
+      const Duration(seconds: 3),
+      (timer) {
+        loadConversations();
+      },
+    );
   }
 
   @override
   void dispose() {
 
+    conversationTimer?.cancel();
     socket.off("conversationUpdated");
 
     socket.off("messageRead");

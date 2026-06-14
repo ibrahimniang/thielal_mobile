@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,6 +33,7 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState
     extends ConsumerState<ChatScreen> {
 
+  Timer? messageTimer;
   final TextEditingController messageController =
       TextEditingController();
 
@@ -153,11 +155,18 @@ class _ChatScreenState
         "❌ Socket disconnected",
       );
     });
+    messageTimer = Timer.periodic(
+      const Duration(seconds: 2),
+      (timer) {
+        loadMessages();
+      },
+    );
   }
 
   @override
   void dispose() {
 
+    messageTimer?.cancel();
     socket.off("newMessage");
 
     socket.disconnect();
