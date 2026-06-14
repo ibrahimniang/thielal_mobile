@@ -10,11 +10,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-    
 
   firebase_core: ^4.0.0
   firebase_messaging: ^16.0.0
-  flutter_local_notifications: ^19.4.0  
+  flutter_local_notifications: ^19.4.0
 
   flutter_localizations:
     sdk: flutter
@@ -25,7 +24,6 @@ dependencies:
 
   intl: ^0.20.2
   url_launcher: ^6.3.0
-
 
   # State management
   flutter_riverpod: ^3.0.2
@@ -64,15 +62,15 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/images/symbol.png"
+  image_path: "assets/images/logo.png"
   background_color: "#ffffff"
   min_sdk_android: 21
 
 flutter_native_splash:
   color: "#ffffff"
   image: "assets/images/logo.png"
-  android_12:
-    image: "assets/images/logo.png"
+  # android_12:
+  #   image: "assets/images/logo.png"
 
 flutter:
   uses-material-design: true

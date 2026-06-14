@@ -16,6 +16,7 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/auth/presentation/screens/set_password_screen.dart';
 
+
 // // STAFF
 // import '../../features/staff/presentation/screens/create_staff_screen.dart';
 // import '../../features/staff/presentation/screens/donors_nearby_screen.dart';
@@ -25,6 +26,7 @@ import '../../features/auth/presentation/screens/set_password_screen.dart';
 // import '../../features/staff/presentation/screens/staff_dashboard_screen.dart';
 // import '../../features/staff/presentation/screens/blood_requests_screen.dart';
 // import '../../features/staff/presentation/screens/director_dashboard_screen.dart';
+
 
 // USER
 import '../../features/home/screens/home_screen.dart';
@@ -46,9 +48,12 @@ import 'route_names.dart';
 import '../../features/auth/presentation/screens/terms_screen.dart';
 import '../../features/auth/presentation/screens/privacy_screen.dart';
 
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+
 class AppRouter {
   static GoRouter router(WidgetRef ref) {
     return GoRouter(
+      navigatorKey: rootNavigatorKey,
       initialLocation: RouteNames.splash,
 
       redirect: (context, state) {
@@ -279,7 +284,9 @@ class AppRouter {
           },
         ),
 
-        // // ================= STAFF =================
+
+        // ================= STAFF =================
+
         // GoRoute(
         //   path: RouteNames.staffDashboard,
         //   builder: (_, __) => const StaffDashboardScreen(),
@@ -321,7 +328,7 @@ class AppRouter {
         //   builder: (_, __) => const CreateStaffScreen(),
         // ),
 
-        // ================= ADMIN =================
+        // // ================= ADMIN =================
         GoRoute(
           path: RouteNames.adminDashboard,
           builder:
