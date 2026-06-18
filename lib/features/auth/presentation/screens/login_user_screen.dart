@@ -77,89 +77,76 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
     super.dispose();
   }
 
-  Widget _buildHeader(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+        Widget _buildHeader(BuildContext context) {
+        final l10n = AppLocalizations.of(context)!;
 
-    return Column(
-      children: [
-        Container(
-          width: 92,
-          height: 92,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [Colors.red.shade500, Colors.red.shade700],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/logo.png',
+              width: 150, // 🔥 réduit (important)
+              fit: BoxFit.contain,
+            ),
+
+            const SizedBox(height: 10),
+
+            Text(
+              l10n.appName,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20, // 🔥 réduit aussi
+                fontWeight: FontWeight.w800,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+
+            const SizedBox(height: 4),
+
+                        Text(
+                      l10n.loginSubtitle,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        height: 1.4, 
+                      ),
+                    ),
+                  ],
+                );
+              }
+            Widget _buildFormCard({
+              required BuildContext context,
+              required AuthState authState,
+              required AuthController auth,
+            }) {
+              final l10n = AppLocalizations.of(context)!;
+              final isDark =
+              Theme.of(context).brightness ==
+              Brightness.dark;
+
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(28),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(22),
+                    decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(
+              color: Theme.of(context).dividerColor.withOpacity(0.2),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.red.withOpacity(0.22),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
               ),
             ],
           ),
-          child: const Icon(
-            Icons.favorite_rounded,
-            color: Colors.white,
-            size: 42,
-          ),
-        ),
-        const SizedBox(height: 18),
-        Text(
-          l10n.appName,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-           color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          l10n.loginSubtitle,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 14,
-                   color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFormCard({
-    required BuildContext context,
-    required AuthState authState,
-    required AuthController auth,
-  }) {
-    final l10n = AppLocalizations.of(context)!;
-    final isDark =
-    Theme.of(context).brightness ==
-    Brightness.dark;
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(28),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(
-  color: Theme.of(context).colorScheme.surface,
-  borderRadius: BorderRadius.circular(28),
-  border: Border.all(
-    color: Theme.of(context).dividerColor.withOpacity(0.2),
-  ),
-  boxShadow: [
-    BoxShadow(
-      color: Colors.black.withOpacity(0.08),
-      blurRadius: 24,
-      offset: const Offset(0, 10),
-    ),
-  ],
-),
           child: Form(
             key: _formKey,
             child: Column(
@@ -346,9 +333,9 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
       ),
     ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 _buildHeader(context),
-                const SizedBox(height: 28),
+                const SizedBox(height: 16),
                 _buildFormCard(
                   context: context,
                   authState: authState,

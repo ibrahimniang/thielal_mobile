@@ -15,7 +15,7 @@ class Env {
   /// URL de base du backend Render
   ///
   /// Toutes les requêtes API passent par cette base URL.
-  static const String baseUrl ='http://192.168.100.44:5000/api';
+  static const String baseUrl ='https://lifelink-backend-3bgr.onrender.com/api';
   //'https://lifelink-backend-3bgr.onrender.com/api';
   //
 }
