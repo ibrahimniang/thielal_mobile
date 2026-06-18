@@ -37,17 +37,27 @@ class DonationDetailsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark =
+    Theme.of(context).brightness == Brightness.dark;
+
+final colors =
+    Theme.of(context).colorScheme;
     final center = alert.center;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F7FB),
+      backgroundColor: isDark
+    ? const Color(0xFF0F172A)
+    : const Color(0xFFF6F7FB),
 
       appBar: AppBar(
         elevation: 0,
 
-        backgroundColor: Colors.white,
+          backgroundColor: isDark
+      ? const Color(0xFF0F172A)
+      : Colors.white,
 
-        foregroundColor: Colors.black,
+foregroundColor:
+    isDark ? Colors.white : Colors.black,
 
         centerTitle: true,
 
@@ -218,8 +228,13 @@ class DonationDetailsScreen extends ConsumerWidget {
             /// ==========================================
             Text(
               l10n.centerInformation,
-
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                color: isDark
+                    ? Colors.white
+                    : Colors.black,
+              ),
             ),
 
             const SizedBox(height: 18),
@@ -339,7 +354,17 @@ class DonationDetailsScreen extends ConsumerWidget {
                         context: context,
                         builder: (dialogContext) {
                           return AlertDialog(
-                            title: const Text('Participation enregistrée'),
+                          backgroundColor: isDark
+                              ? const Color(0xFF1E293B)
+                              : Colors.white,
+                            title: Text(
+                              'Participation enregistrée',
+                              style: TextStyle(
+                                color: isDark
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                            ),
 
                             content: Text(
                               'Vous participez maintenant à cette demande.\n\n'
@@ -422,19 +447,25 @@ class DonationDetailsScreen extends ConsumerWidget {
     bool isPhone = false,
   }) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark =
+    Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
 
       padding: const EdgeInsets.all(18),
 
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark
+    ? const Color(0xFF1E293B)
+    : Colors.white,
 
         borderRadius: BorderRadius.circular(22),
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(
+            isDark ? 0.20 : 0.04,
+          ),
 
             blurRadius: 20,
 
@@ -468,9 +499,10 @@ class DonationDetailsScreen extends ConsumerWidget {
                 Text(
                   title,
 
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-
+                  style: TextStyle(
+                    color: isDark
+                        ? Colors.white70
+                        : AppColors.textSecondary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -480,9 +512,11 @@ class DonationDetailsScreen extends ConsumerWidget {
                 Text(
                   value,
 
-                  style: const TextStyle(
+                 style: TextStyle(
+                    color: isDark
+                        ? Colors.white
+                        : Colors.black,
                     fontWeight: FontWeight.w800,
-
                     fontSize: 15,
                   ),
                 ),

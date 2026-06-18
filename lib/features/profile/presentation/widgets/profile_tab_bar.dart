@@ -2,14 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
-// import '../../../../app/theme/app_radius.dart';
 
 class ProfileTabBar extends StatelessWidget {
   final TabController controller;
 
   const ProfileTabBar({
-    tabAlignment = TabAlignment.fill,
-    labelPadding = const EdgeInsets.symmetric(horizontal: 2),
     super.key,
     required this.controller,
   });
@@ -17,22 +14,32 @@ class ProfileTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       height: 75,
 
       padding: const EdgeInsets.all(6),
 
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? colors.surface : Colors.white,
 
         borderRadius: BorderRadius.circular(22),
 
+        border: isDark
+            ? Border.all(
+                color: colors.outline.withOpacity(0.2),
+              )
+            : null,
+
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-
+            color: isDark
+                ? Colors.black.withOpacity(0.25)
+                : Colors.black.withOpacity(0.04),
             blurRadius: 18,
-
             offset: const Offset(0, 10),
           ),
         ],
@@ -42,14 +49,11 @@ class ProfileTabBar extends StatelessWidget {
         controller: controller,
 
         indicatorPadding: EdgeInsets.zero,
-
         padding: EdgeInsets.zero,
-
         dividerColor: Colors.transparent,
 
         indicator: BoxDecoration(
           color: AppColors.primaryRed,
-
           borderRadius: BorderRadius.circular(18),
         ),
 
@@ -57,108 +61,60 @@ class ProfileTabBar extends StatelessWidget {
 
         labelColor: Colors.white,
 
-        unselectedLabelColor: Colors.grey[700],
+        unselectedLabelColor: isDark
+            ? colors.onSurface.withOpacity(0.6)
+            : Colors.grey[700],
 
-        labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 11),
+        labelStyle: const TextStyle(
+          fontWeight: FontWeight.w800,
+          fontSize: 11,
+        ),
 
         tabs: [
-          Tab(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-
-              mainAxisSize: MainAxisSize.min,
-
-              children: [
-                const Icon(Icons.dashboard_rounded, size: 18),
-
-                const SizedBox(height: 2),
-
-                Text(
-                  l10n.overview,
-
-                  overflow: TextOverflow.ellipsis,
-
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
+          _tab(
+            icon: Icons.dashboard_rounded,
+            label: l10n.overview,
           ),
 
-          Tab(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-
-              mainAxisSize: MainAxisSize.min,
-
-              children: [
-                const Icon(Icons.history_rounded, size: 18),
-
-                const SizedBox(height: 2),
-
-                Text(
-                  l10n.history,
-
-                  overflow: TextOverflow.ellipsis,
-
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
+          _tab(
+            icon: Icons.history_rounded,
+            label: l10n.history,
           ),
 
-          Tab(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-
-              mainAxisSize: MainAxisSize.min,
-
-              children: [
-                const Icon(Icons.qr_code_rounded, size: 18),
-
-                const SizedBox(height: 2),
-
-                Text(
-                  l10n.qr,
-
-                  overflow: TextOverflow.ellipsis,
-
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
+          _tab(
+            icon: Icons.qr_code_rounded,
+            label: l10n.qr,
           ),
 
-          Tab(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+          _tab(
+            icon: Icons.person_rounded,
+            label: l10n.info,
+          ),
+        ],
+      ),
+    );
+  }
 
-              mainAxisSize: MainAxisSize.min,
+  Widget _tab({
+    required IconData icon,
+    required String label,
+  }) {
+    return Tab(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
 
-              children: [
-                const Icon(Icons.person_rounded, size: 18),
+        children: [
+          Icon(icon, size: 18),
 
-                const SizedBox(height: 2),
+          const SizedBox(height: 2),
 
-                Text(
-                  l10n.info,
-
-                  overflow: TextOverflow.ellipsis,
-
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
+          Text(
+            label,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],

@@ -117,18 +117,13 @@ class _HomeHeaderState
                       );
                     },
 
-                    cursorColor:
-                        AppColors.primaryRed,
+                    cursorColor: Theme.of(context).colorScheme.primary,
 
-                    style: TextStyle(
-                      color:
-                          Colors.grey.shade900,
-
-                      fontWeight:
-                          FontWeight.w500,
-
-                      fontSize: 16,
-                    ),
+                   style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 16,
+                  ),
 
                     decoration:
                         InputDecoration(
@@ -155,22 +150,19 @@ class _HomeHeaderState
 
                       filled: true,
 
-                      fillColor:
-                          Colors.transparent,
+                      fillColor: Theme.of(context).colorScheme.surface.withOpacity(0.0),
 
                       prefixIcon: Icon(
                         Icons.search_rounded,
 
-                        color: Colors
-                            .grey.shade600,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
 
                         size: 24,
                       ),
 
                       hintStyle:
                           TextStyle(
-                        color: Colors
-                            .grey.shade500,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
 
                         fontWeight:
                             FontWeight.w400,
@@ -207,10 +199,7 @@ class _HomeHeaderState
 
                     decoration:
                         BoxDecoration(
-                      color:
-                          const Color(
-                        0xFFFBECEF,
-                      ),
+                      color: Theme.of(context).colorScheme.surface,
 
                       borderRadius:
                           BorderRadius.circular(
@@ -223,10 +212,8 @@ class _HomeHeaderState
                         letter,
 
                         style:
-                            const TextStyle(
-                          color:
-                              AppColors
-                                  .primaryRed,
+                           TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
 
                           fontWeight:
                               FontWeight
@@ -268,20 +255,16 @@ class _HomeHeaderState
 
                         decoration:
                             BoxDecoration(
-                          color:
-                              Colors.white,
+                          color: Theme.of(context).cardColor,
 
                           borderRadius:
                               BorderRadius.circular(
                             20,
                           ),
 
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black
-                                  .withOpacity(
-                                0.05,
-                              ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
 
                               blurRadius: 16,
 
@@ -362,7 +345,7 @@ class _HomeHeaderState
         child: Icon(
           icon,
 
-          color: Colors.grey.shade800,
+          color: Theme.of(context).colorScheme.onSurface,
 
           size: 24,
         ),

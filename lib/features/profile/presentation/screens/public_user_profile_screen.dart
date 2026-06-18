@@ -146,13 +146,16 @@ class _PublicUserProfileScreenState
     required String label,
     required dynamic value,
     Color? color,
+    required bool isDark,
   }) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+       color: isDark
+        ? const Color(0xFF111827)
+        : Colors.white,
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
@@ -183,7 +186,9 @@ class _PublicUserProfileScreenState
                 Text(
                   label,
                   style: TextStyle(
-                    color: Colors.grey[600],
+                    color: isDark
+                    ? Colors.white70
+                    : Colors.grey[600],
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -192,7 +197,8 @@ class _PublicUserProfileScreenState
                 Text(
                   format(value),
                   softWrap: true,
-                  style: const TextStyle(
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                     height: 1.4,
@@ -211,16 +217,25 @@ class _PublicUserProfileScreenState
   // =========================
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final fullName =
         "${user?["prenom"] ?? ""} ${user?["nom"] ?? ""}".trim();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FB),
+     backgroundColor:
+       isDark ? const Color(0xFF0F172A) : const Color(0xFFF5F7FB),
 
       body: loading
           ? const Center(child: CircularProgressIndicator(color: Colors.red))
           : user == null
-              ? const Center(child: Text("Utilisateur introuvable"))
+              ? Center(
+                  child: Text(
+                    "Utilisateur introuvable",
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                  ),
+                )
               : SafeArea(
 
                   // 🔥 IMPORTANT: SCROLL GLOBAL
@@ -309,6 +324,7 @@ class _PublicUserProfileScreenState
                                 label: "Téléphone",
                                 value: user?["telephone"],
                                 color: Colors.green,
+                                isDark: isDark,
                               ),
 
                               infoTile(
@@ -316,6 +332,7 @@ class _PublicUserProfileScreenState
                                 label: "Ville",
                                 value: user?["ville"],
                                 color: Colors.purple,
+                                isDark: isDark,
                               ),
 
                               infoTile(
@@ -325,6 +342,7 @@ class _PublicUserProfileScreenState
                                     ? "Non renseignée"
                                     : "${user?["distance_km"]} km",
                                 color: Colors.orange,
+                                isDark: isDark,
                               ),
 
                               infoTile(
@@ -332,6 +350,7 @@ class _PublicUserProfileScreenState
                                 label: "Groupe sanguin",
                                 value: user?["groupe_sanguin"],
                                 color: Colors.red,
+                                isDark: isDark,
                               ),
 
                               infoTile(
@@ -339,6 +358,7 @@ class _PublicUserProfileScreenState
                                 label: "Statut",
                                 value: user?["statut_groupe_sanguin"],
                                 color: Colors.blue,
+                                isDark: isDark,
                               ),
 
                               const SizedBox(height: 30),

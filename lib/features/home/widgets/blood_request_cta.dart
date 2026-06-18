@@ -12,8 +12,24 @@ class BloodRequestCta extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
+    final gradientColors = isDark
+        ? [
+            colorScheme.primary.withOpacity(0.9),
+            colorScheme.primary.withOpacity(0.75),
+          ]
+        : const [
+            Color(0xFFE53946),
+            Color(0xFFC1121F),
+          ];
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.screenPadding,
+      ),
 
       child: GestureDetector(
         onTap: onTap,
@@ -24,21 +40,18 @@ class BloodRequestCta extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.xl),
 
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-
-              colors: [Color(0xFFE53946), Color(0xFFC1121F)],
+              colors: gradientColors,
             ),
 
             borderRadius: BorderRadius.circular(28),
 
             boxShadow: [
               BoxShadow(
-                color: Colors.red.withOpacity(0.28),
-
+                color: (isDark ? Colors.black : Colors.red).withOpacity(0.25),
                 blurRadius: 28,
-
                 offset: const Offset(0, 14),
               ),
             ],
@@ -52,16 +65,13 @@ class BloodRequestCta extends StatelessWidget {
                 width: 62,
 
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.16),
-
+                  color: colorScheme.onPrimary.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(AppRadius.xl),
                 ),
 
-                child: const Icon(
+                child: Icon(
                   Icons.bloodtype_rounded,
-
-                  color: Colors.white,
-
+                  color: colorScheme.onPrimary,
                   size: 34,
                 ),
               ),
@@ -69,29 +79,27 @@ class BloodRequestCta extends StatelessWidget {
               const SizedBox(width: 18),
 
               /// TEXT
-               Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-
                   children: [
                     Text(
                       l10n.iNeedBlood,
-
                       style: TextStyle(
-                        color: Colors.white,
-
+                        color: colorScheme.onPrimary,
                         fontSize: 20,
-
                         fontWeight: FontWeight.w900,
                       ),
                     ),
 
-                    SizedBox(height: 6),
+                    const SizedBox(height: 6),
 
                     Text(
-                     l10n.sendUrgentBloodRequest,
-
-                      style: TextStyle(color: Colors.white70, height: 1.5),
+                      l10n.sendUrgentBloodRequest,
+                      style: TextStyle(
+                        color: colorScheme.onPrimary.withOpacity(0.8),
+                        height: 1.5,
+                      ),
                     ),
                   ],
                 ),
@@ -105,15 +113,13 @@ class BloodRequestCta extends StatelessWidget {
                 width: 50,
 
                 decoration: BoxDecoration(
-                  color: Colors.white,
-
+                  color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(18),
                 ),
 
-                child: const Icon(
+                child: Icon(
                   Icons.arrow_forward_rounded,
-
-                  color: Colors.red,
+                  color: colorScheme.primary,
                 ),
               ),
             ],

@@ -321,6 +321,8 @@ class _DemandeSangScreenState
 
   void _showSuccessDialog() {
     final l10n = AppLocalizations.of(context)!;
+     final isDark =
+      Theme.of(context).brightness == Brightness.dark;
 
     showDialog(
       context: context,
@@ -335,7 +337,9 @@ class _DemandeSangScreenState
             padding: const EdgeInsets.all(28),
 
             decoration: BoxDecoration(
-              color: Colors.white,
+            color: isDark
+                ? const Color(0xFF1E293B)
+                : Colors.white,
 
               borderRadius:
                   BorderRadius.circular(30),
@@ -500,17 +504,23 @@ class _DemandeSangScreenState
 
     final l10n =
         AppLocalizations.of(context)!;
+          final isDark =
+      Theme.of(context).brightness == Brightness.dark;
+
+  final colors =
+      Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF7F8FA),
+     backgroundColor: isDark
+      ? const Color(0xFF0F172A)
+      : const Color(0xFFF7F8FA),
 
       appBar: AppBar(
         elevation: 0,
 
         backgroundColor: Colors.transparent,
-
-        foregroundColor: Colors.black,
+        foregroundColor:
+            isDark ? Colors.white : Colors.black,
 
         centerTitle: true,
 
@@ -644,19 +654,21 @@ class _DemandeSangScreenState
               /// ======================================
               /// FORM
               /// ======================================
-              Container(
-                padding:
-                    const EdgeInsets.all(22),
-
+             Container(
+                padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark
+                      ? const Color(0xFF1E293B)
+                      : Colors.white,
 
                   borderRadius:
                       BorderRadius.circular(30),
 
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black
+                      color: isDark
+                        ? Colors.white
+                        : Colors.black87
                           .withOpacity(0.04),
 
                       blurRadius: 24,
@@ -725,10 +737,10 @@ class _DemandeSangScreenState
                             decoration:
                                 BoxDecoration(
                               color: selected
-                                  ? const Color(
-                                      0xFFC1121F)
-                                  : const Color(
-                                      0xFFF5F6FA),
+                              ? const Color(0xFFC1121F)
+                              : isDark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFF5F6FA),
 
                               borderRadius:
                                   BorderRadius
@@ -742,9 +754,10 @@ class _DemandeSangScreenState
 
                               style: TextStyle(
                                 color: selected
+                                ? Colors.white
+                                : isDark
                                     ? Colors.white
-                                    : Colors
-                                        .black87,
+                                    : Colors.black87,
 
                                 fontWeight:
                                     FontWeight
@@ -828,10 +841,9 @@ class _DemandeSangScreenState
 
                             filled: true,
 
-                            fillColor:
-                                const Color(
-                              0xFFF5F6FA,
-                            ),
+                            fillColor: isDark
+                              ? const Color(0xFF334155)
+                              : const Color(0xFFF5F6FA),
 
                             border:
                                 OutlineInputBorder(
@@ -952,10 +964,9 @@ loadingCentres
 
               filled: true,
 
-              fillColor:
-                  const Color(
-                0xFFF5F6FA,
-              ),
+              fillColor: isDark
+                ? const Color(0xFF334155)
+                : const Color(0xFFF5F6FA),
 
               border: OutlineInputBorder(
                 borderRadius:
@@ -1177,9 +1188,9 @@ loadingCentres
                       ),
 
                       decoration: BoxDecoration(
-                        color: const Color(
-                          0xFFF5F6FA,
-                        ),
+                      color: isDark
+                          ? const Color(0xFF334155)
+                          : const Color(0xFFF5F6FA),
 
                         borderRadius:
                             BorderRadius
@@ -1211,8 +1222,9 @@ loadingCentres
 
                               decoration:
                                   BoxDecoration(
-                                color:
-                                    Colors.white,
+                                color: isDark
+                                  ? const Color(0xFF475569)
+                                  : Colors.white,
 
                                 borderRadius:
                                     BorderRadius

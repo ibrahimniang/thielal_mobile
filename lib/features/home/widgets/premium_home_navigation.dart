@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../app/theme/app_colors.dart';
 
 import '../../../../app/router/route_names.dart';
 import '../../../../app/theme/app_colors.dart';
@@ -17,7 +18,7 @@ class PremiumHomeNavigation extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
 
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
 
         borderRadius: BorderRadius.circular(30),
 
@@ -64,9 +65,12 @@ class PremiumHomeNavigation extends StatelessWidget {
               width: 68,
 
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFE53946), Color(0xFFC1121F)],
-                ),
+                gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primary,
+                  Theme.of(context).colorScheme.primary.withOpacity(0.7),
+                ],
+              ),
 
                 shape: BoxShape.circle,
 
@@ -81,11 +85,9 @@ class PremiumHomeNavigation extends StatelessWidget {
                 ],
               ),
 
-              child: const Icon(
+              Icon(
                 Icons.bloodtype_rounded,
-
-                color: Colors.white,
-
+                color: Theme.of(context).colorScheme.onPrimary,
                 size: 34,
               ),
             ),
@@ -131,9 +133,9 @@ class PremiumHomeNavigation extends StatelessWidget {
 
         decoration: BoxDecoration(
           color:
-              selected
-                  ? AppColors.primaryRed.withOpacity(0.10)
-                  : Colors.transparent,
+             selected
+              ? Theme.of(context).colorScheme.primary.withOpacity(0.10)
+              : Colors.transparent,
 
           borderRadius: BorderRadius.circular(18),
         ),
@@ -141,7 +143,9 @@ class PremiumHomeNavigation extends StatelessWidget {
         child: Icon(
           icon,
 
-          color: selected ? AppColors.primaryRed : Colors.grey,
+         color: selected
+          ? Theme.of(context).colorScheme.primary
+          : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
 
           size: 28,
         ),

@@ -8,7 +8,6 @@ import '../../../../l10n/app_localizations.dart';
 
 class NextDonationCard extends StatelessWidget {
   final DateTime? nextDonationDate;
-
   final VoidCallback? onReminderTap;
 
   const NextDonationCard({
@@ -20,17 +19,35 @@ class NextDonationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     final bool isEligible = nextDonationDate == null;
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.xl),
 
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF161B4B), Color(0xFF232A67)],
+        gradient: LinearGradient(
+          colors: isDark
+              ? [
+                  colors.surface.withOpacity(0.9),
+                  colors.surface.withOpacity(0.6),
+                ]
+              : const [
+                  Color(0xFF161B4B),
+                  Color(0xFF232A67),
+                ],
         ),
 
         borderRadius: BorderRadius.circular(32),
+
+        border: isDark
+            ? Border.all(
+                color: colors.outline.withOpacity(0.2),
+              )
+            : null,
       ),
 
       child: Column(
@@ -45,7 +62,9 @@ class NextDonationCard extends StatelessWidget {
                 width: 64,
 
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.10),
+                  color: Colors.white.withOpacity(
+                    isDark ? 0.08 : 0.10,
+                  ),
 
                   borderRadius: BorderRadius.circular(22),
                 ),
@@ -63,7 +82,7 @@ class NextDonationCard extends StatelessWidget {
                 child: Text(
                   l10n.nextDonationPossible,
 
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w900,
                     fontSize: 22,
@@ -79,8 +98,10 @@ class NextDonationCard extends StatelessWidget {
           Text(
             isEligible
                 ? 'Apte à donner'
-                : DateFormat('dd MMMM yyyy').format(nextDonationDate!),
-            style: const TextStyle(
+                : DateFormat('dd MMMM yyyy')
+                    .format(nextDonationDate!),
+
+            style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w900,
               fontSize: 30,
@@ -95,10 +116,10 @@ class NextDonationCard extends StatelessWidget {
                 : 'Vous serez automatiquement notifié lorsque vous redeviendrez apte.',
 
             style: TextStyle(
-              color: Colors.white.withOpacity(0.82),
-
+              color: Colors.white.withOpacity(
+                isDark ? 0.75 : 0.82,
+              ),
               fontWeight: FontWeight.w500,
-
               height: 1.5,
             ),
           ),
@@ -109,7 +130,9 @@ class NextDonationCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 18),
 
             decoration: BoxDecoration(
-              color: isEligible ? Colors.green : AppColors.primaryRed,
+              color: isEligible
+                  ? Colors.green.withOpacity(isDark ? 0.8 : 1)
+                  : AppColors.primaryRed.withOpacity(isDark ? 0.85 : 1),
 
               borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
@@ -131,6 +154,7 @@ class NextDonationCard extends StatelessWidget {
                   isEligible
                       ? 'Disponible maintenant'
                       : 'Notification automatique activée',
+
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,

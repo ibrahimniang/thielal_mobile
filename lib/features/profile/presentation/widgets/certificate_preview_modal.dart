@@ -68,6 +68,7 @@ class CertificatePreviewModal extends StatelessWidget {
 
   Future<void> _shareCertificate(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     await Share.share('''
 🩸 ${l10n.lifelinkDonationCertificate}
@@ -110,6 +111,7 @@ $appLink
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final formattedDate = DateFormat(
       'dd/MM/yyyy • HH:mm',
     ).format(DateTime.parse(donationDate));
@@ -119,10 +121,13 @@ $appLink
       child: Container(
         height: MediaQuery.of(context).size.height * 0.90,
 
-        decoration: const BoxDecoration(
-          color: Color(0xFFF5F7FB),
-
-          borderRadius: BorderRadius.vertical(top: Radius.circular(34)),
+        decoration: BoxDecoration(
+          color: isDark
+              ? const Color(0xFF0F172A)
+              : const Color(0xFFF5F7FB),
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(34),
+          ),
         ),
 
         child: Column(
@@ -191,8 +196,8 @@ $appLink
 
                           style: TextStyle(
                             fontSize: 24,
-
                             fontWeight: FontWeight.w900,
+                            color: isDark ? Colors.white : Colors.black,
                           ),
                         ),
 
@@ -204,7 +209,7 @@ $appLink
                           style: TextStyle(
                             fontWeight: FontWeight.w500,
 
-                            color: Colors.grey,
+                            color: isDark ? Colors.white70 : Colors.grey,
                           ),
                         ),
                       ],
@@ -232,7 +237,9 @@ $appLink
                       padding: const EdgeInsets.all(28),
 
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: isDark
+                            ? const Color(0xFF161B4B)
+                            : Colors.white,
 
                         borderRadius: BorderRadius.circular(30),
 
@@ -285,10 +292,9 @@ $appLink
 
                             style: TextStyle(
                               fontWeight: FontWeight.w900,
-
                               fontSize: 24,
-
                               letterSpacing: 1.2,
+                              color: isDark ? Colors.white : Colors.black,
                             ),
                           ),
 
@@ -298,7 +304,7 @@ $appLink
                             'LifeLink Mauritanie',
 
                             style: TextStyle(
-                              color: Colors.grey[700],
+                              color: isDark ? Colors.white70 : Colors.grey[700],
 
                               fontWeight: FontWeight.w600,
                             ),
@@ -307,7 +313,11 @@ $appLink
                           const SizedBox(height: 32),
 
                           /// DONOR
-                          _infoRow(label: l10n.donor, value: donorName),
+                          _infoRow(
+                              label: l10n.donor,
+                              value: donorName,
+                              isDark: isDark,
+                            ),
 
                           const SizedBox(height: 18),
 
@@ -490,7 +500,11 @@ $appLink
   /// INFO ROW
   /// =========================================================
 
-  Widget _infoRow({required String label, required String value}) {
+  Widget _infoRow({
+  required String label,
+  required String value,
+  bool isDark = false,
+}) {
     return Row(
       children: [
         Expanded(
@@ -498,7 +512,7 @@ $appLink
             label,
 
             style: TextStyle(
-              color: Colors.grey[700],
+              color: isDark ? Colors.white70 : Colors.grey[700],
 
               fontWeight: FontWeight.w600,
             ),
@@ -529,7 +543,7 @@ $appLink
     required String label,
     required Color color,
     VoidCallback? onTap,
-  }) {
+  }) {    
     return GestureDetector(
       onTap: onTap,
 
@@ -552,11 +566,10 @@ $appLink
 
             Text(
               label,
-
               style: const TextStyle(
                 color: Colors.white,
-
                 fontWeight: FontWeight.w800,
+                fontSize: 15,
               ),
             ),
           ],

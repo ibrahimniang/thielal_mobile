@@ -5,13 +5,9 @@ import '../../../../app/theme/app_spacing.dart';
 
 class EmptyProfileState extends StatelessWidget {
   final String title;
-
   final String subtitle;
-
   final IconData icon;
-
   final VoidCallback? onActionTap;
-
   final String? actionText;
 
   const EmptyProfileState({
@@ -25,15 +21,16 @@ class EmptyProfileState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(
-          AppSpacing.xxl,
-        ),
+        padding: const EdgeInsets.all(AppSpacing.xxl),
 
         child: Column(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
 
           children: [
             /// ICON
@@ -42,8 +39,9 @@ class EmptyProfileState extends StatelessWidget {
               width: 120,
 
               decoration: BoxDecoration(
-                color: AppColors.primaryRed
-                    .withOpacity(0.08),
+                color: AppColors.primaryRed.withOpacity(
+                  isDark ? 0.12 : 0.08,
+                ),
 
                 shape: BoxShape.circle,
               ),
@@ -61,9 +59,10 @@ class EmptyProfileState extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w900,
+                color: colors.onSurface,
               ),
             ),
 
@@ -74,38 +73,42 @@ class EmptyProfileState extends StatelessWidget {
               subtitle,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.grey[700],
+                color: isDark
+                    ? colors.onSurface.withOpacity(0.7)
+                    : Colors.grey[700],
 
                 fontSize: 15,
-
                 height: 1.6,
-
                 fontWeight: FontWeight.w500,
               ),
             ),
 
-            if (onActionTap != null &&
-                actionText != null) ...[
+            if (onActionTap != null && actionText != null) ...[
               const SizedBox(height: 32),
 
               GestureDetector(
                 onTap: onActionTap,
 
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(
-                        horizontal: 26,
-                        vertical: 18,
-                      ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 26,
+                    vertical: 18,
+                  ),
 
                   decoration: BoxDecoration(
-                    color:
-                        AppColors.primaryRed,
+                    color: AppColors.primaryRed,
 
-                    borderRadius:
-                        BorderRadius.circular(
-                          24,
+                    borderRadius: BorderRadius.circular(24),
+
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primaryRed.withOpacity(
+                          isDark ? 0.15 : 0.25,
                         ),
+                        blurRadius: 14,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
 
                   child: Text(

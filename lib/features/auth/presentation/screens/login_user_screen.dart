@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/theme_provider.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/route_names.dart';
@@ -112,10 +113,7 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w800,
-            color: Theme.of(context).brightness ==
-                Brightness.dark
-            ? Colors.white
-            : const Color(0xFF1B1F24),
+           color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 8),
@@ -124,11 +122,7 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 14,
-                    color: Theme.of(context).brightness ==
-                Brightness.dark
-            ? Colors.white70
-            : Colors.grey.shade700,
-            height: 1.4,
+                   color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
           ),
         ),
       ],
@@ -153,39 +147,19 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
-            gradient: LinearGradient(
-          colors: isDark
-              ? [
-                  const Color(0xFF1B1B1B),
-                  const Color(0xFF232323),
-                  const Color(0xFF2A2A2A),
-                ]
-              : [
-                  Colors.white.withOpacity(0.92),
-                  Colors.red.shade50.withOpacity(0.86),
-                  Colors.blue.shade50.withOpacity(0.72),
-                ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.78),
-              width: 1.2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
-              ),
-              BoxShadow(
-                color: Colors.red.withOpacity(0.08),
-                blurRadius: 18,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
+  color: Theme.of(context).colorScheme.surface,
+  borderRadius: BorderRadius.circular(28),
+  border: Border.all(
+    color: Theme.of(context).dividerColor.withOpacity(0.2),
+  ),
+  boxShadow: [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.08),
+      blurRadius: 24,
+      offset: const Offset(0, 10),
+    ),
+  ],
+),
           child: Form(
             key: _formKey,
             child: Column(
@@ -197,7 +171,7 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: Colors.grey.shade900,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ),
@@ -288,7 +262,7 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
                       'Nouveau sur LifeLink ?',
 
                       style: TextStyle(
-                        color: Colors.grey.shade700,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
 
                         fontWeight: FontWeight.w500,
                       ),
@@ -322,16 +296,13 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final authState = ref.watch(authControllerProvider);
     final auth = ref.read(authControllerProvider.notifier);
 
     return Scaffold(
-      backgroundColor:
-        Theme.of(context).brightness ==
-                Brightness.dark
-            ? const Color(0xFF121212)
-            : const Color(0xFFF7F9FC),
+     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       /*appBar: AppBar(
         title: Text(l10n.login),
         backgroundColor: Colors.red,
@@ -341,16 +312,7 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
       body: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.white,
-              Colors.red.shade50.withOpacity(0.55),
-              Colors.green.shade50.withOpacity(0.30),
-              Colors.blue.shade50.withOpacity(0.42),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+          color: Theme.of(context).scaffoldBackgroundColor,
         ),
         child: SafeArea(
           child: SingleChildScrollView(
@@ -364,7 +326,7 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
         height: 48,
         width: 48,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -375,11 +337,11 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
         ),
         child: IconButton(
           onPressed: () {
-            // toggle theme
+            ref.read(themeProvider.notifier).toggleTheme();
           },
-          icon: const Icon(
-            Icons.dark_mode_rounded,
-          ),
+          icon: Icon(
+          isDark ? Icons.dark_mode_rounded : Icons.wb_sunny_rounded,
+        ),
         ),
       ),
     ),

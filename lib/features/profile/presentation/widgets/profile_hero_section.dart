@@ -36,6 +36,7 @@ class ProfileHeroSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
     final letter =
         fullName.trim().isNotEmpty ? fullName.trim()[0].toUpperCase() : '?';
@@ -83,14 +84,20 @@ class ProfileHeroSection extends StatelessWidget {
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
-                color: Colors.red.withOpacity(0.22),
+                color: isDark
+                ? Colors.black.withOpacity(0.4)
+                : Colors.red.withOpacity(0.22),
 
                 blurRadius: 30,
 
                 offset: const Offset(0, 14),
               ),
             ],
-            gradient: AppGradients.primaryRed,
+            gradient: isDark
+            ? const LinearGradient(
+                colors: [Color(0xFF111827), Color(0xFF1F2937)],
+              )
+            : AppGradients.primaryRed,
             borderRadius: BorderRadius.circular(34),
           ),
 

@@ -66,12 +66,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final profileState = ref.watch(profileControllerProvider);
 
     final donationsAsync = ref.watch(myDonationsProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor:
+      isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
       body: profileState.when(
         loading: () => const ProfileLoadingShimmer(),
 
@@ -176,7 +178,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
                   delegate: _ProfileTabDelegate(
                     child: Container(
-                      color: const Color(0xFFF5F7FB),
+                      color: isDark
+                        ? const Color(0xFF111827)
+                        : const Color(0xFFF5F7FB),
 
                       padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
 

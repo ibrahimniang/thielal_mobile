@@ -293,10 +293,17 @@ class _ChatScreenState
   // ======================================================
 
   void showUserInfoModal() {
+     final isDark =
+      Theme.of(context).brightness == Brightness.dark;
+
+      final colors =
+          Theme.of(context).colorScheme;
+
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? colors.surface : Colors.white,
+      
       shape:
           const RoundedRectangleBorder(
         borderRadius:
@@ -351,7 +358,7 @@ class _ChatScreenState
                       Color(0xFFE53935),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+               child: const Icon(
                   Icons.person,
                   color: Colors.white,
                   size: 42,
@@ -362,7 +369,7 @@ class _ChatScreenState
 
               Text(
                 widget.fullName,
-                style: const TextStyle(
+                style:  TextStyle(
                   fontSize: 22,
                   fontWeight:
                       FontWeight.w800,
@@ -478,7 +485,9 @@ class _ChatScreenState
       padding:
           const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF1E293B)
+          : Colors.grey.shade100,
         borderRadius:
             BorderRadius.circular(
           18,
@@ -498,7 +507,7 @@ class _ChatScreenState
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
+              style:  TextStyle(
                 fontWeight:
                     FontWeight.w600,
               ),
@@ -765,18 +774,21 @@ class _ChatScreenState
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
 
     final currentUser =
         ref.read(authControllerProvider)
             .currentUser;
 
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF6F7FB),
+    backgroundColor: isDark
+      ? const Color(0xFF0F172A)
+      : const Color(0xFFF6F7FB),
 
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? colors.surface : const Color(0xFFF6F7FB),
         surfaceTintColor:
             Colors.white,
 
@@ -784,9 +796,9 @@ class _ChatScreenState
           onPressed: () {
             context.pop();
           },
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new,
-            color: Colors.black,
+            color: isDark ? Colors.white : Colors.black,
           ),
         ),
 
@@ -811,7 +823,7 @@ class _ChatScreenState
                       shape:
                           BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.person,
                       color:
                           Colors.white,
@@ -858,14 +870,11 @@ class _ChatScreenState
                           TextOverflow
                               .ellipsis,
                       style:
-                          const TextStyle(
-                        color:
-                            Colors.black,
-                        fontSize: 16,
-                        fontWeight:
-                            FontWeight
-                                .w700,
-                      ),
+                         TextStyle(
+                          color: isDark ? Colors.white : Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        )
                     ),
 
                     const SizedBox(
@@ -877,16 +886,11 @@ class _ChatScreenState
                           ? "En ligne"
                           : "Hors ligne",
                       style:
-                          TextStyle(
-                        color:
-                            isUserOnline
-                                ? Colors.green
-                                : Colors.grey,
-                        fontSize: 12,
-                        fontWeight:
-                            FontWeight
-                                .w600,
-                      ),
+                         TextStyle(
+                        color: isUserOnline
+                            ? Colors.green
+                            : (isDark ? Colors.white54 : Colors.grey),
+                      )
                     ),
                   ],
                 ),
@@ -993,14 +997,12 @@ class _ChatScreenState
                               ),
                               decoration:
                                   BoxDecoration(
-                                color:
-                                    isMe
-                                        ? const Color(
-                                            0xFFE53935,
-                                          )
-                                        : Colors
-                                            .white,
-                                borderRadius:
+                               color: isMe
+                                ? const Color(0xFFE53935)
+                                : (isDark
+                                    ? const Color(0xFF1E293B)
+                                    : Colors.white),
+                                     borderRadius:
                                     BorderRadius.only(
                                   topLeft:
                                       const Radius.circular(
@@ -1057,10 +1059,11 @@ class _ChatScreenState
                                           15,
                                       height:
                                           1.4,
-                                      color:
-                                          isMe
-                                              ? Colors.white
-                                              : Colors.black87,
+                                      color: isMe
+                                    ? Colors.white
+                                    : (isDark
+                                        ? Colors.white
+                                        : Colors.black87),
                                     ),
                                   ),
 
@@ -1124,24 +1127,18 @@ class _ChatScreenState
                 vertical: 12,
               ),
               decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-
-                  BoxShadow(
-                    color: Colors.black
-                        .withOpacity(
-                      0.04,
-                    ),
-                    blurRadius: 12,
-                    offset:
-                        const Offset(
-                      0,
-                      -2,
-                    ),
+                    color: isDark
+                      ? const Color(0xFF111827)
+                      : Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 12,
+                        offset: const Offset(0, -2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Row(
+                  child: Row(
                 children: [
 
                   Expanded(
@@ -1150,36 +1147,39 @@ class _ChatScreenState
                           const EdgeInsets.symmetric(
                         horizontal: 18,
                       ),
-                      decoration:
-                          BoxDecoration(
-                        color:
-                            const Color(
-                          0xFFF4F5F7,
-                        ),
-                        borderRadius:
-                            BorderRadius.circular(
-                          30,
-                        ),
-                      ),
+                      
+                         decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF1A2234)
+                                : const Color(0xFFF4F5F7),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
                       child: TextField(
                         controller:
                             messageController,
                         minLines: 1,
                         maxLines: 5,
+                         style: TextStyle(
+                          color: isDark
+                              ? Colors.white
+                              : Colors.black,
+                        ),
                         textInputAction:
                             TextInputAction
                                 .send,
                         onSubmitted:
                             (_) =>
                                 sendMessage(),
-                        decoration:
-                            const InputDecoration(
-                          border:
-                              InputBorder.none,
-                          hintText:
-                              "Écrire un message...",
+                       decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: "Écrire un message...",
+                            hintStyle: TextStyle(
+                              color: isDark
+                                  ? Colors.white54
+                                  : Colors.grey,
+                            ),
+                          ),
                         ),
-                      ),
                     ),
                   ),
 

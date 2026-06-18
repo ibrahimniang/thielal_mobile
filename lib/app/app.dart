@@ -9,6 +9,7 @@ import 'services/locale_service.dart';
 
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
+import '../core/theme/theme_provider.dart';
 
 /// Application principale.
 ///
@@ -39,9 +40,10 @@ class _ThielalAppState extends ConsumerState<ThielalApp> {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeProvider);
+
     return ValueListenableBuilder(
       valueListenable: localeNotifier,
-
       builder: (context, locale, _) {
         return MaterialApp.router(
           debugShowCheckedModeBanner: false,
@@ -49,6 +51,8 @@ class _ThielalAppState extends ConsumerState<ThielalApp> {
           title: 'Thielal / LifeLink',
 
           theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeMode,
 
           routerConfig: _router,
 
@@ -56,9 +60,7 @@ class _ThielalAppState extends ConsumerState<ThielalApp> {
           /// LOCALIZATION
           /// =========================
           locale: locale,
-
           localizationsDelegates: AppLocalizations.localizationsDelegates,
-
           supportedLocales: AppLocalizations.supportedLocales,
         );
       },

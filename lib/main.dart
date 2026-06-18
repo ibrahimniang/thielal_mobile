@@ -24,17 +24,13 @@ Future<void> main() async {
   // ==========================
   // LOCAL NOTIFICATIONS
   // ==========================
-  await LocalNotificationService
-      .instance
-      .initialize();
+  await LocalNotificationService.instance.initialize();
 
   debugPrint(
     "🔔 Local notifications initialisées",
   );
 
-  // ==========================
-  // ONBOARDING (OPTIONNEL)
-  // ==========================
+  // Réinitialisation du flag onboarding
   // await SecureStorageService.clearOnboardingFlag();
 
   runApp(

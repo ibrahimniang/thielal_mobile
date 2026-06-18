@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-class ProfileHeaderActions
-    extends StatelessWidget {
+class ProfileHeaderActions extends StatelessWidget {
   final VoidCallback? onNotificationTap;
-
   final VoidCallback? onSettingsTap;
 
   const ProfileHeaderActions({
@@ -17,14 +15,15 @@ class ProfileHeaderActions
     return Row(
       children: [
         _actionButton(
-          icon:
-              Icons.notifications_rounded,
+          context: context,
+          icon: Icons.notifications_rounded,
           onTap: onNotificationTap,
         ),
 
         const SizedBox(width: 12),
 
         _actionButton(
+          context: context,
           icon: Icons.settings_rounded,
           onTap: onSettingsTap,
         ),
@@ -33,9 +32,14 @@ class ProfileHeaderActions
   }
 
   Widget _actionButton({
+    required BuildContext context,
     required IconData icon,
     VoidCallback? onTap,
   }) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: onTap,
 
@@ -44,17 +48,22 @@ class ProfileHeaderActions
         width: 52,
 
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(
-            0.16,
-          ),
+          color: isDark
+              ? colors.surface.withOpacity(0.6)
+              : Colors.white.withOpacity(0.16),
 
-          borderRadius:
-              BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18),
+
+          border: Border.all(
+            color: isDark
+                ? colors.outline.withOpacity(0.25)
+                : Colors.white.withOpacity(0.18),
+          ),
         ),
 
         child: Icon(
           icon,
-          color: Colors.white,
+          color: isDark ? colors.onSurface : Colors.white,
         ),
       ),
     );

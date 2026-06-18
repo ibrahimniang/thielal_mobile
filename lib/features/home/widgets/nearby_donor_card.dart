@@ -31,6 +31,12 @@ class NearbyDonorCard extends StatelessWidget {
             ? donor.prenom!.trim()[0].toUpperCase()
             : '?';
 
+    final isDark =
+      Theme.of(context).brightness == Brightness.dark;
+
+  final colors =
+      Theme.of(context).colorScheme;
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 240),
 
@@ -39,13 +45,17 @@ class NearbyDonorCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
 
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark
+          ? colors.surface
+          : Colors.white,
 
         borderRadius: BorderRadius.circular(28),
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            ccolor: Colors.black.withOpacity(
+              isDark ? 0.35 : 0.05,
+            ),
 
             blurRadius: 24,
 
@@ -84,11 +94,9 @@ class NearbyDonorCard extends StatelessWidget {
                   child: Text(
                     letter,
 
-                    style: const TextStyle(
-                      color: AppColors.primaryRed,
-
+                    style: TextStyle(
+                      color: colors.primary,
                       fontWeight: FontWeight.w900,
-
                       fontSize: 28,
                     ),
                   ),
@@ -113,9 +121,9 @@ class NearbyDonorCard extends StatelessWidget {
 
                       overflow: TextOverflow.ellipsis,
 
-                      style: const TextStyle(
+                      style: TextStyle(
+                        color: colors.onSurface,
                         fontSize: 17,
-
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -138,7 +146,9 @@ class NearbyDonorCard extends StatelessWidget {
                           ),
 
                           decoration: BoxDecoration(
-                            color: AppColors.primaryRed.withOpacity(0.08),
+                            color: colors.primary.withOpacity(
+                              isDark ? 0.18 : 0.08,
+                            ),
 
                             borderRadius: BorderRadius.circular(40),
                           ),
@@ -146,9 +156,8 @@ class NearbyDonorCard extends StatelessWidget {
                           child: Text(
                             donor.groupeSanguin ?? '--',
 
-                            style: const TextStyle(
-                              color: AppColors.primaryRed,
-
+                            style: TextStyle(
+                              color: colors.primary,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -171,7 +180,9 @@ class NearbyDonorCard extends StatelessWidget {
                             'Disponible',
 
                             style: TextStyle(
-                              color: Colors.green,
+                              color: isDark
+                                ? Colors.green.shade600
+                                : Colors.green,
 
                               fontWeight: FontWeight.w700,
 
@@ -192,7 +203,9 @@ class NearbyDonorCard extends StatelessWidget {
 
                           size: 16,
 
-                          color: Colors.grey[600],
+                          color: isDark
+                            ? colors.onSurface.withOpacity(0.7)
+                            : Colors.grey[600],
                         ),
 
                         const SizedBox(width: 6),
@@ -206,7 +219,9 @@ class NearbyDonorCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
 
                             style: TextStyle(
-                              color: Colors.grey[700],
+                              color: isDark
+                                ? colors.onSurface.withOpacity(0.8)
+                                : Colors.grey[700],
 
                               fontWeight: FontWeight.w600,
                             ),
@@ -238,7 +253,9 @@ class NearbyDonorCard extends StatelessWidget {
                   ),
 
                   decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(0.06),
+                    color: isDark
+                      ? colors.surfaceContainerHighest
+                      : Colors.grey.withOpacity(0.06),
 
                     borderRadius: BorderRadius.circular(18),
                   ),
@@ -248,7 +265,9 @@ class NearbyDonorCard extends StatelessWidget {
                       Icon(
                         Icons.location_on_rounded,
 
-                        color: Colors.grey[700],
+                        color: isDark
+                          ? colors.onSurface.withOpacity(0.7)
+                          : Colors.grey[700],
 
                         size: 18,
                       ),
@@ -264,7 +283,9 @@ class NearbyDonorCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
 
                           style: TextStyle(
-                            color: Colors.grey[800],
+                            color: isDark
+                              ? colors.onSurface
+                              : Colors.grey[800],
 
                             fontWeight: FontWeight.w700,
                           ),
@@ -310,7 +331,7 @@ class NearbyDonorCard extends StatelessWidget {
                   width: 54,
 
                   decoration: BoxDecoration(
-                    color: AppColors.primaryRed,
+                    color: colors.primary,
 
                     borderRadius: BorderRadius.circular(18),
                   ),
