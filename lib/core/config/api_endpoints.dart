@@ -72,6 +72,7 @@ class ApiEndpoints {
   static const String myDons = '/dons/my-dons';
   static const String demandeSang = '/dons/demande-sang';
   static const String demandes = '/dons/demandes';
+  static const String myDemandes = "/dons/my-demandes";
   static String demandeById(int id) => "/dons/demandes/$id";
   static const String generateQr = '/dons/generate-qr';
 
@@ -167,4 +168,14 @@ class ApiEndpoints {
   // ==========================
 
   static const String collectes = '/collectes';
+
+
+// ==========================
+// DEVICES
+// ==========================
+
+static const String myDevices = '/devices/my-devices';
+
+static String revokeDevice(int id) => '/devices/$id';
+  
 }

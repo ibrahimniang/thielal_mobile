@@ -16,18 +16,6 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/auth/presentation/screens/set_password_screen.dart';
 
-
-// // STAFF
-// import '../../features/staff/presentation/screens/create_staff_screen.dart';
-// import '../../features/staff/presentation/screens/donors_nearby_screen.dart';
-// import '../../features/staff/presentation/screens/blood_stock_screen.dart';
-// import '../../features/staff/presentation/screens/scan_qr_screen.dart';
-// import '../../features/staff/presentation/screens/generate_qr_screen.dart';
-// import '../../features/staff/presentation/screens/staff_dashboard_screen.dart';
-// import '../../features/staff/presentation/screens/blood_requests_screen.dart';
-// import '../../features/staff/presentation/screens/director_dashboard_screen.dart';
-
-
 // USER
 import '../../features/home/screens/home_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -36,6 +24,8 @@ import '../../features/settings/settings_screen.dart';
 import '../../features/centers/presentation/screens/centers_map_screen.dart';
 import '../../features/donations/presentation/screens/donation_history_screen.dart';
 import '../../features/donations/presentation/screens/demande_sang_screen.dart';
+import 'package:thielal/features/donations/presentation/screens/my_demandes_screen.dart';
+
 import '../../features/notifications/presentation/screens/notifications_list_screen.dart';
 import '../../features/alerts/data/models/alert_model.dart';
 
@@ -258,6 +248,11 @@ class AppRouter {
               path: RouteNames.demandeSang,
               builder: (_, __) => const DemandeSangScreen(),
             ),
+
+            GoRoute(
+              path: '/my-demandes',
+              builder: (_, __) => const MyDemandesScreen(),
+            ),
           ],
         ),
 
@@ -283,50 +278,6 @@ class AppRouter {
             );
           },
         ),
-
-
-        // ================= STAFF =================
-
-        // GoRoute(
-        //   path: RouteNames.staffDashboard,
-        //   builder: (_, __) => const StaffDashboardScreen(),
-        // ),
-
-        // GoRoute(
-        //   path: RouteNames.staffRequests,
-        //   builder: (_, __) => const BloodRequestsScreen(),
-        // ),
-
-        // GoRoute(
-        //   path: RouteNames.staffDonors,
-        //   builder: (_, __) => const NearbyDonorsScreen(),
-        // ),
-
-        // GoRoute(
-        //   path: RouteNames.bloodStock,
-        //   builder: (_, __) => const BloodStockScreen(),
-        // ),
-
-        // GoRoute(
-        //   path: RouteNames.qrScan,
-        //   builder: (_, __) => const QrScanScreen(),
-        // ),
-
-        // GoRoute(
-        //   path: RouteNames.qrGenerate,
-        //   builder: (_, __) => const QrGenerateScreen(),
-        // ),
-
-        // // ================= DIRECTOR =================
-        // GoRoute(
-        //   path: RouteNames.directorDashboard,
-        //   builder: (_, __) => const DirectorDashboardScreen(),
-        // ),
-
-        // GoRoute(
-        //   path: RouteNames.createStaff,
-        //   builder: (_, __) => const CreateStaffScreen(),
-        // ),
 
         // // ================= ADMIN =================
         GoRoute(

@@ -15,19 +15,15 @@ class DemandeSangScreen extends ConsumerStatefulWidget {
   const DemandeSangScreen({super.key});
 
   @override
-  ConsumerState<DemandeSangScreen> createState() =>
-      _DemandeSangScreenState();
+  ConsumerState<DemandeSangScreen> createState() => _DemandeSangScreenState();
 }
 
-class _DemandeSangScreenState
-    extends ConsumerState<DemandeSangScreen> {
-
+class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
   /// ==========================================
   /// CONTROLLERS
   /// ==========================================
 
   final villeController = TextEditingController();
-
 
   String? selectedGroupe;
 
@@ -40,7 +36,6 @@ class _DemandeSangScreenState
   /// ==========================================
 
   List<Map<String, dynamic>> centres = [];
-
 
   Map<String, dynamic>? selectedCentre;
 
@@ -94,28 +89,19 @@ class _DemandeSangScreenState
   /// DISTANCE ENTRE USER ET CENTRE
   /// ==========================================
 
-  double calculateDistance(
-  double lat1,
-  double lon1,
-  double lat2,
-  double lon2,
-) {
-  const p = 0.017453292519943295;
+  double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    const p = 0.017453292519943295;
 
-  final a =
-      0.5 -
-      math.cos((lat2 - lat1) * p) / 2 +
-      math.cos(lat1 * p) *
-          math.cos(lat2 * p) *
-          (1 -
-                  math.cos(
-                    (lon2 - lon1) * p,
-                  )) /
-              2;
+    final a =
+        0.5 -
+        math.cos((lat2 - lat1) * p) / 2 +
+        math.cos(lat1 * p) *
+            math.cos(lat2 * p) *
+            (1 - math.cos((lon2 - lon1) * p)) /
+            2;
 
-  return 12742 *
-      math.asin(math.sqrt(a));
-}
+    return 12742 * math.asin(math.sqrt(a));
+  }
 
   /// ==========================================
   /// CHARGER CENTRES
@@ -123,8 +109,7 @@ class _DemandeSangScreenState
 
   Future<void> chargerCentres() async {
     try {
-      final token =
-          ref.read(authControllerProvider).accessToken;
+      final token = ref.read(authControllerProvider).accessToken;
 
       final response = await http.get(
         Uri.parse("${Env.baseUrl}/centres"),
@@ -135,55 +120,36 @@ class _DemandeSangScreenState
         },
       );
 
-      debugPrint(
-        "🏥 CENTRES STATUS => ${response.statusCode}",
-      );
+      debugPrint("🏥 CENTRES STATUS => ${response.statusCode}");
 
-      debugPrint(
-        "🏥 CENTRES BODY => ${response.body}",
-      );
+      debugPrint("🏥 CENTRES BODY => ${response.body}");
 
       final data = jsonDecode(response.body);
 
       if (!mounted) return;
 
-      if (response.statusCode == 200 &&
-          data["success"] == true) {
-
+      if (response.statusCode == 200 && data["success"] == true) {
         List<Map<String, dynamic>> centresData =
-          List<Map<String, dynamic>>.from(
-            data["data"],
-          );
+            List<Map<String, dynamic>>.from(data["data"]);
 
         /// ==========================================
         /// TRI CENTRES PLUS PROCHES
         /// ==========================================
 
-        final currentUser =
-           ref.read(authControllerProvider).currentUser;
+        final currentUser = ref.read(authControllerProvider).currentUser;
 
-        final userLat =
-            currentUser?.latitude;
+        final userLat = currentUser?.latitude;
 
-        final userLng =
-            currentUser?.longitude;
+        final userLng = currentUser?.longitude;
 
-        if (userLat != null &&
-            userLng != null) {
-
+        if (userLat != null && userLng != null) {
           for (var centre in centresData) {
+            final centreLat = centre["latitude"];
 
-            final centreLat =
-                centre["latitude"];
+            final centreLng = centre["longitude"];
 
-            final centreLng =
-                centre["longitude"];
-
-            if (centreLat != null &&
-                centreLng != null) {
-
-              centre["distance"] =
-                  calculateDistance(
+            if (centreLat != null && centreLng != null) {
+              centre["distance"] = calculateDistance(
                 userLat.toDouble(),
                 userLng.toDouble(),
                 centreLat.toDouble(),
@@ -196,10 +162,7 @@ class _DemandeSangScreenState
 
           centresData.sort(
             (a, b) =>
-                (a["distance"] as double)
-                    .compareTo(
-              b["distance"] as double,
-            ),
+                (a["distance"] as double).compareTo(b["distance"] as double),
           );
         }
 
@@ -207,7 +170,6 @@ class _DemandeSangScreenState
           centres = centresData;
           loadingCentres = false;
         });
-
       } else {
         setState(() {
           loadingCentres = false;
@@ -224,7 +186,6 @@ class _DemandeSangScreenState
     }
   }
 
- 
   /// ==========================================
   /// ENVOYER DEMANDE
   /// ==========================================
@@ -245,63 +206,49 @@ class _DemandeSangScreenState
     });
 
     try {
-      final token =
-          ref.read(authControllerProvider).accessToken;
+      final token = ref.read(authControllerProvider).accessToken;
 
       if (token == null || token.isEmpty) {
         throw Exception(l10n.sessionExpired);
       }
 
-      final cleanToken =
-          token.replaceAll("Bearer ", "");
+      final cleanToken = token.replaceAll("Bearer ", "");
 
       final response = await http.post(
-        Uri.parse(
-          "${Env.baseUrl}${ApiEndpoints.demandeSang}",
-        ),
+        Uri.parse("${Env.baseUrl}${ApiEndpoints.demandeSang}"),
 
         headers: {
           "Content-Type": "application/json",
 
           "Accept": "application/json",
 
-          "Authorization":
-              "Bearer $cleanToken",
+          "Authorization": "Bearer $cleanToken",
         },
 
         body: jsonEncode({
           "groupe_sanguin": selectedGroupe,
 
-          "ville":
-              villeController.text.trim(),
+          "ville": villeController.text.trim(),
 
           "quantite": quantite,
 
-          "centre_id":
-              selectedCentre?["id_centre"],
+          "centre_id": selectedCentre?["id_centre"],
         }),
       );
 
-      debugPrint(
-        '🩸 STATUS => ${response.statusCode}',
-      );
+      debugPrint('🩸 STATUS => ${response.statusCode}');
 
-      debugPrint(
-        '🩸 RESPONSE => ${response.body}',
-      );
+      debugPrint('🩸 RESPONSE => ${response.body}');
 
       if (!mounted) return;
 
-      if (response.statusCode == 200 ||
-          response.statusCode == 201) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         _showSuccessDialog();
       } else {
         throw Exception(response.body);
       }
     } catch (e) {
-      debugPrint(
-        '❌ DEMANDE ERROR => $e',
-      );
+      debugPrint('❌ DEMANDE ERROR => $e');
 
       if (!mounted) return;
 
@@ -337,23 +284,20 @@ class _DemandeSangScreenState
             decoration: BoxDecoration(
               color: Colors.white,
 
-              borderRadius:
-                  BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(30),
             ),
 
             child: Column(
               mainAxisSize: MainAxisSize.min,
 
               children: [
-
                 /// ICON
                 Container(
                   height: 84,
                   width: 84,
 
                   decoration: BoxDecoration(
-                    color: Colors.green
-                        .withOpacity(0.10),
+                    color: Colors.green.withOpacity(0.10),
 
                     shape: BoxShape.circle,
                   ),
@@ -387,10 +331,7 @@ class _DemandeSangScreenState
 
                   textAlign: TextAlign.center,
 
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    height: 1.5,
-                  ),
+                  style: const TextStyle(color: Colors.grey, height: 1.5),
                 ),
 
                 const SizedBox(height: 26),
@@ -403,13 +344,11 @@ class _DemandeSangScreenState
 
                   child: ElevatedButton(
                     onPressed: () {
-
                       if (context.canPop()) {
                         context.pop();
                       }
 
                       setState(() {
-
                         selectedGroupe = null;
 
                         quantite = 1;
@@ -417,28 +356,23 @@ class _DemandeSangScreenState
                         selectedCentre = null;
 
                         villeController.clear();
-
                       });
                     },
 
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
 
-                      backgroundColor:
-                          const Color(0xFFC1121F),
+                      backgroundColor: const Color(0xFFC1121F),
 
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(18),
                       ),
                     ),
 
                     child: Text(
                       l10n.continueText,
 
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.w800),
                     ),
                   ),
                 ),
@@ -463,8 +397,7 @@ class _DemandeSangScreenState
       builder: (_) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(24),
           ),
 
           title: Text(l10n.error),
@@ -489,7 +422,6 @@ class _DemandeSangScreenState
 
   @override
   void dispose() {
-
     villeController.dispose();
 
     super.dispose();
@@ -497,13 +429,10 @@ class _DemandeSangScreenState
 
   @override
   Widget build(BuildContext context) {
-
-    final l10n =
-        AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF7F8FA),
+      backgroundColor: const Color(0xFFF7F8FA),
 
       appBar: AppBar(
         elevation: 0,
@@ -517,9 +446,7 @@ class _DemandeSangScreenState
         title: Text(
           l10n.urgentRequest,
 
-          style: const TextStyle(
-            fontWeight: FontWeight.w900,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.w900),
         ),
       ),
 
@@ -528,71 +455,53 @@ class _DemandeSangScreenState
           padding: const EdgeInsets.all(20),
 
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
 
             children: [
-
               /// ======================================
               /// HEADER
               /// ======================================
               Container(
                 width: double.infinity,
 
-                padding:
-                    const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
 
                 decoration: BoxDecoration(
-                  gradient:
-                      const LinearGradient(
+                  gradient: const LinearGradient(
                     begin: Alignment.topLeft,
 
-                    end:
-                        Alignment.bottomRight,
+                    end: Alignment.bottomRight,
 
-                    colors: [
-                      Color(0xFFE53946),
-                      Color(0xFFC1121F),
-                    ],
+                    colors: [Color(0xFFE53946), Color(0xFFC1121F)],
                   ),
 
-                  borderRadius:
-                      BorderRadius.circular(32),
+                  borderRadius: BorderRadius.circular(32),
 
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.red
-                          .withOpacity(0.20),
+                      color: Colors.red.withOpacity(0.20),
 
                       blurRadius: 30,
 
-                      offset:
-                          const Offset(0, 14),
+                      offset: const Offset(0, 14),
                     ),
                   ],
                 ),
 
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
 
                   children: [
-
                     Container(
-                      padding:
-                          const EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 10,
                       ),
 
                       decoration: BoxDecoration(
-                        color: Colors.white
-                            .withOpacity(0.14),
+                        color: Colors.white.withOpacity(0.14),
 
-                        borderRadius:
-                            BorderRadius.circular(
-                          16,
-                        ),
+                        borderRadius: BorderRadius.circular(16),
                       ),
 
                       child: Text(
@@ -601,8 +510,7 @@ class _DemandeSangScreenState
                         style: const TextStyle(
                           color: Colors.white,
 
-                          fontWeight:
-                              FontWeight.w900,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
                     ),
@@ -617,8 +525,7 @@ class _DemandeSangScreenState
 
                         fontSize: 30,
 
-                        fontWeight:
-                            FontWeight.w900,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
 
@@ -645,34 +552,28 @@ class _DemandeSangScreenState
               /// FORM
               /// ======================================
               Container(
-                padding:
-                    const EdgeInsets.all(22),
+                padding: const EdgeInsets.all(22),
 
                 decoration: BoxDecoration(
                   color: Colors.white,
 
-                  borderRadius:
-                      BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(30),
 
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black
-                          .withOpacity(0.04),
+                      color: Colors.black.withOpacity(0.04),
 
                       blurRadius: 24,
 
-                      offset:
-                          const Offset(0, 10),
+                      offset: const Offset(0, 10),
                     ),
                   ],
                 ),
 
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
 
                   children: [
-
                     /// ==================================
                     /// GROUPES
                     /// ==================================
@@ -680,8 +581,7 @@ class _DemandeSangScreenState
                       l10n.bloodGroup,
 
                       style: const TextStyle(
-                        fontWeight:
-                            FontWeight.w800,
+                        fontWeight: FontWeight.w800,
                         fontSize: 16,
                       ),
                     ),
@@ -694,68 +594,50 @@ class _DemandeSangScreenState
 
                       children:
                           groupes.map((groupe) {
+                            final selected = selectedGroupe == groupe;
 
-                        final selected =
-                            selectedGroupe ==
-                                groupe;
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedGroupe = groupe;
+                                });
+                              },
 
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedGroupe =
-                                  groupe;
-                            });
-                          },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 220),
 
-                          child:
-                              AnimatedContainer(
-                            duration:
-                                const Duration(
-                              milliseconds: 220,
-                            ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
 
-                            padding:
-                                const EdgeInsets
-                                    .symmetric(
-                              horizontal: 18,
+                                  vertical: 14,
+                                ),
 
-                              vertical: 14,
-                            ),
+                                decoration: BoxDecoration(
+                                  color:
+                                      selected
+                                          ? const Color(0xFFC1121F)
+                                          : const Color(0xFFF5F6FA),
 
-                            decoration:
-                                BoxDecoration(
-                              color: selected
-                                  ? const Color(
-                                      0xFFC1121F)
-                                  : const Color(
-                                      0xFFF5F6FA),
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
 
-                              borderRadius:
-                                  BorderRadius
-                                      .circular(
-                                18,
+                                child: Text(
+                                  groupe,
+
+                                  style: TextStyle(
+                                    color:
+                                        selected
+                                            ? Colors.white
+                                            : Colors.black87,
+
+                                    fontWeight: FontWeight.w800,
+
+                                    fontSize: 15,
+                                  ),
+                                ),
                               ),
-                            ),
-
-                            child: Text(
-                              groupe,
-
-                              style: TextStyle(
-                                color: selected
-                                    ? Colors.white
-                                    : Colors
-                                        .black87,
-
-                                fontWeight:
-                                    FontWeight
-                                        .w800,
-
-                                fontSize: 15,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                            );
+                          }).toList(),
                     ),
 
                     const SizedBox(height: 28),
@@ -767,8 +649,7 @@ class _DemandeSangScreenState
                       l10n.city,
 
                       style: const TextStyle(
-                        fontWeight:
-                            FontWeight.w800,
+                        fontWeight: FontWeight.w800,
                         fontSize: 16,
                       ),
                     ),
@@ -776,28 +657,20 @@ class _DemandeSangScreenState
                     const SizedBox(height: 14),
 
                     Autocomplete<String>(
-                      optionsBuilder:
-                          (TextEditingValue value) {
-
+                      optionsBuilder: (TextEditingValue value) {
                         if (value.text.isEmpty) {
                           return mauritanieVilles;
                         }
 
-                        return mauritanieVilles.where(
-                          (ville) {
-                            return ville
-                                .toLowerCase()
-                                .contains(
-                                  value.text
-                                      .toLowerCase(),
-                                );
-                          },
-                        );
+                        return mauritanieVilles.where((ville) {
+                          return ville.toLowerCase().contains(
+                            value.text.toLowerCase(),
+                          );
+                        });
                       },
 
                       onSelected: (value) {
-                        villeController.text =
-                            value;
+                        villeController.text = value;
                       },
 
                       fieldViewBuilder: (
@@ -806,47 +679,31 @@ class _DemandeSangScreenState
                         focusNode,
                         onFieldSubmitted,
                       ) {
-
-                        controller.text =
-                            villeController.text;
+                        controller.text = villeController.text;
 
                         return TextField(
                           controller: controller,
 
                           focusNode: focusNode,
 
-                          decoration:
-                              InputDecoration(
-                            hintText:
-                                l10n.enterYourCity,
+                          decoration: InputDecoration(
+                            hintText: l10n.enterYourCity,
 
-                            prefixIcon:
-                                const Icon(
-                              Icons
-                                  .location_on_rounded,
-                            ),
+                            prefixIcon: const Icon(Icons.location_on_rounded),
 
                             filled: true,
 
-                            fillColor:
-                                const Color(
-                              0xFFF5F6FA,
-                            ),
+                            fillColor: const Color(0xFFF5F6FA),
 
-                            border:
-                                OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius
-                                      .circular(20),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
 
-                              borderSide:
-                                  BorderSide.none,
+                              borderSide: BorderSide.none,
                             ),
                           ),
 
                           onChanged: (value) {
-                            villeController.text =
-                                value;
+                            villeController.text = value;
                           },
                         );
                       },
@@ -854,305 +711,244 @@ class _DemandeSangScreenState
 
                     const SizedBox(height: 28),
 
-                   /// ==================================
-/// CENTRE DE DON
-/// ==================================
-const Text(
-  "Centre de don",
+                    /// ==================================
+                    /// CENTRE DE DON
+                    /// ==================================
+                    const Text(
+                      "Centre de don",
 
-  style: TextStyle(
-    fontWeight: FontWeight.w800,
-    fontSize: 16,
-  ),
-),
-
-const SizedBox(height: 8),
-
-const Text(
-  "3 centres proches affichés • recherchez pour voir tous les centres",
-
-  style: TextStyle(
-    color: Colors.grey,
-    fontSize: 13,
-    fontWeight: FontWeight.w500,
-  ),
-),
-
-const SizedBox(height: 14),
-
-loadingCentres
-    ? const Center(
-        child: CircularProgressIndicator(),
-      )
-    : Autocomplete<Map<String, dynamic>>(
-        optionsBuilder: (
-          TextEditingValue value,
-        ) {
-
-          /// SI VIDE => 3 PROCHES
-          if (value.text.trim().isEmpty) {
-            return centres.take(3).toList();
-          }
-
-          final search =
-              value.text.toLowerCase();
-
-          /// RECHERCHE TOUS LES CENTRES
-          return centres.where((centre) {
-
-            final nom =
-                centre["nom"]
-                    .toString()
-                    .toLowerCase();
-
-            final ville =
-                centre["ville"]
-                    .toString()
-                    .toLowerCase();
-
-            return nom.contains(search) ||
-                ville.contains(search);
-
-          }).toList();
-        },
-
-        displayStringForOption:
-            (centre) => centre["nom"],
-
-        onSelected: (centre) {
-
-          setState(() {
-            selectedCentre = centre;
-          });
-        },
-
-        fieldViewBuilder: (
-          context,
-          controller,
-          focusNode,
-          onFieldSubmitted,
-        ) {
-
-          if (selectedCentre != null) {
-           controller.text =
-              selectedCentre?["nom"] ?? "";
-          }
-
-          return TextField(
-            controller: controller,
-            focusNode: focusNode,
-
-            decoration: InputDecoration(
-              hintText:
-                  "Rechercher ou choisir un centre",
-
-              prefixIcon: const Icon(
-                Icons.local_hospital,
-              ),
-
-              filled: true,
-
-              fillColor:
-                  const Color(
-                0xFFF5F6FA,
-              ),
-
-              border: OutlineInputBorder(
-                borderRadius:
-                    BorderRadius.circular(
-                  20,
-                ),
-
-                borderSide:
-                    BorderSide.none,
-              ),
-            ),
-          );
-        },
-
-        optionsViewBuilder: (
-          context,
-          onSelected,
-          options,
-        ) {
-
-          return Align(
-            alignment: Alignment.topLeft,
-
-            child: Material(
-              elevation: 8,
-
-              borderRadius:
-                  BorderRadius.circular(20),
-
-              child: Container(
-                width:
-                    MediaQuery.of(context)
-                        .size
-                        .width - 40,
-
-                constraints:
-                    const BoxConstraints(
-                  maxHeight: 320,
-                ),
-
-                decoration: BoxDecoration(
-                  color: Colors.white,
-
-                  borderRadius:
-                      BorderRadius.circular(
-                    20,
-                  ),
-                ),
-
-                child: ListView.builder(
-                  padding:
-                      const EdgeInsets.all(8),
-
-                  itemCount:
-                      options.length,
-
-                  itemBuilder:
-                      (context, index) {
-
-                    final centre =
-                        options.elementAt(index);
-
-                    final distance =
-                        centre["distance"];
-
-                    return InkWell(
-                      borderRadius:
-                          BorderRadius.circular(
-                        16,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
                       ),
+                    ),
 
-                      onTap: () {
-                        onSelected(centre);
-                      },
+                    const SizedBox(height: 8),
 
-                      child: Container(
-                        padding:
-                            const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 14,
+                    const Text(
+                      "3 centres proches affichés • recherchez pour voir tous les centres",
+
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    loadingCentres
+                        ? const Center(child: CircularProgressIndicator())
+                        : Autocomplete<Map<String, dynamic>>(
+                          optionsBuilder: (TextEditingValue value) {
+                            /// SI VIDE => 3 PROCHES
+                            if (value.text.trim().isEmpty) {
+                              return centres.take(3).toList();
+                            }
+
+                            final search = value.text.toLowerCase();
+
+                            /// RECHERCHE TOUS LES CENTRES
+                            return centres.where((centre) {
+                              final nom =
+                                  centre["nom"].toString().toLowerCase();
+
+                              final ville =
+                                  centre["ville"].toString().toLowerCase();
+
+                              return nom.contains(search) ||
+                                  ville.contains(search);
+                            }).toList();
+                          },
+
+                          displayStringForOption: (centre) => centre["nom"],
+
+                          onSelected: (centre) {
+                            setState(() {
+                              selectedCentre = centre;
+                            });
+                          },
+
+                          fieldViewBuilder: (
+                            context,
+                            controller,
+                            focusNode,
+                            onFieldSubmitted,
+                          ) {
+                            if (selectedCentre != null) {
+                              controller.text = selectedCentre?["nom"] ?? "";
+                            }
+
+                            return TextField(
+                              controller: controller,
+                              focusNode: focusNode,
+
+                              decoration: InputDecoration(
+                                hintText: "Rechercher ou choisir un centre",
+
+                                prefixIcon: const Icon(Icons.local_hospital),
+
+                                filled: true,
+
+                                fillColor: const Color(0xFFF5F6FA),
+
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(20),
+
+                                  borderSide: BorderSide.none,
+                                ),
+                              ),
+                            );
+                          },
+
+                          optionsViewBuilder: (context, onSelected, options) {
+                            return Align(
+                              alignment: Alignment.topLeft,
+
+                              child: Material(
+                                elevation: 8,
+
+                                borderRadius: BorderRadius.circular(20),
+
+                                child: Container(
+                                  width: MediaQuery.of(context).size.width - 40,
+
+                                  constraints: const BoxConstraints(
+                                    maxHeight: 320,
+                                  ),
+
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+
+                                  child: ListView.builder(
+                                    padding: const EdgeInsets.all(8),
+
+                                    itemCount: options.length,
+
+                                    itemBuilder: (context, index) {
+                                      final centre = options.elementAt(index);
+
+                                      final distance = centre["distance"];
+
+                                      return InkWell(
+                                        borderRadius: BorderRadius.circular(16),
+
+                                        onTap: () {
+                                          onSelected(centre);
+                                        },
+
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 14,
+                                            vertical: 14,
+                                          ),
+
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.all(
+                                                  10,
+                                                ),
+
+                                                decoration: BoxDecoration(
+                                                  color: const Color(
+                                                    0xFFC1121F,
+                                                  ).withOpacity(0.08),
+
+                                                  borderRadius:
+                                                      BorderRadius.circular(14),
+                                                ),
+
+                                                child: const Icon(
+                                                  Icons.local_hospital,
+                                                  color: Color(0xFFC1121F),
+                                                ),
+                                              ),
+
+                                              const SizedBox(width: 14),
+
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+
+                                                  children: [
+                                                    Text(
+                                                      centre["nom"],
+
+                                                      maxLines: 1,
+
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w800,
+                                                      ),
+                                                    ),
+
+                                                    const SizedBox(height: 4),
+
+                                                    Text(
+                                                      centre["ville"],
+
+                                                      style: const TextStyle(
+                                                        color: Colors.grey,
+                                                        fontSize: 13,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+
+                                              if (distance != null)
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 6,
+                                                      ),
+
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.red
+                                                        .withOpacity(0.08),
+
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          30,
+                                                        ),
+                                                  ),
+
+                                                  child: Text(
+                                                    "${distance.toStringAsFixed(1)} km",
+
+                                                    style: const TextStyle(
+                                                      color: Color(0xFFC1121F),
+
+                                                      fontWeight:
+                                                          FontWeight.w700,
+
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
 
-                        child: Row(
-                          children: [
+                    const SizedBox(height: 28),
 
-                            Container(
-                              padding:
-                                  const EdgeInsets.all(10),
-
-                              decoration:
-                                  BoxDecoration(
-                                color:
-                                    const Color(
-                                  0xFFC1121F,
-                                ).withOpacity(0.08),
-
-                                borderRadius:
-                                    BorderRadius.circular(
-                                  14,
-                                ),
-                              ),
-
-                              child: const Icon(
-                                Icons.local_hospital,
-                                color:
-                                    Color(0xFFC1121F),
-                              ),
-                            ),
-
-                            const SizedBox(width: 14),
-
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-
-                                children: [
-
-                                  Text(
-                                    centre["nom"],
-
-                                    maxLines: 1,
-
-                                    overflow:
-                                        TextOverflow.ellipsis,
-
-                                    style:
-                                        const TextStyle(
-                                      fontWeight:
-                                          FontWeight.w800,
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 4),
-
-                                  Text(
-                                    centre["ville"],
-
-                                    style:
-                                        const TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            if (distance != null)
-                              Container(
-                                padding:
-                                    const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
-                                ),
-
-                                decoration:
-                                    BoxDecoration(
-                                  color:
-                                      Colors.red.withOpacity(
-                                    0.08,
-                                  ),
-
-                                  borderRadius:
-                                      BorderRadius.circular(
-                                    30,
-                                  ),
-                                ),
-
-                                child: Text(
-                                  "${distance.toStringAsFixed(1)} km",
-
-                                  style:
-                                      const TextStyle(
-                                    color:
-                                        Color(0xFFC1121F),
-
-                                    fontWeight:
-                                        FontWeight.w700,
-
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-
-         const SizedBox(height: 28),
                     /// ==================================
                     /// QUANTITE
                     /// ==================================
@@ -1160,8 +956,7 @@ loadingCentres
                       l10n.requestedQuantity,
 
                       style: const TextStyle(
-                        fontWeight:
-                            FontWeight.w800,
+                        fontWeight: FontWeight.w800,
                         fontSize: 16,
                       ),
                     ),
@@ -1169,34 +964,24 @@ loadingCentres
                     const SizedBox(height: 14),
 
                     Container(
-                      padding:
-                          const EdgeInsets
-                              .symmetric(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: 18,
                         vertical: 12,
                       ),
 
                       decoration: BoxDecoration(
-                        color: const Color(
-                          0xFFF5F6FA,
-                        ),
+                        color: const Color(0xFFF5F6FA),
 
-                        borderRadius:
-                            BorderRadius
-                                .circular(20),
+                        borderRadius: BorderRadius.circular(20),
                       ),
 
                       child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment
-                                .spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                         children: [
-
                           /// MINUS
                           IconButton(
                             onPressed: () {
-
                               if (quantite > 1) {
                                 setState(() {
                                   quantite--;
@@ -1205,26 +990,15 @@ loadingCentres
                             },
 
                             icon: Container(
-                              padding:
-                                  const EdgeInsets
-                                      .all(6),
+                              padding: const EdgeInsets.all(6),
 
-                              decoration:
-                                  BoxDecoration(
-                                color:
-                                    Colors.white,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
 
-                                borderRadius:
-                                    BorderRadius
-                                        .circular(
-                                  12,
-                                ),
+                                borderRadius: BorderRadius.circular(12),
                               ),
 
-                              child:
-                                  const Icon(
-                                Icons.remove,
-                              ),
+                              child: const Icon(Icons.remove),
                             ),
                           ),
 
@@ -1232,13 +1006,10 @@ loadingCentres
                           Text(
                             "$quantite ${l10n.bags}",
 
-                            style:
-                                const TextStyle(
+                            style: const TextStyle(
                               fontSize: 18,
 
-                              fontWeight:
-                                  FontWeight
-                                      .w900,
+                              fontWeight: FontWeight.w900,
                             ),
                           ),
 
@@ -1251,30 +1022,15 @@ loadingCentres
                             },
 
                             icon: Container(
-                              padding:
-                                  const EdgeInsets
-                                      .all(6),
+                              padding: const EdgeInsets.all(6),
 
-                              decoration:
-                                  BoxDecoration(
-                                color:
-                                    const Color(
-                                  0xFFC1121F,
-                                ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFC1121F),
 
-                                borderRadius:
-                                    BorderRadius
-                                        .circular(
-                                  12,
-                                ),
+                                borderRadius: BorderRadius.circular(12),
                               ),
 
-                              child:
-                                  const Icon(
-                                Icons.add,
-                                color:
-                                    Colors.white,
-                              ),
+                              child: const Icon(Icons.add, color: Colors.white),
                             ),
                           ),
                         ],
@@ -1285,6 +1041,18 @@ loadingCentres
               ),
 
               const SizedBox(height: 34),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: () {
+                    context.push('/my-demandes');
+                  },
+                  icon: const Icon(Icons.history),
+                  label: const Text('Voir mes demandes'),
+                ),
+              ),
+
+              const SizedBox(height: 16),
 
               /// ======================================
               /// BUTTON
@@ -1295,52 +1063,37 @@ loadingCentres
                 height: 58,
 
                 child: ElevatedButton(
-                  onPressed:
-                      isLoading
-                          ? null
-                          : envoyerDemande,
+                  onPressed: isLoading ? null : envoyerDemande,
 
-                  style:
-                      ElevatedButton.styleFrom(
+                  style: ElevatedButton.styleFrom(
                     elevation: 0,
 
-                    backgroundColor:
-                        const Color(
-                      0xFFC1121F,
-                    ),
+                    backgroundColor: const Color(0xFFC1121F),
 
-                    shape:
-                        RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius
-                              .circular(22),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(22),
                     ),
                   ),
 
                   child:
                       isLoading
                           ? const SizedBox(
-                              height: 24,
-                              width: 24,
+                            height: 24,
+                            width: 24,
 
-                              child:
-                                  CircularProgressIndicator(
-                                color:
-                                    Colors.white,
-                              ),
-                            )
-                          : Text(
-                              l10n.sendNow,
-
-                              style:
-                                  const TextStyle(
-                                fontSize: 16,
-
-                                fontWeight:
-                                    FontWeight
-                                        .w800,
-                              ),
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
                             ),
+                          )
+                          : Text(
+                            l10n.sendNow,
+
+                            style: const TextStyle(
+                              fontSize: 16,
+
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                 ),
               ),
 
@@ -1352,4 +1105,3 @@ loadingCentres
     );
   }
 }
-

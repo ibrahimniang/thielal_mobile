@@ -6,6 +6,9 @@ import '../../application/profile_controller.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../donations/application/donation_controller.dart';
 
+import '../../../devices/application/device_provider.dart';
+import '../../../devices/domain/models/device_model.dart';
+
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 
@@ -205,7 +208,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   _qrTab(user, l10n),
 
                   /// INFOS
-                  _infosTab(user, l10n),
+                  _infosTab(context, ref, user, l10n),
                 ],
               ),
             ),
@@ -459,7 +462,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   /// INFOS TAB
   /// =====================================================
 
-  Widget _infosTab(dynamic user, AppLocalizations l10n) {
+  Widget _infosTab(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic user,
+    AppLocalizations l10n,
+  ) {
+    final devicesAsync = ref.watch(myDevicesProvider);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.lg),
 
@@ -547,6 +556,65 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ),
 
           const SizedBox(height: 24),
+          const SizedBox(height: 24),
+
+ProfileSectionTitle(
+  title: "Appareils connectés",
+  subtitle: "Connexions récentes",
+  icon: Icons.devices_rounded,
+),
+
+const SizedBox(height: 16),
+
+devicesAsync.when(
+  loading: () =>
+      const Center(
+        child: CircularProgressIndicator(),
+      ),
+
+  error: (e, _) => Text(
+    "Erreur : $e",
+  ),
+
+  data: (devices) {
+    if (devices.isEmpty) {
+      return const Text(
+        "Aucun appareil enregistré",
+      );
+    }
+
+    return Column(
+      children: devices.map((device) {
+        return Card(
+          margin: const EdgeInsets.only(
+            bottom: 12,
+          ),
+
+          child: ListTile(
+            leading: Icon(
+              (device.systeme ?? '')
+                      .toLowerCase()
+                      .contains('android')
+                  ? Icons.phone_android
+                  : Icons.computer,
+            ),
+
+            title: Text(
+              device.nomAppareil ??
+                  'Appareil inconnu',
+            ),
+
+            subtitle: Text(
+              '${device.systeme ?? ''} ${device.versionSysteme ?? ''}',
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  },
+),
+
+const SizedBox(height: 24),
 
           /// BUTTON
           PremiumProfileButton(
