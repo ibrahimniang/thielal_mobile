@@ -363,17 +363,31 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(profileControllerProvider);
 
+    final isDark =
+        Theme.of(context).brightness == Brightness.dark;
+
+    final colors =
+        Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FC),
+      backgroundColor:
+       isDark ? colors.surface : const Color(0xFFF7F9FC),
       appBar: AppBar(
         title: Text(l10n.editProfile),
-        backgroundColor: Colors.red,
-        foregroundColor: Colors.white,
+        backgroundColor:
+            isDark ? colors.surface : Colors.red,
+        foregroundColor:
+            isDark ? colors.onSurface : Colors.white,
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
+            colors: isDark
+          ? [
+              colors.surface,
+              colors.surface,
+            ]
+          : [
               Colors.white,
               Colors.red.shade50.withOpacity(0.55),
               Colors.green.shade50.withOpacity(0.30),
@@ -421,7 +435,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 filled: true,
-                                fillColor: Colors.white,
+                                fillColor: isDark
+                                    ? colors.surfaceContainerHighest
+                                    : Colors.white,
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -433,7 +449,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 filled: true,
-                                fillColor: Colors.white,
+                                fillColor: isDark
+                                  ? colors.surfaceContainerHighest
+                                  : Colors.white,
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -463,7 +481,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 filled: true,
-                                fillColor: Colors.white,
+                                fillColor: isDark
+                                    ? colors.surfaceContainerHighest
+                                    : Colors.white,
                               ),
                             ),
 
@@ -495,7 +515,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 filled: true,
-                                fillColor: Colors.white,
+                                fillColor: isDark
+                                  ? colors.surfaceContainerHighest
+                                  : Colors.white,
                               ),
                             ),
                           ],
@@ -509,13 +531,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         icon: Icons.contact_phone_rounded,
                         child: Column(
                           children: [
-                            _contactTile(
+                           _contactTile(
+                              context,
                               icon: Icons.email_rounded,
                               title: l10n.currentEmail,
                               value: user?.email ?? l10n.noEmailAdded,
                             ),
                             const SizedBox(height: 12),
                             _contactTile(
+                              context,
                               icon: Icons.phone_rounded,
                               title: l10n.currentPhone,
                               value: user?.telephone ?? "--",
@@ -567,18 +591,30 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 
-  Widget _contactTile({
+    Widget _contactTile(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required String value,
   }) {
+     final isDark =
+      Theme.of(context).brightness == Brightness.dark;
+
+      final colors =
+          Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark
+        ? colors.surfaceContainerHighest
+        : Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(
+          color: isDark
+              ? colors.outline.withOpacity(0.3)
+              : Colors.grey.shade200,
+        ),
       ),
       child: Row(
         children: [

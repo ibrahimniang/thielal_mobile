@@ -289,10 +289,11 @@ class _ConversationsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor:
-          const Color(0xFFF5F7FB),
+      backgroundColor: isDark ? colors.surface : const Color(0xFFF5F7FB),
 
       body: SafeArea(
         child: Column(
@@ -360,7 +361,7 @@ class _ConversationsScreenState
 
                   const SizedBox(width: 16),
 
-                  const Expanded(
+                   Expanded(
                     child: Column(
                       crossAxisAlignment:
                           CrossAxisAlignment.start,
@@ -371,8 +372,9 @@ class _ConversationsScreenState
                           "Messagerie",
 
                           style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: isDark ? Colors.white : Colors.black,
                           ),
                         ),
 
@@ -382,10 +384,9 @@ class _ConversationsScreenState
                           "Mes discussions",
 
                           style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight:
-                                FontWeight.w900,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: isDark ? Colors.white : Colors.black,
                           ),
                         ),
                       ],
@@ -426,9 +427,9 @@ class _ConversationsScreenState
                   controller: searchController,
                   decoration: InputDecoration(
                     hintText: "Rechercher un utilisateur...",
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon:  Icon(Icons.search),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: isDark ? colors.surfaceContainerHighest : Colors.white,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(18),
                       borderSide: BorderSide.none,
@@ -444,7 +445,7 @@ class _ConversationsScreenState
             /// =========================
             if (loading)
 
-              const Expanded(
+               Expanded(
                 child: Center(
                   child:
                       CircularProgressIndicator(
@@ -473,8 +474,9 @@ class _ConversationsScreenState
 
                         decoration:
                             BoxDecoration(
-                          color:
-                              Colors.red.withOpacity(.08),
+                          color: isDark
+                            ? Colors.red.withOpacity(0.15)
+                            : Colors.red.withOpacity(0.08),
 
                           shape:
                               BoxShape.circle,
@@ -488,25 +490,26 @@ class _ConversationsScreenState
                         ),
                       ),
 
-                      const SizedBox(height: 20),
+                      
+                     SizedBox(height: 20),
 
-                      const Text(
+                       Text(
                         "Aucune conversation",
 
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight:
-                              FontWeight.bold,
-                        ),
+                       style: TextStyle(
+                        fontSize: 11,
+                        color: isDark ? Colors.white54 : Colors.grey,
+                      ),
                       ),
 
-                      const SizedBox(height: 8),
+                       SizedBox(height: 8),
 
-                      const Text(
+                       Text(
                         "Vos discussions apparaîtront ici",
 
-                        style: TextStyle(
-                          color: Colors.grey,
+                       style: TextStyle(
+                          fontSize: 11,
+                          color: isDark ? Colors.white54 : Colors.grey,
                         ),
                       ),
                     ],
@@ -631,7 +634,7 @@ class _ConversationsScreenState
 
                           decoration:
                               BoxDecoration(
-                            color: Colors.white,
+                            color: isDark ? colors.surfaceContainerHighest : Colors.white,
 
                             borderRadius:
                                 BorderRadius.circular(
@@ -680,7 +683,7 @@ class _ConversationsScreenState
                                           : "?",
 
                                       style:
-                                          const TextStyle(
+                                           TextStyle(
                                         color:
                                             Colors.white,
 
@@ -716,7 +719,7 @@ class _ConversationsScreenState
                                               .toString(),
 
                                           style:
-                                              const TextStyle(
+                                               TextStyle(
                                             color:
                                                 Colors.white,
 
@@ -745,7 +748,7 @@ class _ConversationsScreenState
                                       fullName,
 
                                       style:
-                                          const TextStyle(
+                                           TextStyle(
                                         fontWeight:
                                             FontWeight.bold,
 
@@ -786,7 +789,7 @@ class _ConversationsScreenState
                                     formattedDate,
 
                                     style:
-                                        const TextStyle(
+                                        TextStyle(
                                       fontSize: 11,
 
                                       color: Colors.grey,

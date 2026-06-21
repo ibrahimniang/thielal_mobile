@@ -59,6 +59,9 @@ class _CenterMarkerState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     return GestureDetector(
       onTap: widget.onTap,
 
@@ -115,8 +118,7 @@ class _CenterMarkerState
                         ),
 
                     border: Border.all(
-                      color: Colors.white,
-
+                      color: colors.surface,
                       width: 3,
                     ),
 
@@ -144,10 +146,10 @@ class _CenterMarkerState
                     ],
                   ),
 
-                  child: const Icon(
+                  child: Icon(
                     Icons.local_hospital_rounded,
 
-                    color: Colors.white,
+                    color: colors.onPrimary,
 
                     size: 28,
                   ),

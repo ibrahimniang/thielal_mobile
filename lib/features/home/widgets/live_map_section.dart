@@ -107,6 +107,11 @@ class _LiveMapSectionState extends State<LiveMapSection> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark =
+      Theme.of(context).brightness == Brightness.dark;
+
+  final colors =
+      Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
 
@@ -116,18 +121,29 @@ class _LiveMapSectionState extends State<LiveMapSection> {
         padding: const EdgeInsets.all(18),
 
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-
-            colors: [Color(0xFF101D46), Color(0xFF162B69), Color(0xFF243B87)],
-          ),
+          gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isDark
+                    ? [
+                        colors.surface,
+                        colors.surfaceContainerHighest,
+                        colors.surface,
+                      ]
+                    : const [
+                        Color(0xFF101D46),
+                        Color(0xFF162B69),
+                        Color(0xFF243B87),
+                      ],
+              ),
 
           borderRadius: BorderRadius.circular(30),
 
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF243B87).withOpacity(0.28),
+              color: isDark
+                ? Colors.black.withOpacity(0.40)
+                : const Color(0xFF243B87).withOpacity(0.28),
 
               blurRadius: 30,
 
@@ -152,7 +168,9 @@ class _LiveMapSectionState extends State<LiveMapSection> {
                   ),
 
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.10),
+                    color: isDark
+                    ? colors.surfaceContainerHighest.withOpacity(0.7)
+                    : Colors.white.withOpacity(0.10),
 
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -173,7 +191,9 @@ class _LiveMapSectionState extends State<LiveMapSection> {
                         l10n.realTimeSituation,
 
                         style: TextStyle(
-                          color: Colors.white,
+                          color: isDark
+                              ? colors.onSurface
+                              : Colors.white,
 
                           fontWeight: FontWeight.w800,
 
@@ -202,7 +222,9 @@ class _LiveMapSectionState extends State<LiveMapSection> {
                     l10n.live.toUpperCase(),
 
                     style: TextStyle(
-                      color: Colors.white,
+                      color: isDark
+                        ? colors.onSurface
+                        : Colors.white,
 
                       fontWeight: FontWeight.w800,
 
@@ -319,13 +341,17 @@ class _LiveMapSectionState extends State<LiveMapSection> {
 
                         end: Alignment.bottomCenter,
 
-                        colors: [
-                          const Color(0xFF243B87).withOpacity(0.20),
-
-                          const Color(0xFF162B69).withOpacity(0.30),
-
-                          const Color(0xFF101D46).withOpacity(0.42),
-                        ],
+                        colors: isDark
+                          ? [
+                              Colors.black.withOpacity(0.10),
+                              Colors.black.withOpacity(0.20),
+                              Colors.black.withOpacity(0.35),
+                            ]
+                          : [
+                              const Color(0xFF243B87).withOpacity(0.20),
+                              const Color(0xFF162B69).withOpacity(0.30),
+                              const Color(0xFF101D46).withOpacity(0.42),
+                            ],
                       ),
                     ),
                   ),
@@ -344,7 +370,9 @@ class _LiveMapSectionState extends State<LiveMapSection> {
                       ),
 
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.14),
+                        color: isDark
+                        ? colors.surfaceContainerHighest.withOpacity(0.8)
+                        : Colors.white.withOpacity(0.14),
 
                         borderRadius: BorderRadius.circular(30),
 
@@ -355,10 +383,12 @@ class _LiveMapSectionState extends State<LiveMapSection> {
 
                       child: Row(
                         children: [
-                          const Icon(
+                           Icon(
                             Icons.location_city,
 
-                            color: Colors.white,
+                            color: isDark
+                              ? colors.onSurface
+                              : Colors.white,
 
                             size: 16,
                           ),
@@ -368,8 +398,10 @@ class _LiveMapSectionState extends State<LiveMapSection> {
                           Text(
                             widget.city,
 
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: isDark
+                                ? colors.surfaceContainerHighest
+                                : Colors.white,
 
                               fontWeight: FontWeight.w700,
                             ),
@@ -408,7 +440,9 @@ class _LiveMapSectionState extends State<LiveMapSection> {
 
                               size: 18,
 
-                              color: Color(0xFF101D46),
+                              color: isDark
+                                ? colors.primary
+                                : const Color(0xFF101D46),
                             ),
 
                             SizedBox(width: 8),
@@ -417,7 +451,9 @@ class _LiveMapSectionState extends State<LiveMapSection> {
                               l10n.viewMap,
 
                               style: TextStyle(
-                                color: Color(0xFF101D46),
+                                color: isDark
+                                  ? colors.primary
+                                  : const Color(0xFF101D46),
 
                                 fontWeight: FontWeight.w800,
                               ),
@@ -440,7 +476,9 @@ class _LiveMapSectionState extends State<LiveMapSection> {
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
 
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.06),
+                color: isDark
+                  ? colors.surfaceContainerHighest.withOpacity(0.60)
+                  : Colors.white.withOpacity(0.06),
 
                 borderRadius: BorderRadius.circular(22),
 
@@ -457,11 +495,11 @@ class _LiveMapSectionState extends State<LiveMapSection> {
                         Text(
                           '${filteredCenters.length}',
 
-                          style: const TextStyle(
-                            color: Colors.white,
-
+                          style: TextStyle(
+                            color: isDark
+                                ? colors.onSurface
+                                : Colors.white,
                             fontSize: 30,
-
                             fontWeight: FontWeight.w900,
                           ),
                         ),
@@ -471,7 +509,9 @@ class _LiveMapSectionState extends State<LiveMapSection> {
                         Text(
                           l10n.nearbyCenters,
 
-                          style: TextStyle(color: Colors.white70, fontSize: 13),
+                          style: TextStyle(color: isDark
+                            ? colors.onSurface.withOpacity(0.7)
+                            : Colors.white70, fontSize: 13),
                         ),
                       ],
                     ),
@@ -484,7 +524,7 @@ class _LiveMapSectionState extends State<LiveMapSection> {
                     ),
 
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.16),
+                      color: colors.error.withOpacity(0.18),
 
                       borderRadius: BorderRadius.circular(18),
                     ),
@@ -492,11 +532,12 @@ class _LiveMapSectionState extends State<LiveMapSection> {
                     child: Text(
                       '${widget.urgentRequests} ${l10n.urgencies}',
 
-                      style: const TextStyle(
-                        color: Colors.white,
-
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: TextStyle(
+                          color: isDark
+                              ? colors.onSurface
+                              : Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
                     ),
                   ),
                 ],
@@ -584,32 +625,56 @@ class _LiveMapSectionState extends State<LiveMapSection> {
   }
 
   Widget _chip(String text, bool active) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
+  final isDark =
+      Theme.of(context).brightness == Brightness.dark;
 
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+  final colors = Theme.of(context).colorScheme;
 
-      decoration: BoxDecoration(
-        color: active ? Colors.white : Colors.white.withOpacity(0.06),
+  return AnimatedContainer(
+    duration: const Duration(milliseconds: 220),
 
-        borderRadius: BorderRadius.circular(18),
+    padding: const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 9,
+    ),
 
-        border: Border.all(
-          color: active ? Colors.white : Colors.white.withOpacity(0.05),
-        ),
+    decoration: BoxDecoration(
+      color: active
+          ? (isDark
+              ? colors.primary
+              : Colors.white)
+          : (isDark
+              ? colors.surfaceContainerHighest
+              : Colors.white.withOpacity(0.06)),
+
+      borderRadius: BorderRadius.circular(18),
+
+      border: Border.all(
+        color: active
+            ? (isDark
+                ? colors.primary
+                : Colors.white)
+            : (isDark
+                ? colors.outline.withOpacity(0.20)
+                : Colors.white.withOpacity(0.05)),
       ),
+    ),
 
-      child: Text(
-        text,
+    child: Text(
+      text,
+      style: TextStyle(
+        color: active
+            ? (isDark
+                ? colors.onPrimary
+                : const Color(0xFF101D46))
+            : (isDark
+                ? colors.onSurface
+                : Colors.white70),
 
-        style: TextStyle(
-          color: active ? const Color(0xFF101D46) : Colors.white70,
-
-          fontWeight: FontWeight.w700,
-
-          fontSize: 13,
-        ),
+        fontWeight: FontWeight.w700,
+        fontSize: 13,
       ),
-    );
-  }
+    ),
+  );
+}
 }

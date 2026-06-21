@@ -268,6 +268,7 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
 
   void _showSuccessDialog() {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showDialog(
       context: context,
@@ -282,7 +283,7 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
             padding: const EdgeInsets.all(28),
 
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? const Color(0xFF1E293B) : Colors.white,
 
               borderRadius: BorderRadius.circular(30),
             ),
@@ -430,16 +431,19 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FA),
+      backgroundColor:
+          isDark ? const Color(0xFF0F172A) : const Color(0xFFF7F8FA),
 
       appBar: AppBar(
         elevation: 0,
 
         backgroundColor: Colors.transparent,
-
-        foregroundColor: Colors.black,
+        foregroundColor: isDark ? Colors.white : Colors.black,
 
         centerTitle: true,
 
@@ -553,15 +557,17 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
               /// ======================================
               Container(
                 padding: const EdgeInsets.all(22),
-
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
 
                   borderRadius: BorderRadius.circular(30),
 
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color:
+                          isDark
+                              ? Colors.white
+                              : Colors.black87.withOpacity(0.04),
 
                       blurRadius: 24,
 
@@ -616,6 +622,8 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
                                   color:
                                       selected
                                           ? const Color(0xFFC1121F)
+                                          : isDark
+                                          ? const Color(0xFF334155)
                                           : const Color(0xFFF5F6FA),
 
                                   borderRadius: BorderRadius.circular(18),
@@ -627,6 +635,8 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
                                   style: TextStyle(
                                     color:
                                         selected
+                                            ? Colors.white
+                                            : isDark
                                             ? Colors.white
                                             : Colors.black87,
 
@@ -693,7 +703,10 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
 
                             filled: true,
 
-                            fillColor: const Color(0xFFF5F6FA),
+                            fillColor:
+                                isDark
+                                    ? const Color(0xFF334155)
+                                    : const Color(0xFFF5F6FA),
 
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
@@ -790,7 +803,10 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
 
                                 filled: true,
 
-                                fillColor: const Color(0xFFF5F6FA),
+                                fillColor:
+                                    isDark
+                                        ? const Color(0xFF334155)
+                                        : const Color(0xFFF5F6FA),
 
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(20),
@@ -970,7 +986,10 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
                       ),
 
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF5F6FA),
+                        color:
+                            isDark
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFF5F6FA),
 
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -993,7 +1012,10 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
                               padding: const EdgeInsets.all(6),
 
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color:
+                                    isDark
+                                        ? const Color(0xFF475569)
+                                        : Colors.white,
 
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -1041,6 +1063,7 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
               ),
 
               const SizedBox(height: 34),
+
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton.icon(

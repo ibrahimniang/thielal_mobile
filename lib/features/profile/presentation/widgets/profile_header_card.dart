@@ -1,4 +1,3 @@
-//5
 import 'package:flutter/material.dart';
 import '../../../../l10n/app_localizations.dart';
 
@@ -21,39 +20,58 @@ class ProfileHeaderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     final statusColor = profilComplet ? Colors.green : Colors.orange;
-    final statusText =
-        profilComplet ? l10n.bloodGroupVerified : l10n.pendingVerification;
+    final statusText = profilComplet
+        ? l10n.bloodGroupVerified
+        : l10n.pendingVerification;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(22),
+
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
+
         gradient: LinearGradient(
-          colors: [
-            Colors.red.shade600,
-            Colors.red.shade400,
-            Colors.blue.shade500,
-          ],
+          colors: isDark
+              ? [
+                  colors.surface.withOpacity(0.9),
+                  colors.surface.withOpacity(0.6),
+                  colors.surface.withOpacity(0.4),
+                ]
+              : [
+                  Colors.red.shade600,
+                  Colors.red.shade400,
+                  Colors.blue.shade500,
+                ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
+
         boxShadow: [
           BoxShadow(
-            color: Colors.red.withOpacity(0.18),
+            color: isDark
+                ? Colors.black.withOpacity(0.35)
+                : Colors.red.withOpacity(0.18),
             blurRadius: 24,
             offset: const Offset(0, 10),
           ),
         ],
       ),
+
       child: Column(
         children: [
           Container(
             width: 68,
             height: 68,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.18),
+              color: Colors.white.withOpacity(
+                isDark ? 0.08 : 0.18,
+              ),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -62,6 +80,7 @@ class ProfileHeaderCard extends StatelessWidget {
               color: Colors.white,
             ),
           ),
+
           const SizedBox(height: 14),
 
           Text(
@@ -77,17 +96,26 @@ class ProfileHeaderCard extends StatelessWidget {
           const SizedBox(height: 6),
 
           Text(
-           '${l10n.bloodGroup} : $bloodGroup',
-            style: const TextStyle(color: Colors.white, fontSize: 14),
+            '${l10n.bloodGroup} : $bloodGroup',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+            ),
           ),
 
           const SizedBox(height: 14),
 
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 8,
+            ),
             decoration: BoxDecoration(
-              color: statusColor,
+              color: statusColor.withOpacity(isDark ? 0.2 : 1),
               borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: statusColor.withOpacity(0.4),
+              ),
             ),
             child: Text(
               statusText,
@@ -110,7 +138,12 @@ class ProfileHeaderCard extends StatelessWidget {
 
           const SizedBox(height: 4),
 
-          Text('${l10n.level} : $badge', style: const TextStyle(color: Colors.white)),
+          Text(
+            '${l10n.level} : $badge',
+            style: const TextStyle(
+              color: Colors.white,
+            ),
+          ),
         ],
       ),
     );

@@ -18,18 +18,30 @@ class BloodRequestNotificationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
+    final bgColor = isRead
+        ? (isDark ? colorScheme.surface : Colors.grey.shade100)
+        : (isDark ? colorScheme.surfaceVariant : const Color(0xFFE3F2FD));
+
+    final borderColor = isRead
+        ? (isDark ? colorScheme.outline : Colors.grey.shade300)
+        : (isDark ? colorScheme.primary : const Color(0xFF4FC3F7));
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
 
       padding: const EdgeInsets.all(16),
 
       decoration: BoxDecoration(
-        color: isRead ? Colors.grey.shade100 : const Color(0xFFE3F2FD),
+        color: bgColor,
 
         borderRadius: BorderRadius.circular(16),
 
         border: Border.all(
-          color: isRead ? Colors.grey.shade300 : const Color(0xFF4FC3F7),
+          color: borderColor,
         ),
       ),
 
@@ -40,12 +52,18 @@ class BloodRequestNotificationCard extends StatelessWidget {
             height: 50,
             width: 50,
 
-            decoration: const BoxDecoration(
-              color: Color(0xFFFFEBEE),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? colorScheme.primary.withOpacity(0.15)
+                  : const Color(0xFFFFEBEE),
+
               shape: BoxShape.circle,
             ),
 
-            child: const Icon(Icons.bloodtype, color: Colors.red),
+            child: Icon(
+              Icons.bloodtype,
+              color: isDark ? colorScheme.primary : Colors.red,
+            ),
           ),
 
           const SizedBox(width: 16),
@@ -58,21 +76,30 @@ class BloodRequestNotificationCard extends StatelessWidget {
               children: [
                 Text(
                   "🚨 Besoin de sang $bloodGroup",
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
+                    color: colorScheme.onSurface,
                   ),
                 ),
 
                 const SizedBox(height: 4),
 
-                Text(city, style: TextStyle(color: Colors.grey.shade700)),
+                Text(
+                  city,
+                  style: TextStyle(
+                    color: colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                ),
 
                 const SizedBox(height: 4),
 
                 Text(
                   date,
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                  style: TextStyle(
+                    color: colorScheme.onSurface.withOpacity(0.5),
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -80,27 +107,30 @@ class BloodRequestNotificationCard extends StatelessWidget {
 
           const SizedBox(width: 12),
 
-       Container(
-  margin: const EdgeInsets.only(left: 12),
+          /// BOUTON
+          Container(
+            margin: const EdgeInsets.only(left: 12),
 
-  child: ElevatedButton(
-    onPressed: onTap,
+            child: ElevatedButton(
+              onPressed: onTap,
 
-    style: ElevatedButton.styleFrom(
-      backgroundColor: const Color(0xFFC1121F),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isDark
+                    ? colorScheme.primary
+                    : const Color(0xFFC1121F),
 
-      foregroundColor: Colors.white,
+                foregroundColor: Colors.white,
 
-      minimumSize: const Size(90, 42),
+                minimumSize: const Size(90, 42),
 
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-    ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
 
-    child: const Text("J'y vais"),
-  ),
-)
+              child: const Text("J'y vais"),
+            ),
+          )
         ],
       ),
     );

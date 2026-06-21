@@ -27,6 +27,8 @@ class NationalImpactSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
 
@@ -36,13 +38,17 @@ class NationalImpactSection extends StatelessWidget {
         padding: const EdgeInsets.all(18),
 
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark
+          ? colors.surface
+          : Colors.white,
 
           borderRadius: BorderRadius.circular(28),
 
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withOpacity(
+                isDark ? 0.30 : 0.05,
+              ),
 
               blurRadius: 18,
 
@@ -64,10 +70,9 @@ class NationalImpactSection extends StatelessWidget {
   l10n.nationalImpact,
 
                   style: TextStyle(
+                    color: colors.onSurface,
                     fontWeight: FontWeight.w900,
-
                     fontSize: 16,
-
                     letterSpacing: 0.7,
                   ),
                 ),
@@ -121,7 +126,9 @@ class NationalImpactSection extends StatelessWidget {
                 padding: const EdgeInsets.all(14),
 
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.06),
+                  color: isDark
+                      ? colors.error.withOpacity(0.12)
+                      : Colors.red.withOpacity(0.06),
 
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -164,8 +171,10 @@ class NationalImpactSection extends StatelessWidget {
                             latestDonation!.centre?.nom ??
     l10n.unknownCenter,
 
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: TextStyle(
+                              color: isDark
+                                  ? colors.onSurface.withOpacity(0.7)
+                                  : AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -186,6 +195,7 @@ class NationalImpactSection extends StatelessWidget {
       children: [
         Expanded(
           child: _card(
+            context,
             icon:
                 Icons.water_drop_rounded,
 
@@ -207,6 +217,7 @@ class NationalImpactSection extends StatelessWidget {
 
         Expanded(
           child: _card(
+            context,
             icon:
                 Icons.favorite_rounded,
 
@@ -229,6 +240,7 @@ class NationalImpactSection extends StatelessWidget {
     const SizedBox(height: 12),
 
     _wideCard(
+      context,
       icon: Icons.timer_rounded,
 
       iconColor:
@@ -249,20 +261,29 @@ class NationalImpactSection extends StatelessWidget {
       ),
     );
   }
-Widget _wideCard({
+Widget _wideCard(
+  BuildContext context, {
   required IconData icon,
   required Color iconColor,
   required String title,
   required String value,
   required String subtitle,
 }) {
+  final isDark =
+      Theme.of(context).brightness == Brightness.dark;
+
+  final colors =
+      Theme.of(context).colorScheme;
+
   return Container(
     width: double.infinity,
 
     padding: const EdgeInsets.all(16),
 
     decoration: BoxDecoration(
-      color: AppColors.silverBackground,
+      color: isDark
+        ? colors.surfaceContainerHighest
+        : AppColors.silverBackground,
 
       borderRadius:
           BorderRadius.circular(22),
@@ -301,9 +322,10 @@ Widget _wideCard({
               Text(
                 title,
 
-                style: const TextStyle(
-                  color:
-                      AppColors.textSecondary,
+                style: TextStyle(
+                  color: isDark
+                      ? colors.onSurface.withOpacity(0.7)
+                      : AppColors.textSecondary,
 
                   fontWeight:
                       FontWeight.w600,
@@ -317,12 +339,11 @@ Widget _wideCard({
               Text(
                 value,
 
-                style: const TextStyle(
-                  fontSize: 22,
-
-                  fontWeight:
-                      FontWeight.w900,
-                ),
+                style: TextStyle(
+                    color: colors.onSurface,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
               ),
             ],
           ),
@@ -362,7 +383,9 @@ Widget _wideCard({
     ),
   );
 }
-  Widget _card({
+  Widget _card(
+  BuildContext context, {
+  
     required IconData icon,
     required Color iconColor,
     required String title,
@@ -370,11 +393,18 @@ Widget _wideCard({
     required String subtitle,
   })
    {
+     final isDark =
+      Theme.of(context).brightness == Brightness.dark;
+
+     final colors =
+       Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(14),
 
       decoration: BoxDecoration(
-        color: AppColors.silverBackground,
+        color: isDark
+          ? colors.surfaceContainerHighest
+          : AppColors.silverBackground,
 
         borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
@@ -401,11 +431,11 @@ Widget _wideCard({
 
             textAlign: TextAlign.center,
 
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-
+            style: TextStyle(
+              color: isDark
+                  ? colors.onSurface.withOpacity(0.7)
+                  : AppColors.textSecondary,
               fontWeight: FontWeight.w600,
-
               fontSize: 12,
             ),
           ),
@@ -417,7 +447,11 @@ Widget _wideCard({
 
             textAlign: TextAlign.center,
 
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+            style: TextStyle(
+              color: colors.onSurface,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+            ),
           ),
 
           const SizedBox(height: 6),

@@ -16,39 +16,65 @@ class ProfileSectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark =
+        Theme.of(context).brightness == Brightness.dark;
+
+    final colors =
+        Theme.of(context).colorScheme;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        filter: ImageFilter.blur(
+          sigmaX: 12,
+          sigmaY: 12,
+        ),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.88),
+            color: isDark
+                ? colors.surfaceContainerHighest
+                : Colors.white.withOpacity(0.88),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.75)),
+            border: Border.all(
+              color: isDark
+                  ? colors.outline.withOpacity(0.3)
+                  : Colors.white.withOpacity(0.75),
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withOpacity(
+                  isDark ? 0.20 : 0.04,
+                ),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
             ],
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   if (icon != null) ...[
-                    Icon(icon, color: Colors.red.shade600),
+                    Icon(
+                      icon,
+                      color: isDark
+                          ? colors.primary
+                          : Colors.red.shade600,
+                    ),
                     const SizedBox(width: 8),
                   ],
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 16,
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        color: colors.onSurface,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ],

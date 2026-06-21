@@ -7,7 +7,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../donations/presentation/screens/donation_details_screen.dart';
 
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -56,12 +55,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int unreadMessages = 0;
   bool passwordModalShown = false;
 
-
-@override
-void initState() {
-  super.initState();
-  loadUnreadCount();
-}
+  @override
+  void initState() {
+    super.initState();
+    loadUnreadCount();
+  }
 
   Future<void> loadUnreadCount() async {
     try {
@@ -77,7 +75,17 @@ void initState() {
 
   String selectedGroup = 'Tous';
 
-  final List<String> bloodFilters = ['Tous', 'O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
+  final List<String> bloodFilters = [
+    'Tous',
+    'O+',
+    'O-',
+    'A+',
+    'A-',
+    'B+',
+    'B-',
+    'AB+',
+    'AB-',
+  ];
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   final searchController = TextEditingController();
@@ -129,7 +137,6 @@ void initState() {
       );
     });
 
-
     final alertsAsync = ref.watch(alertsProvider);
 
     final collectesAsync = ref.watch(collectesProvider);
@@ -168,7 +175,7 @@ void initState() {
     debugPrint('🩸 SEARCH QUERY => $searchQuery');
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FB),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
       drawer: HomeDrawer(firstName: user?.nom),
 
@@ -336,7 +343,7 @@ void initState() {
                                   vertical: 12,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: Theme.of(context).cardColor,
                                   borderRadius: BorderRadius.circular(18),
                                 ),
                                 child: Row(
@@ -504,8 +511,13 @@ void initState() {
                     padding: const EdgeInsets.all(22),
 
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFE53946), Color(0xFFC1121F)],
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.7),
+                        ],
                       ),
 
                       borderRadius: BorderRadius.circular(28),
@@ -528,16 +540,16 @@ void initState() {
                           width: 64,
 
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.14),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onPrimary.withOpacity(0.14),
 
                             shape: BoxShape.circle,
                           ),
 
-                          child: const Icon(
+                          child: Icon(
                             Icons.bloodtype_rounded,
-
-                            color: Colors.white,
-
+                            color: Theme.of(context).colorScheme.onPrimary,
                             size: 34,
                           ),
                         ),
@@ -553,7 +565,9 @@ void initState() {
                                 '',
 
                                 style: TextStyle(
-                                  color: Colors.white70,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary.withOpacity(0.7),
 
                                   fontWeight: FontWeight.w700,
 
@@ -567,10 +581,9 @@ void initState() {
                                 l10n.iNeedBlood,
 
                                 style: TextStyle(
-                                  color: Colors.white,
-
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
                                   fontSize: 22,
-
                                   fontWeight: FontWeight.w900,
                                 ),
                               ),
@@ -578,10 +591,10 @@ void initState() {
                           ),
                         ),
 
-                        const Icon(
+                        Icon(
                           Icons.arrow_forward_ios_rounded,
 
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ],
                     ),
@@ -645,13 +658,13 @@ void initState() {
                               ),
                             ),
 
-                            TextButton(
-                              onPressed: () {
-                                context.push(RouteNames.alerts);
-                              },
+                            // TextButton(
+                            //   onPressed: () {
+                            //     context.push(RouteNames.alerts);
+                            //   },
 
-                              child: Text(l10n.seeAll),
-                            ),
+                            //   child: Text(l10n.seeAll),
+                            // ),
                           ],
                         ),
                       ),
@@ -700,14 +713,17 @@ void initState() {
                         ),
 
                         decoration: BoxDecoration(
-                          color: selected ? AppColors.primaryRed : Colors.white,
+                          color:
+                              selected
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).cardColor,
 
                           borderRadius: BorderRadius.circular(30),
 
                           border: Border.all(
                             color:
                                 selected
-                                    ? AppColors.primaryRed
+                                    ? Theme.of(context).colorScheme.primary
                                     : Colors.grey.withOpacity(0.15),
                           ),
                         ),
@@ -716,8 +732,10 @@ void initState() {
                           filter,
 
                           style: TextStyle(
-                            color: selected ? Colors.white : Colors.black87,
-
+                            color:
+                                selected
+                                    ? Colors.white
+                                    : Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w700,
                           ),
                         ),

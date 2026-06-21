@@ -14,6 +14,7 @@ dependencies:
   firebase_core: ^4.0.0
   firebase_messaging: ^16.0.0
   flutter_local_notifications: ^19.4.0
+  shared_preferences: ^2.5.3
 
   flutter_localizations:
     sdk: flutter
@@ -66,11 +67,19 @@ flutter_launcher_icons:
   background_color: "#ffffff"
   min_sdk_android: 21
 
+
 flutter_native_splash:
   color: "#ffffff"
   image: "assets/images/logo.png"
   # android_12:
   #   image: "assets/images/logo.png"
+
+# flutter_native_splash:
+ # color: "#ffffff"
+ # image: "assets/images/logo.png"
+ # android_12:
+  #  image: "assets/images/logo.png" 
+
 
 flutter:
   uses-material-design: true

@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-
-// import '../../../../app/theme/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
 
-class ProfileMedicalStatusCard
-    extends StatelessWidget {
+class ProfileMedicalStatusCard extends StatelessWidget {
   final bool verified;
-
   final String bloodGroup;
 
   const ProfileMedicalStatusCard({
@@ -18,25 +14,39 @@ class ProfileMedicalStatusCard
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
+    final primaryColor = verified ? Colors.green : Colors.orange;
+
     return Container(
       padding: const EdgeInsets.all(24),
 
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors:
-              verified
+          colors: verified
+              ? (isDark
                   ? [
-                    Colors.green.shade600,
-                    Colors.green.shade400,
-                  ]
+                      Colors.green.shade900,
+                      Colors.green.shade700,
+                    ]
                   : [
-                    Colors.orange.shade600,
-                    Colors.orange.shade400,
-                  ],
+                      Colors.green.shade600,
+                      Colors.green.shade400,
+                    ])
+              : (isDark
+                  ? [
+                      Colors.orange.shade900,
+                      Colors.orange.shade700,
+                    ]
+                  : [
+                      Colors.orange.shade600,
+                      Colors.orange.shade400,
+                    ]),
         ),
 
-        borderRadius:
-            BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(30),
       ),
 
       child: Row(
@@ -48,13 +58,10 @@ class ProfileMedicalStatusCard
 
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(
-                0.14,
+                isDark ? 0.10 : 0.14,
               ),
 
-              borderRadius:
-                  BorderRadius.circular(
-                    24,
-                  ),
+              borderRadius: BorderRadius.circular(24),
             ),
 
             child: Icon(
@@ -73,8 +80,7 @@ class ProfileMedicalStatusCard
           /// TEXT
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
 
               children: [
                 Text(
@@ -84,10 +90,7 @@ class ProfileMedicalStatusCard
 
                   style: const TextStyle(
                     color: Colors.white,
-
-                    fontWeight:
-                        FontWeight.w900,
-
+                    fontWeight: FontWeight.w900,
                     fontSize: 22,
                   ),
                 ),
@@ -100,13 +103,9 @@ class ProfileMedicalStatusCard
                       : l10n.pleaseCompleteMedicalVerification,
 
                   style: TextStyle(
-                    color: Colors.white
-                        .withOpacity(0.88),
-
+                    color: Colors.white.withOpacity(0.88),
                     height: 1.5,
-
-                    fontWeight:
-                        FontWeight.w500,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],

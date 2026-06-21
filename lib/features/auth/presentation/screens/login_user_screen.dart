@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/theme_provider.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/route_names.dart';
@@ -76,98 +77,73 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
     super.dispose();
   }
 
-  Widget _buildHeader(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+        Widget _buildHeader(BuildContext context) {
+        final l10n = AppLocalizations.of(context)!;
 
-    return Column(
-      children: [
-        Container(
-          width: 92,
-          height: 92,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [Colors.red.shade500, Colors.red.shade700],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/logo.png',
+              width: 150, // 🔥 réduit (important)
+              fit: BoxFit.contain,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.red.withOpacity(0.22),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
+
+            const SizedBox(height: 10),
+
+            Text(
+              l10n.appName,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20, // 🔥 réduit aussi
+                fontWeight: FontWeight.w800,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
-            ],
-          ),
-          child: const Icon(
-            Icons.favorite_rounded,
-            color: Colors.white,
-            size: 42,
-          ),
-        ),
-        const SizedBox(height: 18),
-        Text(
-          l10n.appName,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF1B1F24),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          l10n.loginSubtitle,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey.shade700,
-            height: 1.4,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFormCard({
-    required BuildContext context,
-    required AuthState authState,
-    required AuthController auth,
-  }) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(28),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
-            gradient: LinearGradient(
-              colors: [
-                Colors.white.withOpacity(0.92),
-                Colors.red.shade50.withOpacity(0.86),
-                Colors.blue.shade50.withOpacity(0.72),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
             ),
+
+            const SizedBox(height: 4),
+
+                        Text(
+                      l10n.loginSubtitle,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        height: 1.4, 
+                      ),
+                    ),
+                  ],
+                );
+              }
+            Widget _buildFormCard({
+              required BuildContext context,
+              required AuthState authState,
+              required AuthController auth,
+            }) {
+              final l10n = AppLocalizations.of(context)!;
+              final isDark =
+              Theme.of(context).brightness ==
+              Brightness.dark;
+
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(28),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(22),
+                    decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(28),
             border: Border.all(
-              color: Colors.white.withOpacity(0.78),
-              width: 1.2,
+              color: Theme.of(context).dividerColor.withOpacity(0.2),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withOpacity(0.08),
                 blurRadius: 24,
                 offset: const Offset(0, 10),
-              ),
-              BoxShadow(
-                color: Colors.red.withOpacity(0.08),
-                blurRadius: 18,
-                offset: const Offset(0, 6),
               ),
             ],
           ),
@@ -182,7 +158,7 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: Colors.grey.shade900,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ),
@@ -273,7 +249,7 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
                       'Nouveau sur LifeLink ?',
 
                       style: TextStyle(
-                        color: Colors.grey.shade700,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
 
                         fontWeight: FontWeight.w500,
                       ),
@@ -307,40 +283,59 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final authState = ref.watch(authControllerProvider);
     final auth = ref.read(authControllerProvider.notifier);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FC),
-      appBar: AppBar(
+     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      /*appBar: AppBar(
         title: Text(l10n.login),
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,
         elevation: 0,
-      ),
+      ),*/
       body: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.white,
-              Colors.red.shade50.withOpacity(0.55),
-              Colors.green.shade50.withOpacity(0.30),
-              Colors.blue.shade50.withOpacity(0.42),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+          color: Theme.of(context).scaffoldBackgroundColor,
         ),
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.screenPadding),
             child: Column(
               children: [
-                const SizedBox(height: 18),
+                /// BOUTON THEME
+    Align(
+      alignment: Alignment.topRight,
+      child: Container(
+        height: 48,
+        width: 48,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 12,
+            ),
+          ],
+        ),
+        child: IconButton(
+          onPressed: () {
+            ref.read(themeProvider.notifier).toggleTheme();
+          },
+          icon: Icon(
+          isDark ? Icons.dark_mode_rounded : Icons.wb_sunny_rounded,
+        ),
+        ),
+      ),
+    ),
+
+                const SizedBox(height: 10),
                 _buildHeader(context),
-                const SizedBox(height: 28),
+                const SizedBox(height: 16),
                 _buildFormCard(
                   context: context,
                   authState: authState,

@@ -964,52 +964,7 @@ DropdownButtonFormField<String>(
           });
         },
 ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: _isFetchingLocation ? null : _fetchCurrentLocation,
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              icon:
-                  _isFetchingLocation
-                      ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2.2),
-                      )
-                      : const Icon(Icons.my_location_rounded),
-              label: Text(
-                _latitude != null && _longitude != null
-                    ? l10n.locationRetrieved
-                    : l10n.useMyLocation,
-              ),
-            ),
-          ),
-          if (_latitude != null && _longitude != null) ...[
-            const SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.green.shade100),
-              ),
-              child: Text(
-                '${l10n.latitude} : ${_latitude!.toStringAsFixed(5)}'
-                '${l10n.longitude} : ${_longitude!.toStringAsFixed(5)}',
-                style: TextStyle(
-                  color: Colors.green.shade800,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+          
         ],
       ),
     );

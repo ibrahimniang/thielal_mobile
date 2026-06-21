@@ -10,6 +10,8 @@ import '../../l10n/app_localizations.dart';
 import '../profile/application/profile_controller.dart';
 import '../donations/application/donation_controller.dart';
 import '../auth/application/auth_controller.dart';
+import '../../../../core/theme/theme_provider.dart';
+
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -17,16 +19,17 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: isDark ? colors.surface : const Color(0xFFF5F7FB),
 
       appBar: AppBar(
         title: Text(l10n.settings),
 
-        backgroundColor: Colors.red,
-
-        foregroundColor: Colors.white,
+       backgroundColor: isDark ? colors.surface : Colors.red,
+       foregroundColor: isDark ? colors.onSurface : Colors.white,
       ),
 
       body: ListView(
@@ -39,6 +42,7 @@ class SettingsScreen extends ConsumerWidget {
           _sectionTitle(l10n.profile),
 
           _tile(
+            context: context,
             icon: Icons.person,
 
             title: l10n.myProfile,
@@ -46,7 +50,7 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => context.go(RouteNames.profile),
           ),
 
-          _tile(icon: Icons.lock, title: l10n.password, onTap: () {}),
+          _tile(  context: context, icon: Icons.lock, title: l10n.password, onTap: () {}),
 
           const SizedBox(height: 20),
 
@@ -56,6 +60,7 @@ class SettingsScreen extends ConsumerWidget {
           _sectionTitle(l10n.settings),
 
           _tile(
+             context: context,
             icon: Icons.notifications,
 
             title: l10n.notifications,
@@ -63,10 +68,33 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () {},
           ),
 
+          // ajout theme
+          Card(
+            elevation: 0,
+            color: isDark ? colors.surfaceContainerHighest : Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: SwitchListTile(
+              secondary: Icon(
+                isDark ? Icons.dark_mode : Icons.light_mode,
+                color: Colors.red,
+              ),
+              title: const Text("Thème"),
+              subtitle: Text(isDark ? "Mode sombre" : "Mode clair"),
+              value: isDark,
+              onChanged: (_) {
+                ref.read(themeProvider.notifier).toggleTheme();
+              },
+            ),
+          ),
+
+
           /// =====================================================
           /// LANGUAGE
           /// =====================================================
           _tile(
+            context: context,
             icon: Icons.language,
 
             title: l10n.language,
@@ -106,10 +134,10 @@ class SettingsScreen extends ConsumerWidget {
                           Text(
                             l10n.changeLanguage,
 
-                            style: const TextStyle(
-                              fontSize: 20,
-
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: isDark ? Colors.white : Colors.black,
                             ),
                           ),
 
@@ -197,6 +225,7 @@ class SettingsScreen extends ConsumerWidget {
           _sectionTitle(l10n.donations),
 
           _tile(
+            context: context,
             icon: Icons.bloodtype_rounded,
 
             title: l10n.donationHistory,
@@ -205,6 +234,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
 
           _tile(
+            context: context,
             icon: Icons.location_on_rounded,
 
             title: l10n.healthCenters,
@@ -286,24 +316,35 @@ class SettingsScreen extends ConsumerWidget {
   /// =====================================================
 
   Widget _tile({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      elevation: 0,
+  required IconData icon,
+  required String title,
+  required VoidCallback onTap,
+  required BuildContext context,
+}) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final colors = Theme.of(context).colorScheme;
 
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-
-      child: ListTile(
-        leading: Icon(icon, color: Colors.red),
-
-        title: Text(title),
-
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-
-        onTap: onTap,
+  return Card(
+    elevation: 0,
+    color: isDark ? colors.surfaceContainerHighest : Colors.white,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(15),
+    ),
+    child: ListTile(
+      leading: Icon(icon, color: Colors.red),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: isDark ? Colors.white : Colors.black,
+        ),
       ),
-    );
-  }
+      trailing: Icon(
+        Icons.arrow_forward_ios,
+        size: 16,
+        color: isDark ? Colors.white70 : Colors.black54,
+      ),
+      onTap: onTap,
+    ),
+  );
+}
 }

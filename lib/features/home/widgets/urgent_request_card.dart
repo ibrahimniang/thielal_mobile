@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_colors.dart';
 // import '../../../../app/theme/app_radius.dart';
 import '../../../../l10n/app_localizations.dart';
 
@@ -39,7 +40,7 @@ class UrgentRequestCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
 
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
 
         borderRadius: BorderRadius.circular(24),
 
@@ -101,10 +102,10 @@ class UrgentRequestCard extends StatelessWidget {
                 Text(
                   hospital,
 
-                  style: const TextStyle(
+                 style: TextStyle(
                     fontWeight: FontWeight.w900,
-
                     fontSize: 16,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
 
@@ -127,22 +128,19 @@ class UrgentRequestCard extends StatelessWidget {
 
                 Row(
                   children: [
-                    const Icon(
-                      Icons.location_on_rounded,
-
-                      size: 16,
-
-                      color: AppColors.textSecondary,
-                    ),
+                    Icon(
+                        Icons.location_on_rounded,
+                        size: 16,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      ),
 
                     const SizedBox(width: 6),
 
                     Text(
                       distance,
 
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                         fontWeight: FontWeight.w600,
                       ),
                     ),

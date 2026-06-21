@@ -83,6 +83,12 @@ class NotificationsListScreen extends ConsumerWidget {
     WidgetRef ref, // ✅ AJOUT MINIMAL ICI
     NotificationModel notification,
   ) async {
+
+    final isDark =
+    Theme.of(context).brightness == Brightness.dark;
+
+    final colors =
+    Theme.of(context).colorScheme;
     String demandeurNom = notification.fullName;
     final token = ref.read(authControllerProvider).accessToken;
 
@@ -158,11 +164,12 @@ class NotificationsListScreen extends ConsumerWidget {
 
                   Text(
                     demandeurNom.isEmpty ? "Demandeur" : demandeurNom,
-                    style: const TextStyle(
+                    style: TextStyle(
+                      color: colors.onSurface,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
-                  ),
+                  ), 
 
                   const SizedBox(height: 16),
 
@@ -335,14 +342,35 @@ class NotificationsListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifications = ref.watch(notificationControllerProvider);
+    final isDark =
+    Theme.of(context).brightness == Brightness.dark;
+
+final colors =
+    Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Notifications")),
+      appBar: AppBar(
+        backgroundColor: colors.surface,
+        title: Text(
+          "Notifications",
+          style: TextStyle(
+            color: colors.onSurface,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
 
       body: notifications.when(
         data: (list) {
           if (list.isEmpty) {
-            return const Center(child: Text("Aucune notification"));
+            return Center(
+              child: Text(
+                "Aucune notification",
+                style: TextStyle(
+                  color: colors.onSurface,
+                ),
+              ),
+            );
           }
 
           return ListView.builder(
@@ -372,19 +400,25 @@ class NotificationsListScreen extends ConsumerWidget {
               return Container(
                 margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color:
-                      notification.lu
-                          ? Colors.grey.shade100
-                          : const Color(0xFFE3F2FD),
+                  color: notification.lu
+                  ? (isDark
+                      ? colors.surfaceContainerHighest
+                      : Colors.grey.shade100)
+                  : (isDark
+                      ? colors.primaryContainer
+                      : const Color(0xFFE3F2FD)),
                   borderRadius: BorderRadius.circular(12),
                 ),
 
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor:
-                        notification.lu
-                            ? Colors.grey.shade400
-                            : const Color(0xFF4FC3F7),
+                    backgroundColor: notification.lu
+                      ? (isDark
+                          ? colors.outline
+                          : Colors.grey.shade400)
+                      : (isDark
+                          ? colors.primary
+                          : const Color(0xFF4FC3F7)),
                     child: const Icon(Icons.notifications, color: Colors.white),
                   ),
 
@@ -397,9 +431,24 @@ class NotificationsListScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 4),
-                      Text(notification.message),
+                      Text(
+                        notification.message,
+                        style: TextStyle(
+                          color: isDark
+                              ? colors.onSurface.withOpacity(0.8)
+                              : Colors.black87,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text(formatNotificationDate(notification.dateCreation)),
+                      Text(
+                        formatNotificationDate(notification.dateCreation),
+                        style: TextStyle(
+                          color: isDark
+                              ? colors.onSurface.withOpacity(0.6)
+                              : Colors.grey,
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ),
 
