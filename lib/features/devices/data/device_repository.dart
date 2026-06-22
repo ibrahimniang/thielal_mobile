@@ -8,4 +8,8 @@ class DeviceRepository {
   Future<void> registerDevice(Map<String, dynamic> body) async {
     await dio.post("/devices/register", data: body);
   }
+
+  Future<void> ping() async {
+    await dio.post("/devices/ping");
+  }
 }

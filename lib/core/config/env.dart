@@ -10,13 +10,13 @@ class Env {
   Env._();
 
   /// Nom de l'application
-  static const String appName = 'Thielal / LifeLink';
+  static const String appName = 'LifeLink';
 
   /// URL de base du backend Render
   ///
   /// Toutes les requêtes API passent par cette base URL.
-  static const String baseUrl ='http://192.168.100.44:5000/api';
+  static const String baseUrl ="http://localhost:5000/api";
   //'https://lifelink-backend-3bgr.onrender.com/api';
   //
 }
-// "http://localhost:5000/api";
+// 'http://192.168.100.44:5000/api';
