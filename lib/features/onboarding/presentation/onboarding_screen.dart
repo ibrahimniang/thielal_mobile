@@ -56,20 +56,34 @@ void dispose() {
             },
           ),
 
-          Positioned(
-            top: 55,
-            right: 20,
-            child: TextButton(
-              onPressed: _finishOnboarding,
-              child: const Text(
-                'Passer',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                ),
-              ),
-            ),
-          ),
+         Positioned(
+  top: 55,
+  right: 20,
+  child: Container(
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black12,
+          blurRadius: 4,
+          offset: Offset(0, 2),
+        ),
+      ],
+    ),
+    child: TextButton(
+      onPressed: _finishOnboarding,
+      child: const Text(
+        'Passer',
+        style: TextStyle(
+          color: Colors.red,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ),
+  ),
+),
 
           Positioned(
             bottom: 40,

@@ -307,70 +307,37 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
             padding: const EdgeInsets.all(AppSpacing.screenPadding),
             child: Column(
               children: [
-                Align(
-  alignment: Alignment.topRight,
-  child: PopupMenuButton<String>(
-    icon: Container(
-      height: 48,
-      width: 48,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 12,
-          ),
-        ],
-      ),
-      child: Icon(
-        Icons.more_vert,
-        color: Theme.of(context).colorScheme.onSurface,
-      ),
-    ),
+               Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: [
 
-    onSelected: (value) {
-      if (value == 'help') {
+    // 👈 AIDE à gauche
+    IconButton(
+      onPressed: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => HelpPdfScreen(),
           ),
         );
-      }
+      },
+      icon: const Icon(Icons.help_outline),
+    ),
 
-      if (value == 'theme') {
+    // 👉 MODE à droite
+    IconButton(
+      onPressed: () {
         ref.read(themeProvider.notifier).toggleTheme();
-      }
-    },
+      },
+      icon: Icon(
+        isDark
+            ? Icons.wb_sunny_rounded
+            : Icons.dark_mode_rounded,
+      ),
+    ),
 
-    itemBuilder: (context) => [
-      PopupMenuItem(
-        value: 'help',
-        child: Row(
-          children: const [
-            Icon(Icons.help_outline),
-            SizedBox(width: 10),
-            Text("Aide"),
-          ],
-        ),
-      ),
-      PopupMenuItem(
-        value: 'theme',
-        child: Row(
-          children: [
-            Icon(
-              isDark ? Icons.wb_sunny_rounded : Icons.dark_mode_rounded,
-            ),
-            const SizedBox(width: 10),
-            Text("Mode"),
-          ],
-        ),
-      ),
-    ],
-  ),
+  ],
 ),
-
                 const SizedBox(height: 10),
                 _buildHeader(context),
                 const SizedBox(height: 16),

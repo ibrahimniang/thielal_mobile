@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:thielal/features/devices/data/device_repository.dart';
 // import 'package:url_launcher/url_launcher.dart';
 
 import '../../application/profile_controller.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../donations/application/donation_controller.dart';
+
+import '../../../devices/application/device_provider.dart';
+import '../../../devices/domain/models/device_model.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
@@ -73,7 +77,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
     return Scaffold(
       backgroundColor:
-      isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+          isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
       body: profileState.when(
         loading: () => const ProfileLoadingShimmer(),
 
@@ -178,9 +182,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
                   delegate: _ProfileTabDelegate(
                     child: Container(
-                      color: isDark
-                        ? const Color(0xFF111827)
-                        : const Color(0xFFF5F7FB),
+                      color:
+                          isDark
+                              ? const Color(0xFF111827)
+                              : const Color(0xFFF5F7FB),
 
                       padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
 
@@ -209,7 +214,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   _qrTab(user, l10n),
 
                   /// INFOS
-                  _infosTab(user, l10n),
+                  _infosTab(context, ref, user, l10n),
                 ],
               ),
             ),
@@ -463,7 +468,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   /// INFOS TAB
   /// =====================================================
 
-  Widget _infosTab(dynamic user, AppLocalizations l10n) {
+  Widget _infosTab(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic user,
+    AppLocalizations l10n,
+  ) {
+    final devicesAsync = ref.watch(myDevicesProvider);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.lg),
 
@@ -548,6 +559,374 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             value: user.profilComplet ? l10n.verified : l10n.notVerified,
 
             iconColor: user.profilComplet ? Colors.green : Colors.orange,
+          ),
+
+          const SizedBox(height: 24),
+          const SizedBox(height: 24),
+
+          ProfileSectionTitle(
+            title: "Appareils connectés",
+            subtitle: "Connexions récentes",
+            icon: Icons.devices_rounded,
+          ),
+
+          const SizedBox(height: 16),
+
+          devicesAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+
+            error: (e, _) => Text("Erreur : $e"),
+
+            data: (devices) {
+              if (devices.isEmpty) {
+                return const Text("Aucun appareil enregistré");
+              }
+
+              return Column(
+                children:
+                    devices.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final device = entry.value;
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 14),
+
+                        padding: const EdgeInsets.all(16),
+
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+
+                          borderRadius: BorderRadius.circular(18),
+
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.08),
+
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+
+                              child: Icon(
+  (device.systeme ?? '')
+          .toLowerCase()
+          .contains('android')
+      ? Icons.phone_android
+      : (device.systeme ?? '')
+              .toLowerCase()
+              .contains('ios')
+          ? Icons.phone_iphone
+          : (device.systeme ?? '')
+                  .toLowerCase()
+                  .contains('ipad')
+              ? Icons.tablet_mac
+              : Icons.computer,
+
+  color: Colors.red,
+),
+                            ),
+
+                            const SizedBox(width: 14),
+
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+
+                                children: [
+                                  Row(
+                                    children: [
+                                     Expanded(
+  child: Text(
+    (device.marque?.isNotEmpty ?? false)
+        ? '${device.marque} ${device.modele ?? ''}'
+        : (device.nomAppareil ??
+            'Appareil inconnu'),
+
+    style: const TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+    ),
+  ),
+
+  
+),
+
+                                      if (index == 0)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+
+                                          decoration: BoxDecoration(
+                                            color: Colors.green.shade100,
+
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+
+                                          child: const Text("Actuel"),
+                                        ),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: 6),
+
+                                  Text(
+                                    '${device.systeme ?? ''} ${device.versionSysteme ?? ''}',
+                                  ),
+
+                                  const SizedBox(height: 6),
+
+                                  Text(
+                                    device.derniereConnexion != null
+                                        ? 'Dernière connexion : '
+                                            '${device.derniereConnexion!.day}/'
+                                            '${device.derniereConnexion!.month}/'
+                                            '${device.derniereConnexion!.year}'
+                                        : 'Date inconnue',
+
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  if (index != 0) ...[
+  const SizedBox(height: 12),
+
+  Align(
+    alignment: Alignment.centerLeft,
+    child: TextButton.icon(
+    onPressed: () async {
+
+  final confirm =
+      await showDialog<bool>(
+        context: context,
+
+        builder: (dialogContext) {
+  return Dialog(
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(24),
+    ),
+
+    child: Padding(
+      padding: const EdgeInsets.all(24),
+
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+
+        children: [
+          /// ICONE
+          Container(
+            width: 72,
+            height: 72,
+
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+
+            child: const Icon(
+              Icons.devices_other_rounded,
+              color: Colors.red,
+              size: 36,
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          /// TITRE
+          const Text(
+            "Déconnecter l'appareil",
+            textAlign: TextAlign.center,
+
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          /// MESSAGE
+          Text(
+            "Voulez-vous vraiment déconnecter\n"
+            "${device.marque ?? ''} ${device.modele ?? ''} ?",
+
+            textAlign: TextAlign.center,
+
+            style: const TextStyle(
+              fontSize: 15,
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          const Text(
+            "Après déconnexion, cet appareil devra se reconnecter pour accéder à votre compte.",
+            textAlign: TextAlign.center,
+
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 13,
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          /// BOUTONS
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.pop(
+                      dialogContext,
+                      false,
+                    );
+                  },
+
+                  style: OutlinedButton.styleFrom(
+                    minimumSize:
+                        const Size.fromHeight(
+                      50,
+                    ),
+
+                    shape:
+                        RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(
+                        14,
+                      ),
+                    ),
+                  ),
+
+                  child: const Text(
+                    "Annuler",
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(
+                      dialogContext,
+                      true,
+                    );
+                  },
+
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        Colors.red,
+
+                    foregroundColor:
+                        Colors.white,
+
+                    minimumSize:
+                        const Size.fromHeight(
+                      50,
+                    ),
+
+                    shape:
+                        RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(
+                        14,
+                      ),
+                    ),
+                  ),
+
+                  child: const Text(
+                    "Déconnecter",
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+},
+      );
+
+  if (confirm != true) {
+    return;
+  }
+
+  try {
+    await DeviceRepository()
+        .revokeDevice(
+      device.idAppareil,
+    );
+
+    ref.refresh(
+      myDevicesProvider,
+    );
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Appareil déconnecté",
+          ),
+        ),
+      );
+    }
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Erreur : $e",
+          ),
+        ),
+      );
+    }
+  }
+},
+
+      icon: const Icon(
+        Icons.logout,
+        size: 18,
+      ),
+
+      label: const Text(
+        "Déconnecter",
+      ),
+    ),
+  ),
+],
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+              );
+            },
           ),
 
           const SizedBox(height: 24),

@@ -31,7 +31,7 @@ Future<void> main() async {
   );
 
   // Réinitialisation du flag onboarding
-  // await SecureStorageService.clearOnboardingFlag();
+  await SecureStorageService.clearOnboardingFlag();
 
   runApp(
     const ProviderScope(

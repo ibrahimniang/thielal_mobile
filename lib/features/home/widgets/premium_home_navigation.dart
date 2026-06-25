@@ -85,7 +85,7 @@ class PremiumHomeNavigation extends StatelessWidget {
                 ],
               ),
 
-              Icon(
+              child: Icon(
                 Icons.bloodtype_rounded,
                 color: Theme.of(context).colorScheme.onPrimary,
                 size: 34,

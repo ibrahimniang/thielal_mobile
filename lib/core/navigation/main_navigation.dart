@@ -50,11 +50,9 @@ class MainNavigation extends ConsumerWidget {
 
     return Scaffold(
       extendBody: true,
+      backgroundColor: Colors.transparent,
 
-      body: SafeArea(
-        bottom: false,
-        child: child,
-      ),
+      body: child,
 
       bottomNavigationBar: SafeArea(
         top: false,
@@ -80,14 +78,15 @@ class MainNavigation extends ConsumerWidget {
                         height: 66,
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.92),
+  color: Colors.white.withOpacity(0.18),
                           borderRadius: BorderRadius.circular(28),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.45),
-                          ),
+                        border: Border.all(
+  color: Colors.white.withOpacity(0.25),
+  width: 1,
+),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
+                              color: Colors.black.withOpacity(0.04),
                               blurRadius: 24,
                               offset: const Offset(0, 10),
                             ),

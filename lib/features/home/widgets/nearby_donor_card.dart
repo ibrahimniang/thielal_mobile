@@ -53,7 +53,7 @@ class NearbyDonorCard extends StatelessWidget {
 
         boxShadow: [
           BoxShadow(
-            ccolor: Colors.black.withOpacity(
+            color: Colors.black.withOpacity(
               isDark ? 0.35 : 0.05,
             ),
 
@@ -176,7 +176,7 @@ class NearbyDonorCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(40),
                           ),
 
-                          child: const Text(
+                          child: Text(
                             'Disponible',
 
                             style: TextStyle(
