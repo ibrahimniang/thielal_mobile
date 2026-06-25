@@ -374,7 +374,7 @@ class _ConversationsScreenState
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                            color: isDark ? Colors.white : Colors.black,
+                            color: Colors.white,
                           ),
                         ),
 
@@ -386,7 +386,7 @@ class _ConversationsScreenState
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                            color: isDark ? Colors.white : Colors.black,
+                            color: Colors.white,
                           ),
                         ),
                       ],

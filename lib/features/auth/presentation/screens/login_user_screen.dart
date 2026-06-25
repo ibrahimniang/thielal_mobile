@@ -14,6 +14,7 @@ import '../../../../l10n/app_localizations.dart';
 
 import '../../application/auth_controller.dart';
 import '../../application/auth_state.dart';
+import '../../../help/presentation/screens/help_pdf_screen.dart';
 
 class LoginUserScreen extends ConsumerStatefulWidget {
   const LoginUserScreen({super.key});
@@ -306,32 +307,69 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
             padding: const EdgeInsets.all(AppSpacing.screenPadding),
             child: Column(
               children: [
-                /// BOUTON THEME
-    Align(
-      alignment: Alignment.topRight,
-      child: Container(
-        height: 48,
-        width: 48,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 12,
-            ),
-          ],
-        ),
-        child: IconButton(
-          onPressed: () {
-            ref.read(themeProvider.notifier).toggleTheme();
-          },
-          icon: Icon(
-          isDark ? Icons.dark_mode_rounded : Icons.wb_sunny_rounded,
-        ),
-        ),
+                Align(
+  alignment: Alignment.topRight,
+  child: PopupMenuButton<String>(
+    icon: Container(
+      height: 48,
+      width: 48,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 12,
+          ),
+        ],
+      ),
+      child: Icon(
+        Icons.more_vert,
+        color: Theme.of(context).colorScheme.onSurface,
       ),
     ),
+
+    onSelected: (value) {
+      if (value == 'help') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => HelpPdfScreen(),
+          ),
+        );
+      }
+
+      if (value == 'theme') {
+        ref.read(themeProvider.notifier).toggleTheme();
+      }
+    },
+
+    itemBuilder: (context) => [
+      PopupMenuItem(
+        value: 'help',
+        child: Row(
+          children: const [
+            Icon(Icons.help_outline),
+            SizedBox(width: 10),
+            Text("Aide"),
+          ],
+        ),
+      ),
+      PopupMenuItem(
+        value: 'theme',
+        child: Row(
+          children: [
+            Icon(
+              isDark ? Icons.wb_sunny_rounded : Icons.dark_mode_rounded,
+            ),
+            const SizedBox(width: 10),
+            Text("Mode"),
+          ],
+        ),
+      ),
+    ],
+  ),
+),
 
                 const SizedBox(height: 10),
                 _buildHeader(context),

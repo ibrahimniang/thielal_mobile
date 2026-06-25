@@ -12,6 +12,14 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../app/router/route_names.dart';
 import '../../../../core/config/env.dart';
 import '../../../auth/application/auth_controller.dart';
+import '../widgets/voice_recorder_button.dart';
+import 'dart:typed_data'; 
+import 'package:audioplayers/audioplayers.dart';
+
+final AudioPlayer player = AudioPlayer();
+
+
+
 
 class ChatScreen extends ConsumerStatefulWidget {
   final int conversationId;
@@ -766,7 +774,57 @@ class _ChatScreenState
         });
       }
     }
+    
   }
+  // ======================================================
+// SEND AUDIO MESSAGE
+// ======================================================
+
+Future<void> sendAudioMessage(dynamic audioData) async {
+  final token = ref.read(authControllerProvider).accessToken;
+
+  final uri = Uri.parse("${Env.baseUrl}/chat/message");
+
+  final request = http.MultipartRequest("POST", uri);
+
+  request.headers["Authorization"] = "Bearer $token";
+  request.fields["conversation_id"] = widget.conversationId.toString();
+
+  if (kIsWeb) {
+    // WEB = blob -> bytes
+    Uint8List bytes;
+
+    if (audioData is String) {
+      final res = await http.get(Uri.parse(audioData));
+      bytes = res.bodyBytes;
+    } else {
+      bytes = audioData;
+    }
+
+    request.files.add(
+      http.MultipartFile.fromBytes(
+        "audio",
+        bytes,
+        filename: "voice.webm",
+      ),
+    );
+  } else {
+    // MOBILE
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        "audio",
+        audioData,
+      ),
+    );
+  }
+
+  final response = await request.send();
+
+  final body = await response.stream.bytesToString();
+
+  debugPrint("UPLOAD STATUS => ${response.statusCode}");
+  debugPrint("UPLOAD BODY => $body");
+}
 
   // ======================================================
   // UI
@@ -969,6 +1027,9 @@ class _ChatScreenState
                               m["lu"] ==
                                   true;
 
+                          final content = m["contenu"] ?? "";
+                          final isAudio = content.toString().startsWith("/uploads/voices/");
+
                           return Align(
                             alignment:
                                 isMe
@@ -1050,23 +1111,44 @@ class _ChatScreenState
                                         .start,
                                 children: [
 
-                                  Text(
-                                    m["contenu"] ??
-                                        "",
-                                    style:
-                                        TextStyle(
-                                      fontSize:
-                                          15,
-                                      height:
-                                          1.4,
-                                      color: isMe
-                                    ? Colors.white
-                                    : (isDark
-                                        ? Colors.white
-                                        : Colors.black87),
-                                    ),
-                                  ),
+                                  isAudio
+                            ? GestureDetector(
+                            onTap: () async {
+                                final url = "${Env.baseUrl.replaceAll('/api', '')}$content";
 
+                                debugPrint("AUDIO => $url");
+
+                                await launchUrl(
+                                  Uri.parse(url),
+                                  mode: LaunchMode.externalApplication,
+                                );
+                              },
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black12,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.play_arrow),
+                                      SizedBox(width: 8),
+                                      Text("Message vocal"),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : Text(
+                                content,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  height: 1.4,
+                                  color: isMe
+                                      ? Colors.white
+                                      : (isDark ? Colors.white : Colors.black87),
+                                ),
+                              ),
                                   const SizedBox(
                                     height:
                                         8,
@@ -1119,112 +1201,92 @@ class _ChatScreenState
           ),
 
           SafeArea(
-            top: false,
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 12,
-              ),
-              decoration: BoxDecoration(
-                    color: isDark
-                      ? const Color(0xFF111827)
-                      : Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 12,
-                        offset: const Offset(0, -2),
+          top: false,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 12,
+            ),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF111827) : Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF1A2234)
+                          : const Color(0xFFF4F5F7),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: TextField(
+                      controller: messageController,
+                      minLines: 1,
+                      maxLines: 5,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        hintText: "Écrire un message...",
                       ),
-                    ],
-                  ),
-                  child: Row(
-                children: [
-
-                  Expanded(
-                    child: Container(
-                      padding:
-                          const EdgeInsets.symmetric(
-                        horizontal: 18,
-                      ),
-                      
-                         decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFF1A2234)
-                                : const Color(0xFFF4F5F7),
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                      child: TextField(
-                        controller:
-                            messageController,
-                        minLines: 1,
-                        maxLines: 5,
-                         style: TextStyle(
-                          color: isDark
-                              ? Colors.white
-                              : Colors.black,
-                        ),
-                        textInputAction:
-                            TextInputAction
-                                .send,
-                        onSubmitted:
-                            (_) =>
-                                sendMessage(),
-                       decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "Écrire un message...",
-                            hintStyle: TextStyle(
-                              color: isDark
-                                  ? Colors.white54
-                                  : Colors.grey,
-                            ),
-                          ),
-                        ),
                     ),
                   ),
+                ),
 
-                  const SizedBox(width: 10),
+                const SizedBox(width: 8),
 
-                  GestureDetector(
-                    onTap:
-                        sendMessage,
-                    child: Container(
-                      height: 54,
-                      width: 54,
-                      decoration:
-                          const BoxDecoration(
-                        color:
-                            Color(
-                          0xFFE53935,
-                        ),
-                        shape:
-                            BoxShape.circle,
-                      ),
-                      child: sending
-                          ? const Padding(
-                              padding:
-                                  EdgeInsets.all(
-                                14,
-                              ),
-                              child:
-                                  CircularProgressIndicator(
-                                color:
-                                    Colors.white,
-                                strokeWidth:
-                                    2,
-                              ),
-                            )
-                          : const Icon(
-                              Icons.send,
-                              color:
-                                  Colors.white,
-                            ),
+                GestureDetector(
+                  onTap: () async {
+                    await showModalBottomSheet(
+                      context: context,
+                      builder: (_) {
+                        return VoiceRecorderButton(
+                          onSendAudio: (path) {
+                            Navigator.pop(context);
+                            sendAudioMessage(path);
+                          },
+                        );
+                      },
+                    );
+                  },
+                  child: Container(
+                    height: 50,
+                    width: 50,
+                    decoration: const BoxDecoration(
+                      color: Colors.grey,
+                      shape: BoxShape.circle,
                     ),
+                    child: const Icon(Icons.mic, color: Colors.white),
                   ),
-                ],
-              ),
+                ),
+
+                const SizedBox(width: 8),
+
+                GestureDetector(
+                  onTap: sendMessage,
+                  child: Container(
+                    height: 54,
+                    width: 54,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE53935),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.send, color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          
             ),
           ),
+         
         ],
       ),
     );
