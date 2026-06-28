@@ -22,7 +22,6 @@
 
   "phone": "رقم الهاتف",
 
-  "loginSubtitle": "قم بتسجيل الدخول للوصول إلى مساحة المتبرع الخاصة بك",
 
   "identifier": "المعرف",
   "start": "ابدأ",
@@ -608,6 +607,7 @@
 "deleteReadNotifications": "حذف الإشعارات المقروءة",
 "deleteReadNotificationsTitle": "حذف الإشعارات المقروءة؟",
 "deleteReadNotificationsMessage": "يجب قراءة جميع الإشعارات أولاً قبل حذفها.",
-"allReadNotificationsDeleted": "تم حذف الإشعارات المقروءة."
+"allReadNotificationsDeleted": "تم حذف الإشعارات المقروءة.",
+"loginSubtitle": "سجّل الدخول للوصول إلى مساحة LifeLink الخاصة بك"
 
 }

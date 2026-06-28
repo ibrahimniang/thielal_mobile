@@ -5,227 +5,157 @@ class TermsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
+      backgroundColor: colors.surface,
       appBar: AppBar(
         title: const Text("Conditions d'utilisation"),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
 
-            Text(
-              "Conditions générales d'utilisation de Thièlal",
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+          /// ================= HEADER =================
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  colors.primary,
+                  colors.primary.withOpacity(0.75),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              children: [
+                Image.asset(
+                  'assets/images/logo.png',
+                  height: 70,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "Thièlal / Life-Link",
+                  style: TextStyle(
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
+                    color: colors.onPrimary,
                   ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "Conditions générales d'utilisation",
+                  style: TextStyle(
+                    color: colors.onPrimary.withOpacity(0.85),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  "Dernière mise à jour : Juin 2026",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colors.onPrimary.withOpacity(0.7),
+                  ),
+                ),
+              ],
             ),
+          ),
 
-            const SizedBox(height: 6),
+          const SizedBox(height: 20),
 
-            Text(
-              "Dernière mise à jour : Juin 2026",
-              style: TextStyle(color: Colors.grey.shade600),
-            ),
+          _card(context, "1. Introduction générale",
+              "Thièlal est une plateforme nationale dédiée à la coordination du don de sang en Mauritanie."),
 
-            const SizedBox(height: 20),
+          _card(context, "2. Acceptation des conditions",
+              "L’utilisation de l’application implique l’acceptation totale des présentes conditions."),
 
-            _sectionTitle("1. Introduction générale"),
-            _paragraph(
-              "Thièlal est une plateforme numérique nationale dédiée à la gestion, "
-              "la coordination et l’optimisation du don de sang en République Islamique de Mauritanie. "
-              "Elle est conçue pour répondre aux besoins urgents des établissements de santé, "
-              "des patients et des donneurs volontaires."
-            ),
-            _paragraph(
-              "L’objectif principal de Thièlal est de réduire le temps de réponse lors des urgences médicales "
-              "liées au sang, tout en améliorant la traçabilité et la transparence des dons."
-            ),
+          _card(context, "3. Âge minimum (18+)",
+              "L’application est strictement réservée aux personnes majeures. Toute fausse déclaration est interdite."),
 
-            _sectionTitle("2. Acceptation des conditions"),
-            _paragraph(
-              "En accédant ou en utilisant l’application Thièlal, l’utilisateur reconnaît avoir lu, "
-              "compris et accepté l’intégralité des présentes conditions. "
-              "Ces conditions constituent un accord légal entre l’utilisateur et la plateforme Thièlal."
-            ),
-            _paragraph(
-              "Si l’utilisateur n’accepte pas ces conditions, il est tenu de ne pas utiliser l’application "
-              "et de supprimer immédiatement son compte s’il en possède un."
-            ),
+          _card(context, "4. Création de compte",
+              "Les informations doivent être exactes et mises à jour régulièrement."),
 
-            _sectionTitle("3. Âge minimum obligatoire (18 ans)"),
-            _paragraph(
-              "L’utilisation de l’application Thièlal est strictement réservée aux personnes âgées de 18 ans ou plus. "
-              "Cette condition est obligatoire et non négociable."
-            ),
-            _paragraph(
-              "Lors de l’inscription, l’utilisateur déclare sur l’honneur être majeur. "
-              "Toute fausse déclaration constitue une violation grave des présentes conditions."
-            ),
-            _paragraph(
-              "Thièlal se réserve le droit de demander une vérification supplémentaire en cas de doute "
-              "sur l’âge déclaré de l’utilisateur."
-            ),
+          _card(context, "5. Responsabilité du compte",
+              "L’utilisateur est responsable de son compte et de toute activité associée."),
 
-            _sectionTitle("4. Création de compte"),
-            _paragraph(
-              "La création de compte nécessite des informations exactes, complètes et vérifiables. "
-              "Ces informations incluent notamment le nom complet, le numéro de téléphone, "
-              "le groupe sanguin et la localisation approximative."
-            ),
-            _paragraph(
-              "L’utilisateur s’engage à maintenir ses informations à jour afin de garantir "
-              "la qualité du service."
-            ),
+          _card(context, "6. Authentification OTP",
+              "Connexion sécurisée par SMS OTP, ne jamais partager les codes."),
 
-            _sectionTitle("5. Responsabilité du compte"),
-            _paragraph(
-              "L’utilisateur est entièrement responsable de son compte et de toute activité effectuée "
-              "à partir de celui-ci. La confidentialité des identifiants doit être strictement maintenue."
-            ),
-            _paragraph(
-              "Toute utilisation frauduleuse ou non autorisée doit être signalée immédiatement à l’équipe Thièlal."
-            ),
+          _card(context, "7. Localisation",
+              "Utilisée uniquement pour connecter donneurs et patients. Jamais commerciale."),
 
-            _sectionTitle("6. Authentification sécurisée"),
-            _paragraph(
-              "L’accès à l’application est sécurisé par un système OTP envoyé par SMS. "
-              "Ce système garantit que seul le propriétaire du numéro peut accéder au compte."
-            ),
-            _paragraph(
-              "L’utilisateur s’engage à ne jamais partager ses codes de vérification."
-            ),
+          _card(context, "8. Don de sang & QR Code",
+              "Chaque utilisateur possède un QR unique pour valider les dons en centre médical."),
 
-            _sectionTitle("7. Utilisation de la localisation"),
-            _paragraph(
-              "Thièlal peut demander l’accès à la localisation de l’utilisateur afin d’améliorer les services."
-            ),
-            _paragraph(
-              "Cette localisation permet :"
-              "\n• la recherche de donneurs compatibles"
-              "\n• la localisation des centres de santé"
-              "\n• la gestion des urgences sanitaires"
-            ),
-            _paragraph(
-              "L’utilisateur peut choisir entre : autorisation unique, autorisation en utilisation, ou refus total."
-            ),
-            _paragraph(
-              "La localisation n’est jamais utilisée à des fins commerciales ou publicitaires."
-            ),
+          _card(context, "9. Historique médical",
+              "Suivi des dons uniquement pour usage médical et statistique."),
 
-            _sectionTitle("8. Système de don de sang"),
-            _paragraph(
-              "Chaque utilisateur possède un identifiant unique sous forme de QR Code sécurisé."
-            ),
-            _paragraph(
-              "Ce QR Code permet l’identification dans les centres de santé partenaires."
-            ),
-            _paragraph(
-              "Lorsqu’un don est effectué, le personnel médical scanne le QR Code pour :"
-              "\n• valider le don"
-              "\n• enregistrer la date"
-              "\n• mettre à jour le statut médical"
-              "\n• générer un certificat numérique"
-              "\n• alimenter les statistiques nationales"
-            ),
+          _card(context, "10. Urgences",
+              "Fonction d’alerte réservée aux situations réelles uniquement."),
 
-            _sectionTitle("9. Historique médical"),
-            _paragraph(
-              "L’application conserve un historique des dons effectués. "
-              "Ces données sont utilisées uniquement pour le suivi médical et statistique."
-            ),
+          _card(context, "11. Comportement utilisateur",
+              "Interdiction de fraude, harcèlement ou abus du système."),
 
-            _sectionTitle("10. Fonction d’urgence"),
-            _paragraph(
-              "Le bouton d’urgence permet d’alerter rapidement les donneurs compatibles."
-            ),
-            _paragraph(
-              "Cette fonctionnalité doit être utilisée uniquement en cas de besoin réel."
-            ),
-            _paragraph(
-              "Toute utilisation abusive peut entraîner une suspension immédiate du compte."
-            ),
+          _card(context, "12. Sanctions",
+              "Suspension ou suppression de compte en cas de violation."),
 
-            _sectionTitle("11. Comportement utilisateur"),
-            _paragraph(
-              "L’utilisateur s’engage à respecter les règles suivantes :"
-              "\n• aucune fraude"
-              "\n• aucun faux signalement"
-              "\n• aucun harcèlement"
-              "\n• aucun abus du système"
-            ),
-            _paragraph(
-              "Tout comportement contraire entraîne des sanctions."
-            ),
+          _card(context, "13. Responsabilité médicale",
+              "Thièlal n’est pas un service médical, les décisions appartiennent aux professionnels."),
 
-            _sectionTitle("12. Sanctions"),
-            _paragraph(
-              "En cas de non-respect des présentes conditions, Thièlal peut :"
-              "\n• suspendre le compte"
-              "\n• supprimer le compte"
-              "\n• bloquer définitivement l’accès"
-            ),
+          _card(context, "14. Données personnelles",
+              "Aucune donnée n’est vendue. Protection stricte des informations."),
 
-            _sectionTitle("13. Responsabilité médicale"),
-            _paragraph(
-              "Thièlal n’est pas un service médical. "
-              "Les décisions médicales sont prises uniquement par les professionnels de santé."
-            ),
+          _card(context, "15. Consentement",
+              "L’utilisateur accepte explicitement les conditions lors de l’inscription."),
 
-            _sectionTitle("14. Données personnelles"),
-            _paragraph(
-              "Les données sont protégées et utilisées uniquement pour le fonctionnement du service."
-            ),
-            _paragraph(
-              "Aucune donnée n’est vendue à des tiers."
-            ),
+          _card(context, "16. Modification",
+              "Les conditions peuvent être mises à jour à tout moment."),
 
-            _sectionTitle("15. Consentement"),
-            _paragraph(
-              "L’utilisateur donne son consentement explicite lors de l’inscription."
-            ),
-
-            _sectionTitle("16. Modification des conditions"),
-            _paragraph(
-              "Les conditions peuvent être modifiées à tout moment."
-            ),
-
-            _sectionTitle("17. Contact"),
-            _paragraph(
-              "Pour toute question, l’utilisateur peut contacter le support Thièlal."
-            ),
-
-            const SizedBox(height: 40),
-          ],
-        ),
+          _card(context, "17. Contact",
+              "Support accessible via les canaux officiels de l’application."),
+        ],
       ),
     );
   }
 
-  Widget _sectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 26, bottom: 10),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
+  /// ================= CARD =================
+  Widget _card(BuildContext context, String title, String text) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: colors.outline.withOpacity(0.2),
         ),
       ),
-    );
-  }
-
-  Widget _paragraph(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 15.5,
-          height: 1.8,
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: colors.primary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            text,
+            style: TextStyle(
+              height: 1.6,
+              fontSize: 14.5,
+              color: colors.onSurface.withOpacity(0.85),
+            ),
+          ),
+        ],
       ),
     );
   }

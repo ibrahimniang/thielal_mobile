@@ -19,7 +19,6 @@
 
   "phone": "Téléphone",
 
-  "loginSubtitle": "Connectez-vous pour accéder à votre espace donneur",
 
   "identifier": "Identifiant",
   "start": "Commencer",
@@ -588,6 +587,7 @@
 "deleteReadNotifications": "Supprimer les notifications lues",
 "deleteReadNotificationsTitle": "Supprimer les notifications lues ?",
 "deleteReadNotificationsMessage": "Toutes les notifications doivent d'abord être lues avant de pouvoir être supprimées.",
-"allReadNotificationsDeleted": "Les notifications lues ont été supprimées."
+"allReadNotificationsDeleted": "Les notifications lues ont été supprimées.",
+"loginSubtitle": "Connectez-vous pour accéder à votre espace LifeLink"
 
 }

@@ -16,6 +16,7 @@ import '../../../../features/profile/data/services/profile_remote_service.dart';
 
 import '../../application/auth_controller.dart';
 import '../../application/auth_state.dart';
+import '../../../help/presentation/screens/help_pdf_screen.dart';
 
 class LoginUserScreen extends ConsumerStatefulWidget {
   const LoginUserScreen({super.key});
@@ -310,47 +311,9 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
             child: Column(
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    /// LANGUE
-                    Container(
-                      height: 48,
-                      width: 48,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: PopupMenuButton<String>(
-                        icon: const Icon(Icons.language_rounded),
-                        onSelected: (value) async {
-                          await LocaleService.changeLocale(value);
-
-                          try {
-                            await ProfileRemoteService().updateLanguage(value);
-                          } catch (e) {
-                            debugPrint('Erreur mise à jour langue: $e');
-                          }
-                        },
-                        itemBuilder:
-                            (context) => const [
-                              PopupMenuItem(
-                                value: 'fr',
-                                child: Text('Français'),
-                              ),
-                              PopupMenuItem(
-                                value: 'en',
-                                child: Text('English'),
-                              ),
-                              PopupMenuItem(
-                                value: 'ar',
-                                child: Text('العربية'),
-                              ),
-                            ],
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-
-                    /// THEME
+                    /// AIDE (gauche)
                     Container(
                       height: 48,
                       width: 48,
@@ -360,18 +323,78 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
                       ),
                       child: IconButton(
                         onPressed: () {
-                          ref.read(themeProvider.notifier).toggleTheme();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => HelpPdfScreen()),
+                          );
                         },
-                        icon: Icon(
-                          isDark
-                              ? Icons.dark_mode_rounded
-                              : Icons.wb_sunny_rounded,
-                        ),
+                        icon: const Icon(Icons.help_outline),
                       ),
+                    ),
+
+                    /// LANGUE + THÈME (droite)
+                    Row(
+                      children: [
+                        Container(
+                          height: 48,
+                          width: 48,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: PopupMenuButton<String>(
+                            icon: const Icon(Icons.language_rounded),
+                            onSelected: (value) async {
+                              await LocaleService.changeLocale(value);
+
+                              try {
+                                await ProfileRemoteService().updateLanguage(
+                                  value,
+                                );
+                              } catch (e) {
+                                debugPrint('Erreur mise à jour langue: $e');
+                              }
+                            },
+                            itemBuilder:
+                                (context) => const [
+                                  PopupMenuItem(
+                                    value: 'fr',
+                                    child: Text('Français'),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'en',
+                                    child: Text('English'),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'ar',
+                                    child: Text('العربية'),
+                                  ),
+                                ],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Container(
+                          height: 48,
+                          width: 48,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: IconButton(
+                            onPressed: () {
+                              ref.read(themeProvider.notifier).toggleTheme();
+                            },
+                            icon: Icon(
+                              isDark
+                                  ? Icons.dark_mode_rounded
+                                  : Icons.wb_sunny_rounded,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 10),
                 _buildHeader(context),
                 const SizedBox(height: 16),

@@ -42,9 +42,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phone => 'Phone';
 
   @override
-  String get loginSubtitle => 'Sign in to access your donor space';
-
-  @override
   String get identifier => 'Identifier';
 
   @override
@@ -1054,4 +1051,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get allReadNotificationsDeleted => 'Read notifications have been deleted.';
+
+  @override
+  String get loginSubtitle => 'Sign in to access your LifeLink space';
 }

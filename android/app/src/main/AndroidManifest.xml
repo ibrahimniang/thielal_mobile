@@ -11,6 +11,9 @@
     <!--  PERMISSION APPEL -->
     <uses-permission android:name="android.permission.CALL_PHONE"/>
 
+    <!--  PERMISSION vocal -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
 <uses-permission
     android:name="android.permission.POST_NOTIFICATIONS"/>
     <application

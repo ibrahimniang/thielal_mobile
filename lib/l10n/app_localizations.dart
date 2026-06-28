@@ -163,12 +163,6 @@ abstract class AppLocalizations {
   /// **'Phone'**
   String get phone;
 
-  /// No description provided for @loginSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign in to access your donor space'**
-  String get loginSubtitle;
-
   /// No description provided for @identifier.
   ///
   /// In en, this message translates to:
@@ -2190,6 +2184,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Read notifications have been deleted.'**
   String get allReadNotificationsDeleted;
+
+  /// No description provided for @loginSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to access your LifeLink space'**
+  String get loginSubtitle;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

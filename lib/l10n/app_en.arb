@@ -22,8 +22,6 @@
 
   "phone": "Phone",
 
-  "loginSubtitle": "Sign in to access your donor space",
-
   "identifier": "Identifier",
   "start": "Start",
 "receiveOtp": "Receive OTP code",
@@ -597,6 +595,7 @@
 "deleteReadNotifications": "Delete read notifications",
 "deleteReadNotificationsTitle": "Delete read notifications?",
 "deleteReadNotificationsMessage": "All notifications must be read before they can be deleted.",
-"allReadNotificationsDeleted": "Read notifications have been deleted."
+"allReadNotificationsDeleted": "Read notifications have been deleted.",
+"loginSubtitle": "Sign in to access your LifeLink space"
 
 }

@@ -42,9 +42,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get phone => 'رقم الهاتف';
 
   @override
-  String get loginSubtitle => 'قم بتسجيل الدخول للوصول إلى مساحة المتبرع الخاصة بك';
-
-  @override
   String get identifier => 'المعرف';
 
   @override
@@ -1054,4 +1051,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get allReadNotificationsDeleted => 'تم حذف الإشعارات المقروءة.';
+
+  @override
+  String get loginSubtitle => 'سجّل الدخول للوصول إلى مساحة LifeLink الخاصة بك';
 }

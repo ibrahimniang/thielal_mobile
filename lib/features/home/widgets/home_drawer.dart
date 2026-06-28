@@ -26,7 +26,7 @@ class HomeDrawer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
 
     /// ==========================================
@@ -61,7 +61,10 @@ class HomeDrawer extends ConsumerWidget {
                 height: double.infinity,
 
                 decoration: BoxDecoration(
-                  color: isDark ? Theme.of(context).colorScheme.surface : Colors.white,
+                  color:
+                      isDark
+                          ? Theme.of(context).colorScheme.surface
+                          : Colors.white,
 
                   borderRadius: BorderRadius.only(
                     topRight: Radius.circular(34),
@@ -86,16 +89,18 @@ class HomeDrawer extends ConsumerWidget {
 
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                                colors: isDark
-                                    ? [
-                                        Theme.of(context).colorScheme.primary.withOpacity(0.9),
-                                        Theme.of(context).colorScheme.primary.withOpacity(0.7),
+                              colors:
+                                  isDark
+                                      ? [
+                                        Theme.of(
+                                          context,
+                                        ).colorScheme.primary.withOpacity(0.9),
+                                        Theme.of(
+                                          context,
+                                        ).colorScheme.primary.withOpacity(0.7),
                                       ]
-                                    : [
-                                        Color(0xFFE53946),
-                                        Color(0xFFC1121F),
-                                      ],
-                              ),
+                                      : [Color(0xFFE53946), Color(0xFFC1121F)],
+                            ),
 
                             borderRadius: BorderRadius.circular(AppRadius.xl),
                           ),
@@ -201,15 +206,12 @@ class HomeDrawer extends ConsumerWidget {
 
                         _drawerItem(
                           context,
-
                           icon: Icons.history_rounded,
-
                           title: l10n.donationHistory,
-
                           onTap: () {
                             context.pop();
 
-                            context.push(RouteNames.donations);
+                            context.go(RouteNames.profile, extra: 1);
                           },
                         ),
 
@@ -224,7 +226,7 @@ class HomeDrawer extends ConsumerWidget {
                           onTap: () {
                             context.pop();
 
-                            context.push(RouteNames.alerts);
+                            context.push(RouteNames.demandeSang);
                           },
                         ),
 
@@ -248,43 +250,43 @@ class HomeDrawer extends ConsumerWidget {
                         /// ==========================================
                         /// LANGUAGES
                         /// ==========================================
-                        Row(
-                          children: [
-                            Row(
-                              children: [
-                                _langButton(
-                                  context,
-                                  'FR',
-                                  onTap: () {
-                                    localeNotifier.value = const Locale('fr');
-                                  },
-                                ),
+                        // Row(
+                        //   children: [
+                        //     Row(
+                        //       children: [
+                        //         _langButton(
+                        //           context,
+                        //           'FR',
+                        //           onTap: () {
+                        //             localeNotifier.value = const Locale('fr');
+                        //           },
+                        //         ),
 
-                                const SizedBox(width: 10),
+                        //         const SizedBox(width: 10),
 
-                                _langButton(
-                                context,
-                                'AR',
-                                  onTap: () {
-                                    localeNotifier.value = const Locale('ar');
-                                  },
-                                ),
+                        //         _langButton(
+                        //         context,
+                        //         'AR',
+                        //           onTap: () {
+                        //             localeNotifier.value = const Locale('ar');
+                        //           },
+                        //         ),
 
-                                const SizedBox(width: 10),
+                        //         const SizedBox(width: 10),
 
-                                _langButton(
-                                context,
-                                'EN',
-                                  onTap: () {
-                                    localeNotifier.value = const Locale('en');
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                        //         _langButton(
+                        //         context,
+                        //         'EN',
+                        //           onTap: () {
+                        //             localeNotifier.value = const Locale('en');
+                        //           },
+                        //         ),
+                        //       ],
+                        //     ),
+                        //   ],
+                        // ),
 
-                        const SizedBox(height: 26),
+                        // const SizedBox(height: 26),
 
                         /// ==========================================
                         /// LOGOUT
@@ -315,7 +317,9 @@ class HomeDrawer extends ConsumerWidget {
                             ),
 
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.1),
 
                               borderRadius: BorderRadius.circular(20),
                             ),
@@ -334,7 +338,8 @@ class HomeDrawer extends ConsumerWidget {
                                   l10n.logout,
 
                                   style: TextStyle(
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
 
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -394,12 +399,17 @@ class HomeDrawer extends ConsumerWidget {
                   width: 46,
 
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.1),
 
                     borderRadius: BorderRadius.circular(14),
                   ),
 
-                  child: Icon(icon, color: Theme.of(context).colorScheme.primary), 
+                  child: Icon(
+                    icon,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
 
                 const SizedBox(width: 14),
@@ -437,11 +447,7 @@ class HomeDrawer extends ConsumerWidget {
   /// LANG BUTTON
   /// ==========================================
 
-  Widget _langButton(
-  BuildContext context,
-  String text, {
-  VoidCallback? onTap,
-}) {
+  Widget _langButton(BuildContext context, String text, {VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap,
 
@@ -455,12 +461,12 @@ class HomeDrawer extends ConsumerWidget {
         ),
 
         child: Text(
-            text,
-            style: TextStyle(
-              fontWeight: FontWeight.w800,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+          text,
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
+        ),
       ),
     );
   }

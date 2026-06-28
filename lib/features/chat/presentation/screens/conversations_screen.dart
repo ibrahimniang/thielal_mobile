@@ -285,7 +285,7 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                            color: isDark ? Colors.white : Colors.black,
+                            color: Colors.white,
                           ),
                         ),
 
@@ -297,7 +297,7 @@ class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                            color: isDark ? Colors.white : Colors.black,
+                            color: Colors.white,
                           ),
                         ),
                       ],
