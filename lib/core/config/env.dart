@@ -17,13 +17,10 @@ class Env {
   /// Toutes les requêtes API passent par cette base URL.
 
   static const String baseUrl ='https://lifelink-backend-3bgr.onrender.com/api';
-  //static const String baseUrl =
  // 'http://localhost:5000/api';
-  //'https://lifelink-backend-3bgr.onrender.com/api';
-  //
+  // 'http://192.168.100.44:5000/api';
 
-// "http://localhost:5000/api";
+
 
 }
 
-// 'http://192.168.100.44:5000/api';
