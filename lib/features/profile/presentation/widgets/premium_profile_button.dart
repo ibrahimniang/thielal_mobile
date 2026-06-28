@@ -4,13 +4,9 @@ import '../../../../app/theme/app_radius.dart';
 
 class PremiumProfileButton extends StatelessWidget {
   final String text;
-
   final IconData icon;
-
   final VoidCallback? onTap;
-
   final Color color;
-
   final bool outlined;
 
   const PremiumProfileButton({
@@ -24,6 +20,9 @@ class PremiumProfileButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: onTap,
 
@@ -36,70 +35,54 @@ class PremiumProfileButton extends StatelessWidget {
         ),
 
         decoration: BoxDecoration(
-          color:
-              outlined
-                  ? Colors.transparent
-                  : color,
+          color: outlined
+              ? Colors.transparent
+              : (isDark
+                  ? color.withOpacity(0.85)
+                  : color),
 
-          borderRadius:
-              BorderRadius.circular(
-                AppRadius.xl,
-              ),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
 
-          border:
-              outlined
-                  ? Border.all(
-                    color: color,
-                    width: 1.5,
-                  )
-                  : null,
+          border: outlined
+              ? Border.all(
+                  color: color,
+                  width: 1.5,
+                )
+              : null,
 
-          boxShadow:
-              outlined
-                  ? null
-                  : [
-                    BoxShadow(
-                      color: color.withOpacity(
-                        0.25,
-                      ),
-
-                      blurRadius: 18,
-
-                      offset: const Offset(
-                        0,
-                        10,
-                      ),
+          boxShadow: outlined
+              ? null
+              : [
+                  BoxShadow(
+                    color: color.withOpacity(
+                      isDark ? 0.20 : 0.25,
                     ),
-                  ],
+                    blurRadius: 18,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
         ),
 
         child: Row(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
 
           children: [
             Icon(
               icon,
-              color:
-                  outlined
-                      ? color
-                      : Colors.white,
+              color: outlined
+                  ? color
+                  : Colors.white,
             ),
 
             const SizedBox(width: 12),
 
             Text(
               text,
-
               style: TextStyle(
-                color:
-                    outlined
-                        ? color
-                        : Colors.white,
-
-                fontWeight:
-                    FontWeight.w800,
-
+                color: outlined
+                    ? color
+                    : Colors.white,
+                fontWeight: FontWeight.w800,
                 fontSize: 15,
               ),
             ),

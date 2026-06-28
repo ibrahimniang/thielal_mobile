@@ -37,17 +37,21 @@ class DonationDetailsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final colors = Theme.of(context).colorScheme;
     final center = alert.center;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F7FB),
+      backgroundColor:
+          isDark ? const Color(0xFF0F172A) : const Color(0xFFF6F7FB),
 
       appBar: AppBar(
         elevation: 0,
 
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
 
-        foregroundColor: Colors.black,
+        foregroundColor: isDark ? Colors.white : Colors.black,
 
         centerTitle: true,
 
@@ -218,8 +222,11 @@ class DonationDetailsScreen extends ConsumerWidget {
             /// ==========================================
             Text(
               l10n.centerInformation,
-
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                color: isDark ? Colors.white : Colors.black,
+              ),
             ),
 
             const SizedBox(height: 18),
@@ -306,16 +313,16 @@ class DonationDetailsScreen extends ConsumerWidget {
                       context: context,
                       builder: (dialogContext) {
                         return AlertDialog(
-                          title: const Text('Don temporairement indisponible'),
+                          title: Text(l10n.donationTemporarilyUnavailable),
                           content: Text(
-                            'Vous ne pouvez pas encore effectuer un don.\n\n'
-                            'Votre prochaine date de don autorisée est le '
+                            '${l10n.cannotDonateYet}\n\n'
+                            '${l10n.nextDonationAuthorizedDate} '
                             '${user!.dateProchainDon!.day}/${user!.dateProchainDon!.month}/${user!.dateProchainDon!.year}.',
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(dialogContext),
-                              child: const Text('OK'),
+                              child: Text(l10n.ok),
                             ),
                           ],
                         );
@@ -338,13 +345,21 @@ class DonationDetailsScreen extends ConsumerWidget {
                       showDialog(
                         context: context,
                         builder: (dialogContext) {
+                          final l10n = AppLocalizations.of(dialogContext)!;
                           return AlertDialog(
-                            title: const Text('Participation enregistrée'),
+                            backgroundColor:
+                                isDark ? const Color(0xFF1E293B) : Colors.white,
+                            title: Text(
+                              l10n.participationRecorded,
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                            ),
 
                             content: Text(
-                              'Vous participez maintenant à cette demande.\n\n'
-                              'Centre : ${center?.name ?? "Centre médical"}\n\n'
-                              'Veuillez contacter le centre ou vous y rendre pour effectuer votre don.',
+                              '${l10n.youAreNowParticipating}\n\n'
+                              '${l10n.center}: ${center?.name ?? l10n.medicalCenter}\n\n'
+                              '${l10n.contactCenterToDonate}',
                             ),
 
                             actions: [
@@ -352,7 +367,7 @@ class DonationDetailsScreen extends ConsumerWidget {
                                 onPressed: () {
                                   Navigator.of(dialogContext).pop();
                                 },
-                                child: const Text('OK'),
+                                child: Text(l10n.ok),
                               ),
                             ],
                           );
@@ -382,7 +397,7 @@ class DonationDetailsScreen extends ConsumerWidget {
 
                 icon: const Icon(Icons.favorite_rounded),
 
-                label: const Text('Je participe'),
+                label: Text(l10n.imParticipating),
               ),
             ),
             const SizedBox(height: 140),
@@ -422,19 +437,20 @@ class DonationDetailsScreen extends ConsumerWidget {
     bool isPhone = false,
   }) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
 
       padding: const EdgeInsets.all(18),
 
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
 
         borderRadius: BorderRadius.circular(22),
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(isDark ? 0.20 : 0.04),
 
             blurRadius: 20,
 
@@ -468,9 +484,8 @@ class DonationDetailsScreen extends ConsumerWidget {
                 Text(
                   title,
 
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-
+                  style: TextStyle(
+                    color: isDark ? Colors.white70 : AppColors.textSecondary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -480,9 +495,9 @@ class DonationDetailsScreen extends ConsumerWidget {
                 Text(
                   value,
 
-                  style: const TextStyle(
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black,
                     fontWeight: FontWeight.w800,
-
                     fontSize: 15,
                   ),
                 ),

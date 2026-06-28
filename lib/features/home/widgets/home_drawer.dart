@@ -12,7 +12,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../app/services/locale_service.dart';
 
 import '../../../../app/router/route_names.dart';
-import '../../../../app/theme/app_colors.dart';
+// import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_radius.dart';
 import '../../../../app/theme/app_spacing.dart';
 
@@ -26,6 +26,7 @@ class HomeDrawer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
 
     /// ==========================================
@@ -44,7 +45,7 @@ class HomeDrawer extends ConsumerWidget {
       },
 
       child: Material(
-        color: Colors.black.withOpacity(0.18),
+        color: Colors.black.withOpacity(isDark ? 0.35 : 0.18),
 
         child: Row(
           children: [
@@ -59,8 +60,8 @@ class HomeDrawer extends ConsumerWidget {
 
                 height: double.infinity,
 
-                decoration: const BoxDecoration(
-                  color: Colors.white,
+                decoration: BoxDecoration(
+                  color: isDark ? Theme.of(context).colorScheme.surface : Colors.white,
 
                   borderRadius: BorderRadius.only(
                     topRight: Radius.circular(34),
@@ -84,13 +85,17 @@ class HomeDrawer extends ConsumerWidget {
                           padding: const EdgeInsets.all(AppSpacing.lg),
 
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              begin: Alignment.topLeft,
-
-                              end: Alignment.bottomRight,
-
-                              colors: [Color(0xFFE53946), Color(0xFFC1121F)],
-                            ),
+                            gradient: LinearGradient(
+                                colors: isDark
+                                    ? [
+                                        Theme.of(context).colorScheme.primary.withOpacity(0.9),
+                                        Theme.of(context).colorScheme.primary.withOpacity(0.7),
+                                      ]
+                                    : [
+                                        Color(0xFFE53946),
+                                        Color(0xFFC1121F),
+                                      ],
+                              ),
 
                             borderRadius: BorderRadius.circular(AppRadius.xl),
                           ),
@@ -248,6 +253,7 @@ class HomeDrawer extends ConsumerWidget {
                             Row(
                               children: [
                                 _langButton(
+                                  context,
                                   'FR',
                                   onTap: () {
                                     localeNotifier.value = const Locale('fr');
@@ -257,7 +263,8 @@ class HomeDrawer extends ConsumerWidget {
                                 const SizedBox(width: 10),
 
                                 _langButton(
-                                  'AR',
+                                context,
+                                'AR',
                                   onTap: () {
                                     localeNotifier.value = const Locale('ar');
                                   },
@@ -266,7 +273,8 @@ class HomeDrawer extends ConsumerWidget {
                                 const SizedBox(width: 10),
 
                                 _langButton(
-                                  'EN',
+                                context,
+                                'EN',
                                   onTap: () {
                                     localeNotifier.value = const Locale('en');
                                   },
@@ -307,7 +315,7 @@ class HomeDrawer extends ConsumerWidget {
                             ),
 
                             decoration: BoxDecoration(
-                              color: AppColors.primaryRed.withOpacity(0.08),
+                              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
 
                               borderRadius: BorderRadius.circular(20),
                             ),
@@ -317,7 +325,7 @@ class HomeDrawer extends ConsumerWidget {
                                 Icon(
                                   Icons.logout_rounded,
 
-                                  color: AppColors.primaryRed,
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
 
                                 SizedBox(width: 12),
@@ -326,7 +334,7 @@ class HomeDrawer extends ConsumerWidget {
                                   l10n.logout,
 
                                   style: TextStyle(
-                                    color: AppColors.primaryRed,
+                                    color: Theme.of(context).colorScheme.primary,
 
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -386,12 +394,12 @@ class HomeDrawer extends ConsumerWidget {
                   width: 46,
 
                   decoration: BoxDecoration(
-                    color: AppColors.primaryRed.withOpacity(0.08),
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
 
                     borderRadius: BorderRadius.circular(14),
                   ),
 
-                  child: Icon(icon, color: AppColors.primaryRed),
+                  child: Icon(icon, color: Theme.of(context).colorScheme.primary), 
                 ),
 
                 const SizedBox(width: 14),
@@ -429,7 +437,11 @@ class HomeDrawer extends ConsumerWidget {
   /// LANG BUTTON
   /// ==========================================
 
-  Widget _langButton(String text, {VoidCallback? onTap}) {
+  Widget _langButton(
+  BuildContext context,
+  String text, {
+  VoidCallback? onTap,
+}) {
     return GestureDetector(
       onTap: onTap,
 
@@ -437,12 +449,18 @@ class HomeDrawer extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
 
         decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(0.08),
+          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
 
           borderRadius: BorderRadius.circular(14),
         ),
 
-        child: Text(text, style: const TextStyle(fontWeight: FontWeight.w800)),
+        child: Text(
+            text,
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
       ),
     );
   }

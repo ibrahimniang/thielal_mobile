@@ -56,6 +56,7 @@ static const String conversations = '/conversations';
 
 // IMPORTANT : chat par conversationId
 static const String chat = '/chat';
+static const String unreadCount = '/chat/unread-count';
   // ==========================
   // Dashboards protégés
   // ==========================

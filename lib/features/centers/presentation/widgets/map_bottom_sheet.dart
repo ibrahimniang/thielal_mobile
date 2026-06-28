@@ -33,14 +33,14 @@ class MapBottomSheet extends StatelessWidget {
         110,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(32),
           topRight: Radius.circular(32),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Theme.of(context).shadowColor.withOpacity(0.12),
             blurRadius: 30,
             offset: const Offset(0, -10),
           ),
@@ -54,7 +54,7 @@ class MapBottomSheet extends StatelessWidget {
             height: 5,
             width: 60,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: Theme.of(context).dividerColor,
               borderRadius: BorderRadius.circular(20),
             ),
           ),
@@ -88,8 +88,7 @@ class MapBottomSheet extends StatelessWidget {
                   children: [
                     Text(
                       centerName,
-                      style: const TextStyle(
-                        fontSize: 20,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -98,8 +97,10 @@ class MapBottomSheet extends StatelessWidget {
 
                     Text(
                       address,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.color?.withOpacity(0.7),
                         height: 1.4,
                       ),
                     ),
@@ -115,7 +116,7 @@ class MapBottomSheet extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
-              color: AppColors.silverBackground,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
             child: Row(
@@ -130,7 +131,9 @@ class MapBottomSheet extends StatelessWidget {
                 Expanded(
                   child: Text(
                     '${l10n.estimatedDistance} : $distance',
-                    style: const TextStyle(fontWeight: FontWeight.w700),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],

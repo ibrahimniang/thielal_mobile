@@ -6,12 +6,9 @@ import '../../../../app/theme/app_spacing.dart';
 
 class MedicalInfoTile extends StatelessWidget {
   final IconData icon;
-
   final String label;
   final String value;
-
   final Color? iconColor;
-
   final VoidCallback? onTap;
 
   const MedicalInfoTile({
@@ -25,6 +22,13 @@ class MedicalInfoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
+    final Color effectiveIconColor =
+        iconColor ?? AppColors.primaryRed;
+
     return GestureDetector(
       onTap: onTap,
 
@@ -38,18 +42,25 @@ class MedicalInfoTile extends StatelessWidget {
         ),
 
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? colors.surface : Colors.white,
 
           borderRadius: BorderRadius.circular(
             AppRadius.xl,
           ),
 
+          border: isDark
+              ? Border.all(
+                  color: colors.outline.withOpacity(0.2),
+                )
+              : null,
+
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: isDark
+                  ? Colors.black.withOpacity(0.25)
+                  : Colors.black.withOpacity(0.04),
 
               blurRadius: 14,
-
               offset: const Offset(0, 8),
             ),
           ],
@@ -63,21 +74,16 @@ class MedicalInfoTile extends StatelessWidget {
               width: 52,
 
               decoration: BoxDecoration(
-                color: (iconColor ??
-                        AppColors.primaryRed)
-                    .withOpacity(0.10),
+                color: effectiveIconColor.withOpacity(
+                  isDark ? 0.15 : 0.10,
+                ),
 
-                borderRadius:
-                    BorderRadius.circular(
-                      18,
-                    ),
+                borderRadius: BorderRadius.circular(18),
               ),
 
               child: Icon(
                 icon,
-                color:
-                    iconColor ??
-                    AppColors.primaryRed,
+                color: effectiveIconColor,
               ),
             ),
 
@@ -86,19 +92,17 @@ class MedicalInfoTile extends StatelessWidget {
             /// TEXT
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
 
                 children: [
                   Text(
                     label,
-
                     style: TextStyle(
-                      color: Colors.grey[600],
+                      color: isDark
+                          ? colors.onSurface.withOpacity(0.7)
+                          : Colors.grey[600],
 
-                      fontWeight:
-                          FontWeight.w600,
-
+                      fontWeight: FontWeight.w600,
                       fontSize: 13,
                     ),
                   ),
@@ -107,17 +111,13 @@ class MedicalInfoTile extends StatelessWidget {
 
                   Text(
                     value,
-
                     maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
 
-                    overflow:
-                        TextOverflow.ellipsis,
-
-                    style: const TextStyle(
-                      fontWeight:
-                          FontWeight.w800,
-
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
                       fontSize: 15,
+                      color: colors.onSurface,
                     ),
                   ),
                 ],
@@ -126,10 +126,12 @@ class MedicalInfoTile extends StatelessWidget {
 
             /// ARROW
             if (onTap != null)
-              const Icon(
+              Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 16,
-                color: Colors.grey,
+                color: isDark
+                    ? colors.onSurface.withOpacity(0.5)
+                    : Colors.grey,
               ),
           ],
         ),

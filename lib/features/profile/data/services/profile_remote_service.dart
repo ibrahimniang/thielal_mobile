@@ -60,6 +60,20 @@ class ProfileRemoteService {
     );
   }
 
+  // ==========================
+// UPDATE LANGUAGE
+// ==========================
+Future<Response<dynamic>> updateLanguage(
+  String langue,
+) {
+  return _dio.put(
+    ApiEndpoints.updateMe,
+    data: {
+      'langue': langue,
+    },
+  );
+}
+
   Future<Response<dynamic>> verifyPhoneChange({
     required String phone,
     required String code,

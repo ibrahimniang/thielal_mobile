@@ -34,6 +34,7 @@ class DonationTimelineCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
 
@@ -50,10 +51,9 @@ class DonationTimelineCard extends StatelessWidget {
                   width: 68,
 
                   decoration: BoxDecoration(
-                    color: AppColors.primaryRed.withOpacity(0.08),
-
-                    borderRadius: BorderRadius.circular(22),
-                  ),
+                  color: AppColors.primaryRed.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(22),
+                ),
 
                   child: const Icon(
                     Icons.bloodtype_rounded,
@@ -76,9 +76,9 @@ class DonationTimelineCard extends StatelessWidget {
 
                         overflow: TextOverflow.ellipsis,
 
-                        style: const TextStyle(
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black,
                           fontWeight: FontWeight.w900,
-
                           fontSize: 18,
                         ),
                       ),
@@ -90,7 +90,7 @@ class DonationTimelineCard extends StatelessWidget {
                           Icon(
                             Icons.calendar_month_rounded,
                             size: 16,
-                            color: Colors.grey[600],
+                            color: isDark ? Colors.white70 : Colors.grey[600],
                           ),
 
                           const SizedBox(width: 6),
@@ -99,7 +99,7 @@ class DonationTimelineCard extends StatelessWidget {
                             DateFormat('dd MMM yyyy').format(donationDate),
 
                             style: TextStyle(
-                              color: Colors.grey[700],
+                              color: isDark ? Colors.white70 : Colors.grey[700],
 
                               fontWeight: FontWeight.w600,
                             ),
@@ -128,10 +128,9 @@ class DonationTimelineCard extends StatelessWidget {
                   ),
 
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.10),
-
-                    borderRadius: BorderRadius.circular(30),
-                  ),
+                  color: Colors.green.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(30),
+                ),
 
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -164,8 +163,7 @@ class DonationTimelineCard extends StatelessWidget {
                   ),
 
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.10),
-
+                    color: Colors.orange.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(30),
                   ),
 
@@ -206,7 +204,14 @@ class DonationTimelineCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 18),
 
                 decoration: BoxDecoration(
-                  color: const Color(0xFF161B4B),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF161B4B),
+                      Color(0xFF232A67),
+                    ],
+                  ),
 
                   borderRadius: BorderRadius.circular(AppRadius.xl),
                 ),

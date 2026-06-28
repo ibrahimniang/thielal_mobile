@@ -98,7 +98,37 @@ class NotificationController
 
     }
   }
-  
+/// ===============================
+/// Tout marquer comme lu
+/// ===============================
+Future<void> markAllAsRead() async {
+  try {
+    await repository.markAllAsRead();
+
+    await loadNotifications();
+
+    ref.invalidate(unreadNotificationCountProvider);
+
+  } catch (e) {
+    print("Erreur markAllAsRead : $e");
+  }
+}
+
+/// ===============================
+/// Supprimer les notifications lues
+/// ===============================
+Future<void> deleteAllReadNotifications() async {
+  try {
+    await repository.deleteAllReadNotifications();
+
+    await loadNotifications();
+
+    ref.invalidate(unreadNotificationCountProvider);
+
+  } catch (e) {
+    print("Erreur deleteAllReadNotifications : $e");
+  }
+}
 }
 
 /// =================================
@@ -108,3 +138,4 @@ final unreadNotificationCountProvider = FutureProvider<int>((ref) async {
   final repo = ref.watch(notificationRepositoryProvider);
   return repo.fetchUnreadCount();
 });
+

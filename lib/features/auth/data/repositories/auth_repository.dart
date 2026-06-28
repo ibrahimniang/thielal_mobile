@@ -43,6 +43,7 @@ class AuthRepository {
     required String prenom,
     String? genre,
     String? dateNaissance,
+    String? langue,
     String? phone,
     String? email,
   }) async {
@@ -52,6 +53,7 @@ class AuthRepository {
       prenom: prenom,
       genre: genre,
       dateNaissance: dateNaissance,
+      langue: langue,
       phone: phone,
       email: email,
     );

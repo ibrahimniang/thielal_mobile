@@ -57,5 +57,19 @@ class NotificationRepository {
     }
 
     return 0;
+ 
   }
+/// ===============================
+/// Tout marquer comme lu
+/// ===============================
+Future<void> markAllAsRead() async {
+  await service.markAllAsRead();
+}
+
+/// ===============================
+/// Supprimer les notifications lues
+/// ===============================
+Future<void> deleteAllReadNotifications() async {
+  await service.deleteAllReadNotifications();
+}
 }

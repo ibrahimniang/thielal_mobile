@@ -11,11 +11,8 @@ import '../../../../l10n/app_localizations.dart';
 
 class QrPremiumCard extends StatelessWidget {
   final String qrData;
-
   final String fullName;
-
   final String bloodGroup;
-
   final bool verified;
 
   final VoidCallback? onShareWhatsapp;
@@ -34,10 +31,12 @@ class QrPremiumCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return ProfileGlassCard(
-      padding: const EdgeInsets.all(
-        AppSpacing.xl,
-      ),
+      padding: const EdgeInsets.all(AppSpacing.xl),
 
       child: Column(
         children: [
@@ -46,10 +45,9 @@ class QrPremiumCard extends StatelessWidget {
             padding: const EdgeInsets.all(20),
 
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? colors.surface : Colors.white,
 
-              borderRadius:
-                  BorderRadius.circular(28),
+              borderRadius: BorderRadius.circular(28),
 
               border: Border.all(
                 color: AppColors.primaryRed,
@@ -58,11 +56,10 @@ class QrPremiumCard extends StatelessWidget {
 
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryRed
-                      .withOpacity(0.10),
-
+                  color: AppColors.primaryRed.withOpacity(
+                    isDark ? 0.06 : 0.10,
+                  ),
                   blurRadius: 18,
-
                   offset: const Offset(0, 10),
                 ),
               ],
@@ -72,7 +69,8 @@ class QrPremiumCard extends StatelessWidget {
               data: qrData,
               version: QrVersions.auto,
               size: 220,
-              backgroundColor: Colors.white,
+              backgroundColor:
+                  isDark ? colors.surface : Colors.white,
             ),
           ),
 
@@ -82,9 +80,10 @@ class QrPremiumCard extends StatelessWidget {
           Text(
             fullName,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w900,
+              color: colors.onSurface,
             ),
           ),
 
@@ -103,7 +102,7 @@ class QrPremiumCard extends StatelessWidget {
             l10n.presentQrAtDonationCenters,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.grey[700],
+              color: colors.onSurface.withOpacity(0.7),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -119,6 +118,7 @@ class QrPremiumCard extends StatelessWidget {
                   text: 'WhatsApp',
                   color: Colors.green,
                   onTap: onShareWhatsapp,
+                  isDark: isDark,
                 ),
               ),
 
@@ -130,6 +130,7 @@ class QrPremiumCard extends StatelessWidget {
                   text: 'Email',
                   color: AppColors.primaryRed,
                   onTap: onShareEmail,
+                  isDark: isDark,
                 ),
               ),
             ],
@@ -140,30 +141,38 @@ class QrPremiumCard extends StatelessWidget {
           /// SECURITY
           Container(
             width: double.infinity,
-
             padding: const EdgeInsets.all(18),
 
             decoration: BoxDecoration(
-              color: const Color(0xFF171B4D),
+              color: isDark
+                  ? colors.surface.withOpacity(0.6)
+                  : const Color(0xFF171B4D),
 
-              borderRadius:
-                  BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(24),
+
+              border: Border.all(
+                color: isDark
+                    ? colors.outline.withOpacity(0.2)
+                    : Colors.transparent,
+              ),
             ),
 
-            child:  Row(
+            child: Row(
               children: [
                 Icon(
                   Icons.lock_rounded,
                   color: Colors.amber,
                 ),
 
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
 
                 Expanded(
                   child: Text(
                     l10n.secureDonationQrInfo,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: isDark
+                          ? colors.onSurface
+                          : Colors.white,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -180,33 +189,34 @@ class QrPremiumCard extends StatelessWidget {
     required IconData icon,
     required String text,
     required Color color,
+    required bool isDark,
     VoidCallback? onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
 
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: 18,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 18),
 
         decoration: BoxDecoration(
-          color: color,
+          color: isDark ? color.withOpacity(0.85) : color,
 
-          borderRadius: BorderRadius.circular(
-            AppRadius.xl,
-          ),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(isDark ? 0.15 : 0.25),
+              blurRadius: 14,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
 
         child: Row(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
 
           children: [
-            Icon(
-              icon,
-              color: Colors.white,
-            ),
+            Icon(icon, color: Colors.white),
 
             const SizedBox(width: 8),
 

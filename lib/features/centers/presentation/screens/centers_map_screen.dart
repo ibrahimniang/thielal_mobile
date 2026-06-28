@@ -474,7 +474,7 @@ class _CentersMapScreenState extends ConsumerState<CentersMapScreen> {
     final centersAsync = ref.watch(centersProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.silverBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
       body: Stack(
         children: [
@@ -524,7 +524,7 @@ class _CentersMapScreenState extends ConsumerState<CentersMapScreen> {
 
                           borderStrokeWidth: 2,
 
-                          borderColor: Colors.white,
+                          borderColor: Theme.of(context).colorScheme.surface,
                         ),
                       ],
                     ),
@@ -650,7 +650,7 @@ class _CentersMapScreenState extends ConsumerState<CentersMapScreen> {
                 padding: const EdgeInsets.all(18),
 
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
 
                   borderRadius: BorderRadius.circular(22),
                 ),

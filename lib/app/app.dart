@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 // import 'package:flutter_localizations/flutter_localizations.dart';
 import '../features/devices/data/device_repository.dart';
+import '../features/auth/application/auth_controller.dart';
 
 import '../l10n/app_localizations.dart';
 
@@ -10,6 +11,7 @@ import 'services/locale_service.dart';
 
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
+import '../core/theme/theme_provider.dart';
 
 /// Application principale.
 ///
@@ -51,6 +53,12 @@ class _ThielalAppState extends ConsumerState<ThielalApp>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.resumed) {
+      final auth = ref.read(authControllerProvider);
+
+      if (!auth.isAuthenticated || auth.accessToken == null) {
+        return;
+      }
+
       try {
         await DeviceRepository().ping();
 
@@ -63,9 +71,10 @@ class _ThielalAppState extends ConsumerState<ThielalApp>
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeProvider);
+
     return ValueListenableBuilder(
       valueListenable: localeNotifier,
-
       builder: (context, locale, _) {
         return MaterialApp.router(
           debugShowCheckedModeBanner: false,
@@ -73,6 +82,8 @@ class _ThielalAppState extends ConsumerState<ThielalApp>
           title: 'Thielal / LifeLink',
 
           theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeMode,
 
           routerConfig: _router,
 
@@ -80,9 +91,7 @@ class _ThielalAppState extends ConsumerState<ThielalApp>
           /// LOCALIZATION
           /// =========================
           locale: locale,
-
           localizationsDelegates: AppLocalizations.localizationsDelegates,
-
           supportedLocales: AppLocalizations.supportedLocales,
         );
       },

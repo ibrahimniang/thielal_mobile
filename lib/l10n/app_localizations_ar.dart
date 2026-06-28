@@ -817,4 +817,241 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get secureDonationQrInfo => 'يحتوي رمز QR هذا على معلومات تبرعك المؤمنة';
+
+  @override
+  String get secureYourAccount => 'قم بتأمين حسابك';
+
+  @override
+  String get createPasswordToSecureAccount => 'أنشئ كلمة المرور الآن لتأمين حساب LifeLink الخاص بك.';
+
+  @override
+  String get createMyPassword => 'إنشاء كلمة المرور الخاصة بي';
+
+  @override
+  String get passwordMinLength => 'يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل.';
+
+  @override
+  String get newToLifeLink => 'جديد في LifeLink؟';
+
+  @override
+  String get continueWithOtp => 'المتابعة باستخدام OTP';
+
+  @override
+  String get alreadyHaveAccount => 'هل لديك حساب بالفعل؟';
+
+  @override
+  String get messaging => 'الرسائل';
+
+  @override
+  String get myConversations => 'محادثاتي';
+
+  @override
+  String get searchUser => 'ابحث عن مستخدم...';
+
+  @override
+  String get noConversation => 'لا توجد محادثات';
+
+  @override
+  String get conversationsWillAppearHere => 'ستظهر محادثاتك هنا';
+
+  @override
+  String get noMessage => 'لا توجد رسالة';
+
+  @override
+  String get online => 'متصل';
+
+  @override
+  String get offline => 'غير متصل';
+
+  @override
+  String get writeMessage => 'اكتب رسالة...';
+
+  @override
+  String get notSpecified => 'غير محدد';
+
+  @override
+  String get donationCenter => 'مركز التبرع';
+
+  @override
+  String get nearbyCentersDisplayed => 'يتم عرض 3 مراكز قريبة • ابحث لعرض جميع المراكز';
+
+  @override
+  String get searchOrSelectCenter => 'ابحث أو اختر مركزاً';
+
+  @override
+  String get viewMyRequests => 'عرض طلباتي';
+
+  @override
+  String get donationTemporarilyUnavailable => 'التبرع غير متاح مؤقتاً';
+
+  @override
+  String get cannotDonateYet => 'لا يمكنك التبرع حالياً.';
+
+  @override
+  String get nextDonationAuthorizedDate => 'تاريخ التبرع المسموح القادم هو';
+
+  @override
+  String get participationRecorded => 'تم تسجيل المشاركة';
+
+  @override
+  String get youAreNowParticipating => 'أنت الآن مشارك في هذا الطلب.';
+
+  @override
+  String get contactCenterToDonate => 'يرجى الاتصال بالمركز أو التوجه إليه لإتمام التبرع.';
+
+  @override
+  String get imParticipating => 'سأشارك';
+
+  @override
+  String get myRequests => 'طلباتي';
+
+  @override
+  String get noRequestFound => 'لم يتم العثور على أي طلب';
+
+  @override
+  String get delivered => 'تم التسليم';
+
+  @override
+  String get cancelled => 'ملغاة';
+
+  @override
+  String get bloodRequest => 'طلب دم';
+
+  @override
+  String get quantity => 'الكمية';
+
+  @override
+  String get accountSecuredSuccessfully => 'تم تأمين الحساب بنجاح ';
+
+  @override
+  String get todayAt => 'اليوم الساعة';
+
+  @override
+  String get yesterdayAt => 'أمس الساعة';
+
+  @override
+  String get daysAgo => 'منذ';
+
+  @override
+  String get days => 'أيام';
+
+  @override
+  String get validatedDonation => 'تم اعتماد التبرع';
+
+  @override
+  String get notification => 'إشعار';
+
+  @override
+  String get mauritania => 'موريتانيا';
+
+  @override
+  String get requester => 'طالب الدم';
+
+  @override
+  String get message => 'رسالة';
+
+  @override
+  String get alreadyParticipant => 'مشارك بالفعل';
+
+  @override
+  String get noNotification => 'لا توجد إشعارات';
+
+  @override
+  String get bloodNeed => 'حاجة إلى الدم';
+
+  @override
+  String get eligibleToDonate => 'مؤهل للتبرع';
+
+  @override
+  String get connectedDevices => 'الأجهزة المتصلة';
+
+  @override
+  String get recentConnections => 'عمليات الاتصال الأخيرة';
+
+  @override
+  String get noDeviceRegistered => 'لا يوجد جهاز مسجل';
+
+  @override
+  String get disconnectDevice => 'فصل الجهاز';
+
+  @override
+  String get current => 'الحالي';
+
+  @override
+  String get lastConnection => 'آخر اتصال';
+
+  @override
+  String get confirmDisconnectDevice => 'هل تريد حقًا فصل';
+
+  @override
+  String get deviceReconnectRequired => 'بعد فصل الجهاز، سيتعين عليه تسجيل الدخول مرة أخرى للوصول إلى حسابك.';
+
+  @override
+  String get disconnect => 'فصل';
+
+  @override
+  String get deviceDisconnected => 'تم فصل الجهاز';
+
+  @override
+  String get theme => 'المظهر';
+
+  @override
+  String get darkMode => 'الوضع الداكن';
+
+  @override
+  String get lightMode => 'الوضع الفاتح';
+
+  @override
+  String get locationLoading => 'جارٍ تحديد الموقع...';
+
+  @override
+  String get sessionExpiredMessage => 'انتهت صلاحية جلستك. يرجى تسجيل الدخول مرة أخرى.';
+
+  @override
+  String get noInternetConnection => 'لا يوجد اتصال بالإنترنت';
+
+  @override
+  String get checkInternetAndRetry => 'يرجى التحقق من اتصالك بالإنترنت ثم المحاولة مرة أخرى.';
+
+  @override
+  String get deliveryReceipt => 'إيصال الاستلام';
+
+  @override
+  String get presentQrToStaff => 'اعرض رمز QR هذا على الطاقم الصحي.';
+
+  @override
+  String get viewReceipt => 'عرض الإيصال';
+
+  @override
+  String get markAllAsRead => 'تحديد الكل كمقروء';
+
+  @override
+  String get deleteAllNotifications => 'حذف جميع الإشعارات';
+
+  @override
+  String get deleteAllNotificationsTitle => 'حذف جميع الإشعارات؟';
+
+  @override
+  String get deleteAllNotificationsMessage => 'هل تريد بالتأكيد حذف جميع الإشعارات؟ لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String get allNotificationsMarkedAsRead => 'تم تحديد جميع الإشعارات كمقروءة.';
+
+  @override
+  String get allNotificationsDeleted => 'تم حذف جميع الإشعارات.';
+
+  @override
+  String get delete => 'حذف';
+
+  @override
+  String get deleteReadNotifications => 'حذف الإشعارات المقروءة';
+
+  @override
+  String get deleteReadNotificationsTitle => 'حذف الإشعارات المقروءة؟';
+
+  @override
+  String get deleteReadNotificationsMessage => 'يجب قراءة جميع الإشعارات أولاً قبل حذفها.';
+
+  @override
+  String get allReadNotificationsDeleted => 'تم حذف الإشعارات المقروءة.';
 }

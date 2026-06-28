@@ -24,6 +24,8 @@ import '../../features/settings/settings_screen.dart';
 import '../../features/centers/presentation/screens/centers_map_screen.dart';
 import '../../features/donations/presentation/screens/donation_history_screen.dart';
 import '../../features/donations/presentation/screens/demande_sang_screen.dart';
+import 'package:thielal/features/donations/presentation/screens/my_demandes_screen.dart';
+
 import '../../features/notifications/presentation/screens/notifications_list_screen.dart';
 import '../../features/alerts/data/models/alert_model.dart';
 
@@ -201,7 +203,11 @@ class AppRouter {
 
             GoRoute(
               path: RouteNames.profile,
-              builder: (_, __) => const ProfileScreen(),
+              builder: (context, state) {
+                final initialTab = state.extra as int? ?? 0;
+
+                return ProfileScreen(initialTab: initialTab);
+              },
             ),
 
             GoRoute(
@@ -245,6 +251,11 @@ class AppRouter {
             GoRoute(
               path: RouteNames.demandeSang,
               builder: (_, __) => const DemandeSangScreen(),
+            ),
+
+            GoRoute(
+              path: '/my-demandes',
+              builder: (_, __) => const MyDemandesScreen(),
             ),
           ],
         ),

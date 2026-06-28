@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-
-// import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_radius.dart';
 
 class ProfileStatCard extends StatelessWidget {
@@ -19,41 +17,56 @@ class ProfileStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Expanded(
       child: Container(
         height: 118,
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
-          gradient:
-              gradient ??
+          gradient: gradient ??
               LinearGradient(
-                colors: [
-                  Colors.white.withOpacity(0.18),
-                  Colors.white.withOpacity(0.08),
-                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isDark
+                    ? [
+                        colors.surface.withOpacity(0.9),
+                        colors.surface.withOpacity(0.6),
+                      ]
+                    : [
+                        Colors.white.withOpacity(0.25),
+                        Colors.white.withOpacity(0.10),
+                      ],
               ),
+
           borderRadius: BorderRadius.circular(AppRadius.xl),
+
           border: Border.all(
-            color: Colors.white.withOpacity(0.12),
+            color: isDark
+                ? colors.outline.withOpacity(0.25)
+                : Colors.white.withOpacity(0.15),
           ),
         ),
+
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
-              color: Colors.white,
               size: 26,
+              color: isDark ? colors.onSurface : Colors.white,
             ),
 
             const SizedBox(height: 12),
 
             Text(
               value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
+              style: TextStyle(
                 fontSize: 24,
+                fontWeight: FontWeight.w900,
+                color: isDark ? colors.onSurface : Colors.white,
               ),
             ),
 
@@ -62,8 +75,10 @@ class ProfileStatCard extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.82),
                 fontWeight: FontWeight.w600,
+                color: isDark
+                    ? colors.onSurface.withOpacity(0.75)
+                    : Colors.white.withOpacity(0.82),
               ),
             ),
           ],

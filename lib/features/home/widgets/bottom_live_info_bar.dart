@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
+// import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../l10n/app_localizations.dart';
 
@@ -19,6 +19,11 @@ class BottomLiveInfoBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.screenPadding,
@@ -37,18 +42,25 @@ class BottomLiveInfoBar extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
 
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.92),
+              color: isDark
+                  ? colorScheme.surface.withOpacity(0.75)
+                  : Colors.white.withOpacity(0.92),
 
               borderRadius: BorderRadius.circular(22),
 
-              border: Border.all(color: Colors.white.withOpacity(0.5)),
+              border: Border.all(
+                color: isDark
+                    ? colorScheme.outline.withOpacity(0.3)
+                    : Colors.white.withOpacity(0.5),
+              ),
 
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: isDark
+                      ? Colors.black.withOpacity(0.35)
+                      : Colors.black.withOpacity(0.05),
 
                   blurRadius: 20,
-
                   offset: const Offset(0, 8),
                 ),
               ],
@@ -62,8 +74,16 @@ class BottomLiveInfoBar extends StatelessWidget {
                   width: 56,
 
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFE53946), Color(0xFFC1121F)],
+                    gradient: LinearGradient(
+                      colors: isDark
+                          ? [
+                              colorScheme.primary.withOpacity(0.9),
+                              colorScheme.primary.withOpacity(0.7),
+                            ]
+                          : const [
+                              Color(0xFFE53946),
+                              Color(0xFFC1121F),
+                            ],
                     ),
 
                     borderRadius: BorderRadius.circular(18),
@@ -71,7 +91,6 @@ class BottomLiveInfoBar extends StatelessWidget {
 
                   child: const Icon(
                     Icons.favorite_rounded,
-
                     color: Colors.white,
                   ),
                 ),
@@ -86,24 +105,20 @@ class BottomLiveInfoBar extends StatelessWidget {
                     children: [
                       Text(
                         '$livesSaved ${l10n.livesSavedToday}',
-
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w900,
-
                           fontSize: 15,
+                          color: colorScheme.onSurface,
                         ),
                       ),
 
                       const SizedBox(height: 4),
 
                       Text(
-                       '$activeDonors ${l10n.activeDonorsInYourArea}',
-
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-
+                        '$activeDonors ${l10n.activeDonorsInYourArea}',
+                        style: TextStyle(
+                          color: colorScheme.onSurface.withOpacity(0.7),
                           height: 1.4,
-
                           fontSize: 13,
                         ),
                       ),
@@ -113,12 +128,10 @@ class BottomLiveInfoBar extends StatelessWidget {
 
                 const SizedBox(width: 12),
 
-                const Icon(
+                Icon(
                   Icons.arrow_forward_ios_rounded,
-
                   size: 16,
-
-                  color: Colors.grey,
+                  color: colorScheme.onSurface.withOpacity(0.6),
                 ),
               ],
             ),

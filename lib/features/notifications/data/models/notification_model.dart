@@ -8,6 +8,8 @@ class NotificationModel {
   final String type;
   final int? demandeId;
 
+  final String? ville;
+
   // AJOUT
   final String nom;
   final String prenom;
@@ -22,6 +24,7 @@ class NotificationModel {
     required this.dateCreation,
     required this.type,
     this.demandeId,
+    this.ville,
 
     // AJOUT
     required this.nom,
@@ -59,7 +62,7 @@ class NotificationModel {
           json['demande_id'] != null
               ? int.tryParse(json['demande_id'].toString())
               : null,
-
+      ville: json['ville']?.toString(),
       // AJOUT
       nom: json['demande']?['utilisateur']?['nom']?.toString() ?? '',
       prenom: json['demande']?['utilisateur']?['prenom']?.toString() ?? '',

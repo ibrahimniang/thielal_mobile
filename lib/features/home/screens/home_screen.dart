@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:thielal/shared/widgets/app_heart_loader.dart';
 
 import '../../donations/presentation/screens/donation_details_screen.dart';
-
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -56,28 +56,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int unreadMessages = 0;
   bool passwordModalShown = false;
 
-
-@override
-void initState() {
-  super.initState();
-  loadUnreadCount();
-}
+  @override
+  void initState() {
+    super.initState();
+    loadUnreadCount();
+  }
 
   Future<void> loadUnreadCount() async {
     try {
+      final auth = ref.read(authControllerProvider);
+
+      final repository = ChatRepository(token: auth.accessToken);
+
+      final count = await repository.getUnreadCount();
+
+      if (!mounted) return;
+
       setState(() {
-        unreadCount = 0;
+        unreadMessages = count;
       });
 
-      debugPrint('💬 unreadCount => $unreadCount');
+      debugPrint("💬 Messages non lus : $count");
     } catch (e) {
-      debugPrint('❌ loadUnreadCount error => $e');
+      debugPrint("❌ loadUnreadCount => $e");
     }
   }
 
   String selectedGroup = 'Tous';
 
-  final List<String> bloodFilters = ['Tous', 'O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
+  final List<String> bloodFilters = [
+    'Tous',
+    'O+',
+    'O-',
+    'A+',
+    'A-',
+    'B+',
+    'B-',
+    'AB+',
+    'AB-',
+  ];
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   final searchController = TextEditingController();
@@ -121,14 +138,13 @@ void initState() {
               if (!mounted) return;
 
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Compte sécurisé avec succès 🔐')),
+                SnackBar(content: Text(l10n.accountSecuredSuccessfully)),
               );
             },
           );
         },
       );
     });
-
 
     final alertsAsync = ref.watch(alertsProvider);
 
@@ -168,7 +184,7 @@ void initState() {
     debugPrint('🩸 SEARCH QUERY => $searchQuery');
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FB),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
       drawer: HomeDrawer(firstName: user?.nom),
 
@@ -336,7 +352,7 @@ void initState() {
                                   vertical: 12,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: Theme.of(context).cardColor,
                                   borderRadius: BorderRadius.circular(18),
                                 ),
                                 child: Row(
@@ -452,7 +468,7 @@ void initState() {
                             (user?.ville != null &&
                                     user!.ville!.trim().isNotEmpty)
                                 ? user.ville!
-                                : 'Nouakchott',
+                                : l10n.nouakchott,
 
                         /// 🔥 ouvrir grande map
                         onTap: () {
@@ -464,13 +480,11 @@ void initState() {
                     loading:
                         () => const Center(child: CircularProgressIndicator()),
 
-                    error: (e, _) {
-                      return Center(child: Text(e.toString()));
-                    },
+                    error: (_, __) => const SizedBox(),
                   );
                 },
 
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: AppHeartLoader(size: 80)),
 
                 error: (e, _) {
                   return Center(child: Text(e.toString()));
@@ -504,8 +518,13 @@ void initState() {
                     padding: const EdgeInsets.all(22),
 
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFE53946), Color(0xFFC1121F)],
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.7),
+                        ],
                       ),
 
                       borderRadius: BorderRadius.circular(28),
@@ -528,16 +547,16 @@ void initState() {
                           width: 64,
 
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.14),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onPrimary.withOpacity(0.14),
 
                             shape: BoxShape.circle,
                           ),
 
-                          child: const Icon(
+                          child: Icon(
                             Icons.bloodtype_rounded,
-
-                            color: Colors.white,
-
+                            color: Theme.of(context).colorScheme.onPrimary,
                             size: 34,
                           ),
                         ),
@@ -553,7 +572,9 @@ void initState() {
                                 '',
 
                                 style: TextStyle(
-                                  color: Colors.white70,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary.withOpacity(0.7),
 
                                   fontWeight: FontWeight.w700,
 
@@ -567,10 +588,9 @@ void initState() {
                                 l10n.iNeedBlood,
 
                                 style: TextStyle(
-                                  color: Colors.white,
-
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
                                   fontSize: 22,
-
                                   fontWeight: FontWeight.w900,
                                 ),
                               ),
@@ -578,10 +598,10 @@ void initState() {
                           ),
                         ),
 
-                        const Icon(
+                        Icon(
                           Icons.arrow_forward_ios_rounded,
 
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ],
                     ),
@@ -608,11 +628,11 @@ void initState() {
                   );
                 },
 
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: AppHeartLoader(size: 80)),
 
                 error: (e, _) {
-                  print("ALERT ERROR => $e");
-                  return Center(child: Text(e.toString()));
+                  debugPrint("MY DONATIONS ERROR => $e");
+                  return const SizedBox();
                 },
               ),
 
@@ -645,13 +665,13 @@ void initState() {
                               ),
                             ),
 
-                            TextButton(
-                              onPressed: () {
-                                context.push(RouteNames.alerts);
-                              },
+                            // TextButton(
+                            //   onPressed: () {
+                            //     context.push(RouteNames.alerts);
+                            //   },
 
-                              child: Text(l10n.seeAll),
-                            ),
+                            //   child: Text(l10n.seeAll),
+                            // ),
                           ],
                         ),
                       ),
@@ -700,14 +720,17 @@ void initState() {
                         ),
 
                         decoration: BoxDecoration(
-                          color: selected ? AppColors.primaryRed : Colors.white,
+                          color:
+                              selected
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).cardColor,
 
                           borderRadius: BorderRadius.circular(30),
 
                           border: Border.all(
                             color:
                                 selected
-                                    ? AppColors.primaryRed
+                                    ? Theme.of(context).colorScheme.primary
                                     : Colors.grey.withOpacity(0.15),
                           ),
                         ),
@@ -716,8 +739,10 @@ void initState() {
                           filter,
 
                           style: TextStyle(
-                            color: selected ? Colors.white : Colors.black87,
-
+                            color:
+                                selected
+                                    ? Colors.white
+                                    : Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -761,15 +786,15 @@ void initState() {
                     /// ALERTES DE LA VILLE UTILISATEUR
                     /// ==========================================
 
-                    for (final a in alerts) {
-                      print("========== ALERTE ==========");
-                      print("Titre: ${a.title}");
-                      print("Type: ${a.type}");
-                      print("Ville: ${a.city}");
-                      print("Status: ${a.status}");
-                      print("Blood: ${a.bloodGroup}");
-                      print("Center: ${a.center?.name}");
-                    }
+                    // for (final a in alerts) {
+                    //   // print("========== ALERTE ==========");
+                    //   // print("Titre: ${a.title}");
+                    //   // print("Type: ${a.type}");
+                    //   // print("Ville: ${a.city}");
+                    //   // print("Status: ${a.status}");
+                    //   // print("Blood: ${a.bloodGroup}");
+                    //   // print("Center: ${a.center?.name}");
+                    // }
                     final cityAlerts =
                         alerts.where((a) {
                           final type = a.type.trim().toLowerCase();
@@ -851,13 +876,12 @@ void initState() {
 
                                   urgency:
                                       alert.type.toLowerCase() == 'urgent'
-                                          ? 'Urgent'
-                                          : 'Normal',
-
-                                  quantity: '${alert.quantity ?? 1} poche(s)',
-
+                                          ? l10n.urgent
+                                          : l10n.normal,
+                                  quantity:
+                                      '${alert.quantity ?? 1} ${l10n.bags}',
                                   distance:
-                                      '${alert.city} • ${alert.quantity ?? 1} poche(s)',
+                                      '${alert.city} • ${alert.quantity ?? 1} ${l10n.bags}',
 
                                   critical:
                                       alert.type.toLowerCase() == 'urgent',
@@ -882,7 +906,7 @@ void initState() {
                                             ),
 
                                             content: Text(
-                                              'Vous êtes actuellement en période de récupération ❤️\n\nProchain don possible : ${user.dateProchainDon!.day}/${user.dateProchainDon!.month}/${user.dateProchainDon!.year}',
+                                              '${l10n.recoveryPeriod} ❤️\n\n${l10n.nextDonationDate} : ${user.dateProchainDon!.day}/${user.dateProchainDon!.month}/${user.dateProchainDon!.year}',
                                             ),
 
                                             duration: const Duration(
@@ -915,9 +939,7 @@ void initState() {
                   loading:
                       () => const Center(child: CircularProgressIndicator()),
 
-                  error: (e, _) {
-                    return Center(child: Text(e.toString()));
-                  },
+                  error: (_, __) => const SizedBox(),
                 ),
               ),
 
@@ -1071,7 +1093,7 @@ void initState() {
                             ),
 
                             content: Text(
-                              'Inscription à "${collecte.title}" réussie 🚑',
+                              '${l10n.registrationSuccess} "${collecte.title}" ',
                             ),
                           ),
                         );
@@ -1109,8 +1131,8 @@ void initState() {
 
                             content: Text(
                               already
-                                  ? 'Vous êtes déjà inscrit à cette collecte 🚑'
-                                  : 'Erreur lors de l’inscription',
+                                  ? '${l10n.alreadyRegisteredCollection} '
+                                  : l10n.registrationError,
                             ),
                           ),
                         );
@@ -1119,12 +1141,11 @@ void initState() {
                   );
                 },
 
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: AppHeartLoader(size: 80)),
 
                 error: (e, _) {
                   debugPrint('❌ COLLECTES ERROR => $e');
-
-                  return Center(child: Text(e.toString()));
+                  return const SizedBox();
                 },
               ),
               const SizedBox(height: 24),

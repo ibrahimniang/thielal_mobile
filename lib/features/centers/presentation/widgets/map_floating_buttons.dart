@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 
-class MapFloatingButtons
-    extends StatelessWidget {
+class MapFloatingButtons extends StatelessWidget {
   final VoidCallback onGpsTap;
 
   final VoidCallback? onLayersTap;
@@ -27,12 +26,12 @@ class MapFloatingButtons
           /// GPS BUTTON
           /// =========================
           _floatingButton(
-            icon:
-                Icons.my_location_rounded,
+            icon: Icons.my_location_rounded,
 
             onTap: onGpsTap,
 
             isPrimary: true,
+            context: context,
           ),
 
           const SizedBox(height: 12),
@@ -41,10 +40,10 @@ class MapFloatingButtons
           /// MAP STYLE BUTTON
           /// =========================
           _floatingButton(
+            context: context,
             icon: Icons.layers_rounded,
 
-            onTap:
-                onLayersTap ?? () {},
+            onTap: onLayersTap ?? () {},
 
             isPrimary: false,
           ),
@@ -54,6 +53,7 @@ class MapFloatingButtons
   }
 
   Widget _floatingButton({
+    required BuildContext context,
     required IconData icon,
 
     required VoidCallback onTap,
@@ -64,9 +64,7 @@ class MapFloatingButtons
       onTap: onTap,
 
       child: AnimatedContainer(
-        duration: const Duration(
-          milliseconds: 220,
-        ),
+        duration: const Duration(milliseconds: 220),
 
         height: 54,
 
@@ -78,11 +76,13 @@ class MapFloatingButtons
           color:
               isPrimary
                   ? AppColors.primaryRed
-                  : Colors.white,
+                  : Theme.of(context).colorScheme.surface,
 
           border: Border.all(
-            color: Colors.white,
-
+            color:
+                isPrimary
+                    ? Colors.white
+                    : Theme.of(context).colorScheme.outline.withOpacity(0.2),
             width: 2,
           ),
 
@@ -90,22 +90,10 @@ class MapFloatingButtons
             BoxShadow(
               color:
                   isPrimary
-                      ? AppColors
-                          .primaryRed
-                          .withOpacity(
-                            0.25,
-                          )
-                      : Colors.black
-                          .withOpacity(
-                            0.08,
-                          ),
-
+                      ? AppColors.primaryRed.withOpacity(0.25)
+                      : Colors.black.withOpacity(0.08),
               blurRadius: 18,
-
-              offset: const Offset(
-                0,
-                8,
-              ),
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -113,10 +101,7 @@ class MapFloatingButtons
         child: Icon(
           icon,
 
-          color:
-              isPrimary
-                  ? Colors.white
-                  : AppColors.primaryRed,
+          color: isPrimary ? Colors.white : AppColors.primaryRed,
 
           size: 24,
         ),

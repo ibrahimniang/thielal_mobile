@@ -817,4 +817,241 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get secureDonationQrInfo => 'This QR contains your secured donation information';
+
+  @override
+  String get secureYourAccount => 'Secure your account';
+
+  @override
+  String get createPasswordToSecureAccount => 'Create your password now to secure your LifeLink account.';
+
+  @override
+  String get createMyPassword => 'Create my password';
+
+  @override
+  String get passwordMinLength => 'Password must contain at least 6 characters.';
+
+  @override
+  String get newToLifeLink => 'New to LifeLink?';
+
+  @override
+  String get continueWithOtp => 'Continue with OTP';
+
+  @override
+  String get alreadyHaveAccount => 'Already have an account?';
+
+  @override
+  String get messaging => 'Messaging';
+
+  @override
+  String get myConversations => 'My conversations';
+
+  @override
+  String get searchUser => 'Search for a user...';
+
+  @override
+  String get noConversation => 'No conversation';
+
+  @override
+  String get conversationsWillAppearHere => 'Your conversations will appear here';
+
+  @override
+  String get noMessage => 'No message';
+
+  @override
+  String get online => 'Online';
+
+  @override
+  String get offline => 'Offline';
+
+  @override
+  String get writeMessage => 'Write a message...';
+
+  @override
+  String get notSpecified => 'Not specified';
+
+  @override
+  String get donationCenter => 'Donation center';
+
+  @override
+  String get nearbyCentersDisplayed => '3 nearby centers displayed • search to see all centers';
+
+  @override
+  String get searchOrSelectCenter => 'Search or select a center';
+
+  @override
+  String get viewMyRequests => 'View my requests';
+
+  @override
+  String get donationTemporarilyUnavailable => 'Donation temporarily unavailable';
+
+  @override
+  String get cannotDonateYet => 'You cannot donate yet.';
+
+  @override
+  String get nextDonationAuthorizedDate => 'Your next authorized donation date is';
+
+  @override
+  String get participationRecorded => 'Participation recorded';
+
+  @override
+  String get youAreNowParticipating => 'You are now participating in this request.';
+
+  @override
+  String get contactCenterToDonate => 'Please contact the center or go there to make your donation.';
+
+  @override
+  String get imParticipating => 'I\'m participating';
+
+  @override
+  String get myRequests => 'My requests';
+
+  @override
+  String get noRequestFound => 'No request found';
+
+  @override
+  String get delivered => 'Delivered';
+
+  @override
+  String get cancelled => 'Cancelled';
+
+  @override
+  String get bloodRequest => 'Blood request';
+
+  @override
+  String get quantity => 'Quantity';
+
+  @override
+  String get accountSecuredSuccessfully => 'Account secured successfully ';
+
+  @override
+  String get todayAt => 'Today at';
+
+  @override
+  String get yesterdayAt => 'Yesterday at';
+
+  @override
+  String get daysAgo => 'Days ago';
+
+  @override
+  String get days => 'days ago';
+
+  @override
+  String get validatedDonation => 'Validated donation';
+
+  @override
+  String get notification => 'Notification';
+
+  @override
+  String get mauritania => 'Mauritania';
+
+  @override
+  String get requester => 'Requester';
+
+  @override
+  String get message => 'Message';
+
+  @override
+  String get alreadyParticipant => 'Already participating';
+
+  @override
+  String get noNotification => 'No notifications';
+
+  @override
+  String get bloodNeed => 'Blood needed';
+
+  @override
+  String get eligibleToDonate => 'Eligible to donate';
+
+  @override
+  String get connectedDevices => 'Connected devices';
+
+  @override
+  String get recentConnections => 'Recent connections';
+
+  @override
+  String get noDeviceRegistered => 'No device registered';
+
+  @override
+  String get disconnectDevice => 'Disconnect device';
+
+  @override
+  String get current => 'Current';
+
+  @override
+  String get lastConnection => 'Last connection';
+
+  @override
+  String get confirmDisconnectDevice => 'Do you really want to disconnect';
+
+  @override
+  String get deviceReconnectRequired => 'After disconnection, this device will need to reconnect to access your account.';
+
+  @override
+  String get disconnect => 'Disconnect';
+
+  @override
+  String get deviceDisconnected => 'Device disconnected';
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get darkMode => 'Dark mode';
+
+  @override
+  String get lightMode => 'Light mode';
+
+  @override
+  String get locationLoading => 'Location in progress...';
+
+  @override
+  String get sessionExpiredMessage => 'Your session has expired. Please log in again.';
+
+  @override
+  String get noInternetConnection => 'No Internet connection';
+
+  @override
+  String get checkInternetAndRetry => 'Please check your Internet connection and try again.';
+
+  @override
+  String get deliveryReceipt => 'Delivery receipt';
+
+  @override
+  String get presentQrToStaff => 'Present this QR code to the healthcare staff.';
+
+  @override
+  String get viewReceipt => 'View receipt';
+
+  @override
+  String get markAllAsRead => 'Mark all as read';
+
+  @override
+  String get deleteAllNotifications => 'Delete all notifications';
+
+  @override
+  String get deleteAllNotificationsTitle => 'Delete all notifications?';
+
+  @override
+  String get deleteAllNotificationsMessage => 'Do you really want to delete all your notifications? This action cannot be undone.';
+
+  @override
+  String get allNotificationsMarkedAsRead => 'All notifications have been marked as read.';
+
+  @override
+  String get allNotificationsDeleted => 'All notifications have been deleted.';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get deleteReadNotifications => 'Delete read notifications';
+
+  @override
+  String get deleteReadNotificationsTitle => 'Delete read notifications?';
+
+  @override
+  String get deleteReadNotificationsMessage => 'All notifications must be read before they can be deleted.';
+
+  @override
+  String get allReadNotificationsDeleted => 'Read notifications have been deleted.';
 }

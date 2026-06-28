@@ -54,6 +54,7 @@ class _CurrentLocationMarkerState
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return AnimatedBuilder(
       animation: _pulseAnimation,
 
@@ -76,9 +77,7 @@ class _CurrentLocationMarkerState
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
 
-                  color: const Color(
-                    0xFF2196F3,
-                  ).withOpacity(0.10),
+                  color: colors.primary.withOpacity(0.10),
                 ),
               ),
 
@@ -93,9 +92,7 @@ class _CurrentLocationMarkerState
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
 
-                  color: const Color(
-                    0xFF2196F3,
-                  ).withOpacity(0.18),
+                  color: colors.primary.withOpacity(0.18),
                 ),
               ),
 
@@ -104,40 +101,28 @@ class _CurrentLocationMarkerState
               /// =========================
               Container(
                 height: 20,
-
                 width: 20,
-
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
 
-                  gradient:
-                      const LinearGradient(
-                        begin:
-                            Alignment.topLeft,
-
-                        end:
-                            Alignment.bottomRight,
-
-                        colors: [
-                          Color(0xFF42A5F5),
-                          Color(0xFF1976D2),
-                        ],
-                      ),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      colors.primary,
+                      colors.primary.withOpacity(0.8),
+                    ],
+                  ),
 
                   border: Border.all(
-                    color: Colors.white,
-
+                    color: colors.surface,
                     width: 4,
                   ),
 
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(
-                        0xFF2196F3,
-                      ).withOpacity(0.35),
-
+                      color: colors.primary.withOpacity(0.35),
                       blurRadius: 18,
-
                       spreadRadius: 2,
                     ),
                   ],

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:thielal/features/devices/data/device_repository.dart';
 // import 'package:url_launcher/url_launcher.dart';
 
 import '../../application/profile_controller.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../donations/application/donation_controller.dart';
+
+import '../../../devices/application/device_provider.dart';
+import '../../../devices/domain/models/device_model.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
@@ -39,7 +43,9 @@ import '../widgets/empty_profile_state.dart';
 import 'edit_profile_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
-  const ProfileScreen({super.key});
+  final int initialTab;
+
+  const ProfileScreen({super.key, this.initialTab = 0});
 
   @override
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
@@ -53,7 +59,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   void initState() {
     super.initState();
 
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(
+      length: 4,
+      vsync: this,
+      initialIndex: widget.initialTab,
+    );
   }
 
   @override
@@ -66,14 +76,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final profileState = ref.watch(profileControllerProvider);
 
     final donationsAsync = ref.watch(myDonationsProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor:
+          isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
       body: profileState.when(
-        loading: () => const ProfileLoadingShimmer(),
+        loading: () => const Center(child: AppHeartLoader(size: 80)),
 
         error:
             (e, _) => ProfileErrorState(
@@ -176,7 +188,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
                   delegate: _ProfileTabDelegate(
                     child: Container(
-                      color: const Color(0xFFF5F7FB),
+                      color:
+                          isDark
+                              ? const Color(0xFF111827)
+                              : const Color(0xFFF5F7FB),
 
                       padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
 
@@ -205,7 +220,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   _qrTab(user, l10n),
 
                   /// INFOS
-                  _infosTab(user, l10n),
+                  _infosTab(context, ref, user, l10n),
                 ],
               ),
             ),
@@ -459,7 +474,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   /// INFOS TAB
   /// =====================================================
 
-  Widget _infosTab(dynamic user, AppLocalizations l10n) {
+  Widget _infosTab(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic user,
+    AppLocalizations l10n,
+  ) {
+    final devicesAsync = ref.watch(myDevicesProvider);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.lg),
 
@@ -528,10 +549,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ),
           MedicalInfoTile(
             icon: Icons.volunteer_activism_rounded,
-            label: "Prochain don",
+            label: l10n.nextDonationPossible,
             value:
                 user.dateProchainDon == null
-                    ? "Apte à donner"
+                    ? l10n.eligibleToDonate
                     : "${user.dateProchainDon!.day}/${user.dateProchainDon!.month}/${user.dateProchainDon!.year}",
             iconColor: Colors.green,
           ),
@@ -544,6 +565,391 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             value: user.profilComplet ? l10n.verified : l10n.notVerified,
 
             iconColor: user.profilComplet ? Colors.green : Colors.orange,
+          ),
+
+          const SizedBox(height: 24),
+          const SizedBox(height: 24),
+
+          ProfileSectionTitle(
+            title: l10n.connectedDevices,
+            subtitle: l10n.recentConnections,
+            icon: Icons.devices_rounded,
+          ),
+
+          const SizedBox(height: 16),
+
+          devicesAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+
+            error: (e, _) => Text("${l10n.error} : $e"),
+
+            data: (devices) {
+              if (devices.isEmpty) {
+                return Text(l10n.noDeviceRegistered);
+              }
+
+              return Column(
+                children:
+                    devices.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final device = entry.value;
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 14),
+
+                        padding: const EdgeInsets.all(16),
+
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+
+                          borderRadius: BorderRadius.circular(18),
+
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+
+                              decoration: BoxDecoration(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.error.withOpacity(0.1),
+
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+
+                              child: Icon(
+                                (device.systeme ?? '').toLowerCase().contains(
+                                      'android',
+                                    )
+                                    ? Icons.phone_android
+                                    : (device.systeme ?? '')
+                                        .toLowerCase()
+                                        .contains('ios')
+                                    ? Icons.phone_iphone
+                                    : (device.systeme ?? '')
+                                        .toLowerCase()
+                                        .contains('ipad')
+                                    ? Icons.tablet_mac
+                                    : Icons.computer,
+
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                            ),
+
+                            const SizedBox(width: 14),
+
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          l10n.disconnectDevice,
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.titleLarge?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+
+                                      if (index == 0)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+
+                                          decoration: BoxDecoration(
+                                            color: Colors.green.shade100,
+
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+
+                                          child: Text(l10n.current),
+                                        ),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: 6),
+
+                                  Text(
+                                    '${device.systeme ?? ''} ${device.versionSysteme ?? ''}',
+                                  ),
+
+                                  const SizedBox(height: 6),
+
+                                  Text(
+                                    device.derniereConnexion != null
+                                        ? '${l10n.lastConnection} : '
+                                            '${device.derniereConnexion!.day}/'
+                                            '${device.derniereConnexion!.month}/'
+                                            '${device.derniereConnexion!.year}'
+                                        : l10n.unknownDate,
+
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  if (index != 0) ...[
+                                    const SizedBox(height: 12),
+
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: TextButton.icon(
+                                        onPressed: () async {
+                                          final confirm = await showDialog<
+                                            bool
+                                          >(
+                                            context: context,
+
+                                            builder: (dialogContext) {
+                                              return Dialog(
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(24),
+                                                ),
+
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    24,
+                                                  ),
+
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+
+                                                    children: [
+                                                      /// ICONE
+                                                      Container(
+                                                        width: 72,
+                                                        height: 72,
+
+                                                        decoration:
+                                                            BoxDecoration(
+                                                              color: Colors.red
+                                                                  .withOpacity(
+                                                                    0.1,
+                                                                  ),
+                                                              shape:
+                                                                  BoxShape
+                                                                      .circle,
+                                                            ),
+
+                                                        child: const Icon(
+                                                          Icons
+                                                              .devices_other_rounded,
+                                                          color: Colors.red,
+                                                          size: 36,
+                                                        ),
+                                                      ),
+
+                                                      const SizedBox(
+                                                        height: 20,
+                                                      ),
+
+                                                      /// TITRE
+                                                      Text(
+                                                        l10n.disconnectDevice,
+                                                        textAlign:
+                                                            TextAlign.center,
+
+                                                        style: TextStyle(
+                                                          fontSize: 20,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+
+                                                      const SizedBox(
+                                                        height: 16,
+                                                      ),
+
+                                                      /// MESSAGE
+                                                      Text(
+                                                        "${l10n.confirmDisconnectDevice}\n"
+                                                        "${device.marque ?? ''} ${device.modele ?? ''} ?",
+
+                                                        textAlign:
+                                                            TextAlign.center,
+
+                                                        style: const TextStyle(
+                                                          fontSize: 15,
+                                                        ),
+                                                      ),
+
+                                                      const SizedBox(
+                                                        height: 12,
+                                                      ),
+
+                                                      Text(
+                                                        l10n.deviceReconnectRequired,
+                                                        textAlign:
+                                                            TextAlign.center,
+
+                                                        style: TextStyle(
+                                                          color: Colors.grey,
+                                                          fontSize: 13,
+                                                        ),
+                                                      ),
+
+                                                      const SizedBox(
+                                                        height: 24,
+                                                      ),
+
+                                                      /// BOUTONS
+                                                      Row(
+                                                        children: [
+                                                          Expanded(
+                                                            child: OutlinedButton(
+                                                              onPressed: () {
+                                                                Navigator.pop(
+                                                                  dialogContext,
+                                                                  false,
+                                                                );
+                                                              },
+
+                                                              style: OutlinedButton.styleFrom(
+                                                                minimumSize:
+                                                                    const Size.fromHeight(
+                                                                      50,
+                                                                    ),
+
+                                                                shape: RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius.circular(
+                                                                        14,
+                                                                      ),
+                                                                ),
+                                                              ),
+
+                                                              child: Text(
+                                                                l10n.cancel,
+                                                              ),
+                                                            ),
+                                                          ),
+
+                                                          const SizedBox(
+                                                            width: 12,
+                                                          ),
+
+                                                          Expanded(
+                                                            child: ElevatedButton(
+                                                              onPressed: () {
+                                                                Navigator.pop(
+                                                                  dialogContext,
+                                                                  true,
+                                                                );
+                                                              },
+
+                                                              style: ElevatedButton.styleFrom(
+                                                                backgroundColor:
+                                                                    Colors.red,
+
+                                                                foregroundColor:
+                                                                    Colors
+                                                                        .white,
+
+                                                                minimumSize:
+                                                                    const Size.fromHeight(
+                                                                      50,
+                                                                    ),
+
+                                                                shape: RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius.circular(
+                                                                        14,
+                                                                      ),
+                                                                ),
+                                                              ),
+
+                                                              child: Text(
+                                                                l10n.disconnect,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          );
+
+                                          if (confirm != true) {
+                                            return;
+                                          }
+
+                                          try {
+                                            await DeviceRepository()
+                                                .revokeDevice(
+                                                  device.idAppareil,
+                                                );
+
+                                            ref.refresh(myDevicesProvider);
+
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    l10n.deviceDisconnected,
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          } catch (e) {
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    "${l10n.error} : $e",
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        },
+
+                                        icon: const Icon(
+                                          Icons.logout,
+                                          size: 18,
+                                        ),
+
+                                        label: Text(l10n.disconnect),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+              );
+            },
           ),
 
           const SizedBox(height: 24),

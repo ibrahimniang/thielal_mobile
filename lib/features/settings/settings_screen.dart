@@ -4,12 +4,16 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/router/route_names.dart';
 import '../../app/services/locale_service.dart';
+import '../../../core/providers/app_container.dart';
 
 import '../../l10n/app_localizations.dart';
 
-import '../profile/application/profile_controller.dart';
-import '../donations/application/donation_controller.dart';
-import '../auth/application/auth_controller.dart';
+// import '../profile/application/profile_controller.dart';
+// import '../donations/application/donation_controller.dart';
+// import '../auth/application/auth_controller.dart';
+import '../../core/services/session_logout_service.dart';
+import '../profile/data/services/profile_remote_service.dart';
+import '../../../../core/theme/theme_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -17,16 +21,17 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: isDark ? colors.surface : const Color(0xFFF5F7FB),
 
       appBar: AppBar(
         title: Text(l10n.settings),
 
-        backgroundColor: Colors.red,
-
-        foregroundColor: Colors.white,
+        backgroundColor: isDark ? colors.surface : Colors.red,
+        foregroundColor: isDark ? colors.onSurface : Colors.white,
       ),
 
       body: ListView(
@@ -39,6 +44,7 @@ class SettingsScreen extends ConsumerWidget {
           _sectionTitle(l10n.profile),
 
           _tile(
+            context: context,
             icon: Icons.person,
 
             title: l10n.myProfile,
@@ -46,7 +52,14 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => context.go(RouteNames.profile),
           ),
 
-          _tile(icon: Icons.lock, title: l10n.password, onTap: () {}),
+          _tile(
+            context: context,
+            icon: Icons.lock,
+            title: l10n.password,
+            onTap: () {
+              context.go(RouteNames.profile, extra: 3);
+            },
+          ),
 
           const SizedBox(height: 20),
 
@@ -56,17 +69,42 @@ class SettingsScreen extends ConsumerWidget {
           _sectionTitle(l10n.settings),
 
           _tile(
+            context: context,
             icon: Icons.notifications,
 
             title: l10n.notifications,
 
-            onTap: () {},
+            onTap: () {
+              context.go(RouteNames.notifications);
+            },
+          ),
+
+          // ajout theme
+          Card(
+            elevation: 0,
+            color: isDark ? colors.surfaceContainerHighest : Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: SwitchListTile(
+              secondary: Icon(
+                isDark ? Icons.dark_mode : Icons.light_mode,
+                color: Colors.red,
+              ),
+              title: Text(l10n.theme),
+              subtitle: Text(isDark ? l10n.darkMode : l10n.lightMode),
+              value: isDark,
+              onChanged: (_) {
+                ref.read(themeProvider.notifier).toggleTheme();
+              },
+            ),
           ),
 
           /// =====================================================
           /// LANGUAGE
           /// =====================================================
           _tile(
+            context: context,
             icon: Icons.language,
 
             title: l10n.language,
@@ -106,10 +144,10 @@ class SettingsScreen extends ConsumerWidget {
                           Text(
                             l10n.changeLanguage,
 
-                            style: const TextStyle(
-                              fontSize: 20,
-
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: isDark ? Colors.white : Colors.black,
                             ),
                           ),
 
@@ -130,8 +168,16 @@ class SettingsScreen extends ConsumerWidget {
                               size: 16,
                             ),
 
-                            onTap: () {
-                              localeNotifier.value = const Locale('fr');
+                            onTap: () async {
+                              await LocaleService.changeLocale('fr');
+
+                              try {
+                                await ProfileRemoteService().updateLanguage(
+                                  'fr',
+                                );
+                              } catch (e) {
+                                debugPrint('Erreur mise à jour langue: $e');
+                              }
 
                               Navigator.pop(context);
                             },
@@ -152,8 +198,16 @@ class SettingsScreen extends ConsumerWidget {
                               size: 16,
                             ),
 
-                            onTap: () {
-                              localeNotifier.value = const Locale('en');
+                            onTap: () async {
+                              await LocaleService.changeLocale('en');
+
+                              try {
+                                await ProfileRemoteService().updateLanguage(
+                                  'en',
+                                );
+                              } catch (e) {
+                                debugPrint('Erreur mise à jour langue: $e');
+                              }
 
                               Navigator.pop(context);
                             },
@@ -174,8 +228,16 @@ class SettingsScreen extends ConsumerWidget {
                               size: 16,
                             ),
 
-                            onTap: () {
-                              localeNotifier.value = const Locale('ar');
+                            onTap: () async {
+                              await LocaleService.changeLocale('ar');
+
+                              try {
+                                await ProfileRemoteService().updateLanguage(
+                                  'ar',
+                                );
+                              } catch (e) {
+                                debugPrint('Erreur mise à jour langue: $e');
+                              }
 
                               Navigator.pop(context);
                             },
@@ -197,19 +259,25 @@ class SettingsScreen extends ConsumerWidget {
           _sectionTitle(l10n.donations),
 
           _tile(
+            context: context,
             icon: Icons.bloodtype_rounded,
 
             title: l10n.donationHistory,
 
-            onTap: () {},
+            onTap: () {
+              context.go(RouteNames.profile, extra: 1);
+            },
           ),
 
           _tile(
+            context: context,
             icon: Icons.location_on_rounded,
 
             title: l10n.healthCenters,
 
-            onTap: () {},
+            onTap: () {
+              context.go(RouteNames.map);
+            },
           ),
 
           const SizedBox(height: 30),
@@ -229,21 +297,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
 
             onPressed: () async {
-              /// LOGOUT
-              await ref.read(authControllerProvider.notifier).logout();
-
-              /// CLEAR PROFILE
-              ref.invalidate(profileControllerProvider);
-
-              /// CLEAR DONATIONS
-              ref.invalidate(myDonationsProvider);
-
-              if (!context.mounted) {
-                return;
-              }
-
-              /// REDIRECT
-              context.go(RouteNames.loginUser);
+              await SessionLogoutService.logout(appContainer);
             },
 
             child: Text(
@@ -289,19 +343,26 @@ class SettingsScreen extends ConsumerWidget {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
+    required BuildContext context,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = Theme.of(context).colorScheme;
+
     return Card(
       elevation: 0,
-
+      color: isDark ? colors.surfaceContainerHighest : Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-
       child: ListTile(
         leading: Icon(icon, color: Colors.red),
-
-        title: Text(title),
-
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-
+        title: Text(
+          title,
+          style: TextStyle(color: isDark ? Colors.white : Colors.black),
+        ),
+        trailing: Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: isDark ? Colors.white70 : Colors.black54,
+        ),
         onTap: onTap,
       ),
     );

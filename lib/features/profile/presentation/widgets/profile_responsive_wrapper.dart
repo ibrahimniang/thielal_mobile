@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-class ProfileResponsiveWrapper
-    extends StatelessWidget {
+class ProfileResponsiveWrapper extends StatelessWidget {
   final Widget child;
 
   const ProfileResponsiveWrapper({
@@ -11,20 +10,21 @@ class ProfileResponsiveWrapper
 
   @override
   Widget build(BuildContext context) {
-    final width =
-        MediaQuery.of(context).size.width;
+    final width = MediaQuery.of(context).size.width;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    Widget content = child;
 
     if (width >= 1200) {
-      return Center(
+      content = Center(
         child: SizedBox(
           width: 900,
           child: child,
         ),
       );
-    }
-
-    if (width >= 700) {
-      return Center(
+    } else if (width >= 700) {
+      content = Center(
         child: SizedBox(
           width: 680,
           child: child,
@@ -32,6 +32,9 @@ class ProfileResponsiveWrapper
       );
     }
 
-    return child;
+    return Container(
+      color: colors.background,
+      child: content,
+    );
   }
 }

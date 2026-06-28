@@ -75,13 +75,26 @@ class DonorLevelProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Container(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+  return Container(
       padding: const EdgeInsets.all(
         AppSpacing.xl,
       ),
 
       decoration: BoxDecoration(
-        color: Colors.white,
+  gradient: isDark
+      ? const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF161B4B),
+            Color(0xFF232A67),
+          ],
+        )
+      : null,
+
+  color: isDark ? null : Colors.white,
 
         borderRadius: BorderRadius.circular(
           28,
@@ -89,10 +102,9 @@ class DonorLevelProgress extends StatelessWidget {
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
-              0.04,
-            ),
-
+           color: isDark
+            ? const Color(0xFF161B4B).withValues(alpha: 0.45)
+            : Colors.black.withValues(alpha: 0.04),
             blurRadius: 18,
 
             offset: const Offset(0, 10),
@@ -113,9 +125,9 @@ class DonorLevelProgress extends StatelessWidget {
                 width: 58,
 
                 decoration: BoxDecoration(
-                  color: levelColor.withOpacity(
-                    0.10,
-                  ),
+                  color: levelColor.withValues(
+                  alpha: isDark ? 0.20 : 0.10,
+                ),
 
                   borderRadius:
                       BorderRadius.circular(
@@ -141,13 +153,12 @@ class DonorLevelProgress extends StatelessWidget {
                     Text(
                      '${l10n.level} ${localizedLevel(context)}',
 
-                      style: const TextStyle(
-                        fontWeight:
-                            FontWeight.w900,
-
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                        fontWeight: FontWeight.w900,
                         fontSize: 20,
                       ),
-                    ),
+                   ),
 
                     const SizedBox(height: 6),
 
@@ -155,7 +166,7 @@ class DonorLevelProgress extends StatelessWidget {
                       '$points ${l10n.donorPoints}',
 
                       style: TextStyle(
-                        color: Colors.grey[700],
+                        color: isDark ? Colors.white70 : Colors.grey[700],
 
                         fontWeight:
                             FontWeight.w600,
@@ -180,9 +191,9 @@ class DonorLevelProgress extends StatelessWidget {
               minHeight: 14,
 
               backgroundColor:
-                  Colors.grey.withOpacity(
-                    0.10,
-                  ),
+              isDark
+                  ? Colors.white.withValues(alpha: 0.18)
+                  : Colors.grey.withValues(alpha: 0.10),
 
               valueColor:
                   AlwaysStoppedAnimation(
@@ -197,7 +208,7 @@ class DonorLevelProgress extends StatelessWidget {
             '${(progress * 100).toInt()}% ${l10n.donorProgression}',
 
             style: TextStyle(
-              color: Colors.grey[700],
+              color: isDark ? Colors.white70 : Colors.grey[700],
               fontWeight: FontWeight.w600,
             ),
           ),

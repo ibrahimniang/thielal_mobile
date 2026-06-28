@@ -71,6 +71,11 @@ class _PremiumCollectionSectionState extends State<PremiumCollectionSection> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark =
+    Theme.of(context).brightness == Brightness.dark;
+
+final colors =
+    Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
 
@@ -82,12 +87,21 @@ class _PremiumCollectionSectionState extends State<PremiumCollectionSection> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(34),
 
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-
-            colors: [Color(0xFF1A237E), Color(0xFF283593), Color(0xFF3949AB)],
-          ),
+          gradient: LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: isDark
+      ? [
+          colors.surface,
+          colors.surfaceContainerHighest,
+          colors.surface,
+        ]
+      : const [
+          Color(0xFF1A237E),
+          Color(0xFF283593),
+          Color(0xFF3949AB),
+        ],
+),
         ),
 
         child: Stack(
@@ -130,7 +144,9 @@ class _PremiumCollectionSectionState extends State<PremiumCollectionSection> {
                             l10n.activeCollection,
 
                             style: TextStyle(
-                              color: Colors.white70,
+                              color: isDark
+                                ? colors.onSurface.withOpacity(0.7)
+                                : Colors.white70,
 
                               fontWeight: FontWeight.w800,
 
@@ -200,9 +216,13 @@ class _PremiumCollectionSectionState extends State<PremiumCollectionSection> {
                       },
 
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
+                        backgroundColor: isDark
+                            ? colors.primary
+                            : Colors.white,
 
-                        foregroundColor: const Color(0xFF1A237E),
+                        foregroundColor: isDark
+                            ? colors.onPrimary
+                            : const Color(0xFF1A237E),
 
                         elevation: 0,
 
@@ -240,19 +260,35 @@ class _PremiumCollectionSectionState extends State<PremiumCollectionSection> {
                     /// ==========================================
                     Row(
                       children: [
-                        _miniTime(remaining.inDays, l10n.daysShort),
+                        _miniTime(
+                          context,
+                          remaining.inDays,
+                          l10n.daysShort,
+                        ),
 
                         const SizedBox(width: 6),
 
-                        _miniTime(remaining.inHours % 24, l10n.hoursShort),
+                        _miniTime(
+                          context,
+                          remaining.inHours % 24,
+                          l10n.hoursShort,
+                        ),
 
                         const SizedBox(width: 6),
 
-                        _miniTime(remaining.inMinutes % 60, l10n.minutesShort),
+                        _miniTime(
+                          context,
+                          remaining.inMinutes % 60,
+                          l10n.minutesShort,
+                        ),
 
                         const SizedBox(width: 6),
 
-                        _miniTime(remaining.inSeconds % 60, l10n.secondsShort),
+                        _miniTime(
+                          context,
+                          remaining.inSeconds % 60,
+                          l10n.secondsShort,
+                        ),
                       ],
                     ),
                   ],
@@ -265,10 +301,12 @@ class _PremiumCollectionSectionState extends State<PremiumCollectionSection> {
                 /// ==========================================
                 Row(
                   children: [
-                    const Icon(
+                   Icon(  
                       Icons.location_on_rounded,
 
-                      color: Colors.white70,
+                      color: isDark
+                        ? colors.onSurface.withOpacity(0.7)
+                        : Colors.white70,
 
                       size: 18,
                     ),
@@ -283,8 +321,10 @@ class _PremiumCollectionSectionState extends State<PremiumCollectionSection> {
 
                         overflow: TextOverflow.ellipsis,
 
-                        style: const TextStyle(
-                          color: Colors.white70,
+                        style: TextStyle(
+                          color: isDark
+                            ? colors.onSurface.withOpacity(0.7)
+                            : Colors.white70,
 
                           fontSize: 14,
 
@@ -302,10 +342,12 @@ class _PremiumCollectionSectionState extends State<PremiumCollectionSection> {
                 /// ==========================================
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.calendar_month_rounded,
 
-                      color: Colors.white70,
+                      color: isDark
+                        ? colors.onSurface.withOpacity(0.7)
+                        : Colors.white70,
 
                       size: 18,
                     ),
@@ -315,11 +357,11 @@ class _PremiumCollectionSectionState extends State<PremiumCollectionSection> {
                     Text(
                       '${widget.date.day}/${widget.date.month}/${widget.date.year}',
 
-                      style: const TextStyle(
-                        color: Colors.white70,
-
+                      style: TextStyle(
+                        color: isDark
+                            ? colors.onSurface.withOpacity(0.7)
+                            : Colors.white70,
                         fontSize: 14,
-
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -388,12 +430,23 @@ class _PremiumCollectionSectionState extends State<PremiumCollectionSection> {
     );
   }
 
-  Widget _miniTime(int value, String label) {
+  Widget _miniTime(
+  BuildContext context,
+  int value,
+  String label,
+) {
+  final isDark =
+      Theme.of(context).brightness == Brightness.dark;
+
+  final colors =
+      Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
 
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.10),
+        color: isDark
+          ? colors.surfaceContainerHighest
+          : Colors.white.withOpacity(0.10),
 
         borderRadius: BorderRadius.circular(12),
       ),
@@ -403,8 +456,10 @@ class _PremiumCollectionSectionState extends State<PremiumCollectionSection> {
           Text(
             value.toString().padLeft(2, '0'),
 
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: isDark
+                ? colors.onSurface
+                : Colors.white,
 
               fontWeight: FontWeight.w900,
 
@@ -415,11 +470,11 @@ class _PremiumCollectionSectionState extends State<PremiumCollectionSection> {
           Text(
             label,
 
-            style: const TextStyle(
-              color: Colors.white70,
-
+            style: TextStyle(
+              color: isDark
+                  ? colors.onSurface
+                  : Colors.white,
               fontWeight: FontWeight.w700,
-
               fontSize: 9,
             ),
           ),

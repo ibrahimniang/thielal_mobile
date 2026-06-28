@@ -83,25 +83,24 @@ class _InformationTickerState
       ),
 
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-
-          end: Alignment.bottomRight,
-
-          colors: [
-            Color(0xFFE53946),
-            Color(0xFFC1121F),
-          ],
-        ),
+        gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.primary,
+              Theme.of(context).colorScheme.primary.withOpacity(0.7),
+            ],
+          ),
 
         borderRadius:
             BorderRadius.circular(22),
 
         boxShadow: [
           BoxShadow(
-            color: const Color(
-              0xFFE53946,
-            ).withOpacity(0.25),
+            color: Theme.of(context)
+            .colorScheme
+            .primary
+            .withOpacity(0.25),
 
             blurRadius: 20,
 
@@ -125,21 +124,20 @@ class _InformationTickerState
               height: double.infinity,
 
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(
-                  0.10,
-                ),
-              ),
+                color: Theme.of(context)
+                  .colorScheme
+                  .onPrimary
+                  .withOpacity(0.10),
+                            ),
 
-              child: const Center(
+              child: Center(
                 child: Icon(
                   Icons.graphic_eq_rounded,
-
-                  color: Colors.white,
-
+                  color: Theme.of(context).colorScheme.onPrimary,
                   size: 24,
                 ),
               ),
-            ),
+                          ),
 
             /// =====================================
             /// TEXT TICKER
@@ -193,14 +191,10 @@ class _InformationTickerState
                         overflow:
                             TextOverflow.visible,
 
-                        style: const TextStyle(
-                          color: Colors.white,
-
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
                           fontSize: 14,
-
-                          fontWeight:
-                              FontWeight.w600,
-
+                          fontWeight: FontWeight.w600,
                           letterSpacing: 0.2,
                         ),
                       ),

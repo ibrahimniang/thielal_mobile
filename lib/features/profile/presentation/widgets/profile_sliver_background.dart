@@ -7,6 +7,11 @@ class ProfileSliverBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark =
+    Theme.of(context).brightness == Brightness.dark;
+
+    final colors =
+        Theme.of(context).colorScheme;
     return Stack(
       children: [
         /// EXTRA GLOW 1
@@ -61,9 +66,21 @@ class ProfileSliverBackground extends StatelessWidget {
         ),
 
         /// MAIN GRADIENT
-        Container(
-          decoration: const BoxDecoration(gradient: AppGradients.primaryRed),
-        ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: isDark
+                  ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        colors.surface,
+                        colors.surfaceContainerHighest,
+                        const Color(0xFF0F172A),
+                      ],
+                    )
+                  : AppGradients.primaryRed,
+            ),
+          ),
 
         /// TOP GLOW
         Positioned(
@@ -77,7 +94,9 @@ class ProfileSliverBackground extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
 
-              color: Colors.white.withOpacity(0.08),
+              color: isDark
+            ? colors.primary.withOpacity(0.08)
+            : Colors.white.withOpacity(0.04)
             ),
           ),
         ),

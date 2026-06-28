@@ -118,6 +118,7 @@ class AuthController extends StateNotifier<AuthState> {
     required String prenom,
     String? genre,
     String? dateNaissance,
+    String? langue,
   }) async {
     try {
       state = state.copyWith(isLoading: true, clearError: true);
@@ -131,6 +132,7 @@ class AuthController extends StateNotifier<AuthState> {
         prenom: prenom,
         genre: genre,
         dateNaissance: dateNaissance,
+        langue: langue,
         phone: state.pendingPhone,
         email: state.pendingEmail,
       );
@@ -587,6 +589,7 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> logout() async {
     // ✅ On supprime seulement les tokens
     await _repository.logout();
+    await SessionStorage.clearSessionExpiry();
 
     state = state.copyWith(
       isAuthenticated: false,
