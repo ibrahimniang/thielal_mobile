@@ -5,6 +5,7 @@ import '../../../../core/network/dio_provider.dart';
 import '../../data/models/my_demande_model.dart';
 import '../../data/repositories/my_demandes_repository.dart';
 import '../../data/services/my_demandes_service.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class MyDemandesScreen extends ConsumerStatefulWidget {
   const MyDemandesScreen({super.key});
@@ -21,13 +22,13 @@ class _MyDemandesScreenState extends ConsumerState<MyDemandesScreen> {
   String getStatusLabel(String status) {
     switch (status.toUpperCase()) {
       case "DELIVREE":
-        return "Délivrée";
+        return AppLocalizations.of(context)!.delivered;
 
       case "EN_ATTENTE":
-        return "En attente";
+        return AppLocalizations.of(context)!.pending;
 
       case "ANNULEE":
-        return "Annulée";
+        return AppLocalizations.of(context)!.cancelled;
 
       default:
         return status;
@@ -68,14 +69,15 @@ class _MyDemandesScreenState extends ConsumerState<MyDemandesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text('Mes demandes (${demandes.length})')),
+      appBar: AppBar(title: Text('${l10n.myRequests} (${demandes.length})')),
 
       body:
           isLoading
               ? const Center(child: CircularProgressIndicator())
               : demandes.isEmpty
-              ? const Center(child: Text("Aucune demande trouvée"))
+              ? Center(child: Text(l10n.noRequestFound))
               : RefreshIndicator(
                 onRefresh: chargerDemandes,
 
@@ -99,7 +101,7 @@ class _MyDemandesScreenState extends ConsumerState<MyDemandesScreen> {
                             child: Row(
                               children: [
                                 ChoiceChip(
-                                  label: const Text("Toutes"),
+                                  label: Text(l10n.all),
 
                                   selected: filtre == "TOUTES",
 
@@ -113,7 +115,7 @@ class _MyDemandesScreenState extends ConsumerState<MyDemandesScreen> {
                                 const SizedBox(width: 8),
 
                                 ChoiceChip(
-                                  label: const Text("En attente"),
+                                  label: Text(l10n.pending),
 
                                   selected: filtre == "EN_ATTENTE",
 
@@ -127,7 +129,7 @@ class _MyDemandesScreenState extends ConsumerState<MyDemandesScreen> {
                                 const SizedBox(width: 8),
 
                                 ChoiceChip(
-                                  label: const Text("Délivrées"),
+                                  label: Text(l10n.delivered),
                                   selected: filtre == "DELIVREE",
                                   onSelected: (_) {
                                     setState(() {
@@ -139,7 +141,7 @@ class _MyDemandesScreenState extends ConsumerState<MyDemandesScreen> {
                                 const SizedBox(width: 8),
 
                                 ChoiceChip(
-                                  label: const Text("Annulées"),
+                                  label: Text(l10n.cancelled),
                                   selected: filtre == "ANNULEE",
                                   onSelected: (_) {
                                     setState(() {
@@ -155,9 +157,7 @@ class _MyDemandesScreenState extends ConsumerState<MyDemandesScreen> {
                         Expanded(
                           child:
                               demandesFiltrees.isEmpty
-                                  ? const Center(
-                                    child: Text("Aucune demande trouvée"),
-                                  )
+                                  ? Center(child: Text(l10n.noRequestFound))
                                   : ListView.builder(
                                     padding: EdgeInsets.only(
                                       left: 16,
@@ -273,7 +273,7 @@ class _MyDemandesScreenState extends ConsumerState<MyDemandesScreen> {
                                                         ),
 
                                                         Text(
-                                                          "Demande de sang",
+                                                          l10n.bloodRequest,
 
                                                           style: TextStyle(
                                                             color:
@@ -344,7 +344,7 @@ class _MyDemandesScreenState extends ConsumerState<MyDemandesScreen> {
                                                   ),
                                                   const SizedBox(width: 8),
                                                   Text(
-                                                    "Quantité : ${demande.quantite}",
+                                                    '${l10n.quantity}: ${demande.quantite}',
                                                   ),
                                                 ],
                                               ),

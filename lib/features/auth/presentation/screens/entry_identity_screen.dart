@@ -630,8 +630,7 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
 
                       children: [
                         Text(
-                          'Vous avez déjà un compte ?',
-
+                          l10n.alreadyHaveAccount,
                           style: TextStyle(
                             color: Colors.grey.shade700,
 
@@ -644,8 +643,8 @@ class _EntryIdentityScreenState extends ConsumerState<EntryIdentityScreen> {
                             context.go(RouteNames.loginUser);
                           },
 
-                          child: const Text(
-                            'Se connecter',
+                          child: Text(
+                            l10n.login,
 
                             style: TextStyle(
                               fontWeight: FontWeight.w800,

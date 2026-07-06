@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
+// import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../l10n/app_localizations.dart';
 
@@ -36,27 +36,19 @@ class HomeHeader extends StatefulWidget {
   });
 
   @override
-  State<HomeHeader> createState() =>
-      _HomeHeaderState();
+  State<HomeHeader> createState() => _HomeHeaderState();
 }
 
-class _HomeHeaderState
-    extends State<HomeHeader> {
+class _HomeHeaderState extends State<HomeHeader> {
   bool showSuggestions = false;
 
   @override
   Widget build(BuildContext context) {
-    final l10n =
-        AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context)!;
 
     final letter =
-        (widget.firstName != null &&
-                widget.firstName!
-                    .trim()
-                    .isNotEmpty)
-            ? widget.firstName!
-                .trim()[0]
-                .toUpperCase()
+        (widget.firstName != null && widget.firstName!.trim().isNotEmpty)
+            ? widget.firstName!.trim()[0].toUpperCase()
             : '?';
 
     return SafeArea(
@@ -80,10 +72,7 @@ class _HomeHeaderState
                 /// ==========================================
                 /// MENU
                 /// ==========================================
-                _iconButton(
-                  icon: Icons.menu_rounded,
-                  onTap: widget.onMenuTap,
-                ),
+                _iconButton(icon: Icons.menu_rounded, onTap: widget.onMenuTap),
 
                 const SizedBox(width: 6),
 
@@ -92,80 +81,67 @@ class _HomeHeaderState
                 /// ==========================================
                 Expanded(
                   child: TextField(
-                    controller:
-                        widget.controller,
+                    controller: widget.controller,
 
                     maxLines: 1,
 
-                    textInputAction:
-                        TextInputAction.search,
+                    textInputAction: TextInputAction.search,
 
-                    textAlignVertical:
-                        TextAlignVertical
-                            .center,
+                    textAlignVertical: TextAlignVertical.center,
 
                     onChanged: (value) {
                       setState(() {
-                        showSuggestions =
-                            value
-                                .trim()
-                                .isNotEmpty;
+                        showSuggestions = value.trim().isNotEmpty;
                       });
 
-                      widget.onChanged?.call(
-                        value,
-                      );
+                      widget.onChanged?.call(value);
                     },
 
                     cursorColor: Theme.of(context).colorScheme.primary,
 
-                   style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 16,
-                  ),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                    ),
 
-                    decoration:
-                        InputDecoration(
-                      hintText:
-                          l10n.search,
+                    decoration: InputDecoration(
+                      hintText: l10n.search,
 
-                      border:
-                          InputBorder.none,
+                      border: InputBorder.none,
 
-                      enabledBorder:
-                          InputBorder.none,
+                      enabledBorder: InputBorder.none,
 
-                      focusedBorder:
-                          InputBorder.none,
+                      focusedBorder: InputBorder.none,
 
-                      disabledBorder:
-                          InputBorder.none,
+                      disabledBorder: InputBorder.none,
 
-                      errorBorder:
-                          InputBorder.none,
+                      errorBorder: InputBorder.none,
 
-                      focusedErrorBorder:
-                          InputBorder.none,
+                      focusedErrorBorder: InputBorder.none,
 
                       filled: true,
 
-                      fillColor: Theme.of(context).colorScheme.surface.withOpacity(0.0),
+                      fillColor: Theme.of(
+                        context,
+                      ).colorScheme.surface.withOpacity(0.0),
 
                       prefixIcon: Icon(
                         Icons.search_rounded,
 
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.6),
 
                         size: 24,
                       ),
 
-                      hintStyle:
-                          TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                      hintStyle: TextStyle(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.5),
 
-                        fontWeight:
-                            FontWeight.w400,
+                        fontWeight: FontWeight.w400,
 
                         fontSize: 16,
                       ),
@@ -175,14 +151,54 @@ class _HomeHeaderState
 
                 const SizedBox(width: 2),
 
-                      /// =====================================================
-                      /// CHAT
-                      /// =====================================================
-                      _iconButton(
-                        icon: Icons.chat_bubble_outline_rounded,
+                /// =====================================================
+                /// CHAT
+                /// =====================================================
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    _iconButton(
+                      icon: Icons.chat_bubble_outline_rounded,
+                      onTap: widget.onChatTap,
+                    ),
 
-                        onTap: widget.onChatTap,
+                    if (widget.unreadMessages > 0)
+                      Positioned(
+                        right: -2,
+                        top: -2,
+                        child: Container(
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Theme.of(context).scaffoldBackgroundColor,
+                              width: 2,
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              widget.unreadMessages > 99
+                                  ? '99+'
+                                  : widget.unreadMessages.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
+                  ],
+                ),
 
                 const SizedBox(width: 2),
 
@@ -190,34 +206,26 @@ class _HomeHeaderState
                 /// PROFILE
                 /// ==========================================
                 GestureDetector(
-                  onTap:
-                      widget.onProfileTap,
+                  onTap: widget.onProfileTap,
 
                   child: Container(
                     height: 42,
                     width: 42,
 
-                    decoration:
-                        BoxDecoration(
+                    decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.surface,
 
-                      borderRadius:
-                          BorderRadius.circular(
-                        14,
-                      ),
+                      borderRadius: BorderRadius.circular(14),
                     ),
 
                     child: Center(
                       child: Text(
                         letter,
 
-                        style:
-                           TextStyle(
+                        style: TextStyle(
                           color: Theme.of(context).colorScheme.primary,
 
-                          fontWeight:
-                              FontWeight
-                                  .w900,
+                          fontWeight: FontWeight.w900,
 
                           fontSize: 18,
                         ),
@@ -232,87 +240,49 @@ class _HomeHeaderState
             /// SUGGESTIONS
             /// ==========================================
             AnimatedSwitcher(
-              duration:
-                  const Duration(
-                milliseconds: 220,
-              ),
+              duration: const Duration(milliseconds: 220),
 
               child:
-                  showSuggestions &&
-                          widget
-                              .suggestions
-                              .isNotEmpty
+                  showSuggestions && widget.suggestions.isNotEmpty
                       ? Container(
-                        margin:
-                            const EdgeInsets.only(
-                          top: 10,
-                        ),
+                        margin: const EdgeInsets.only(top: 10),
 
-                        padding:
-                            const EdgeInsets.all(
-                          12,
-                        ),
+                        padding: const EdgeInsets.all(12),
 
-                        decoration:
-                            BoxDecoration(
+                        decoration: BoxDecoration(
                           color: Theme.of(context).cardColor,
 
-                          borderRadius:
-                              BorderRadius.circular(
-                            20,
-                          ),
+                          borderRadius: BorderRadius.circular(20),
 
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
 
                               blurRadius: 16,
 
-                              offset:
-                                  const Offset(
-                                0,
-                                8,
-                              ),
+                              offset: const Offset(0, 8),
                             ),
                           ],
                         ),
 
                         child: Column(
                           children:
-                              widget
-                                  .suggestions
+                              widget.suggestions
                                   .take(5)
                                   .map(
-                                    (
-                                      item,
-                                    ) => ListTile(
-                                      dense:
-                                          true,
+                                    (item) => ListTile(
+                                      dense: true,
 
-                                      title:
-                                          Text(
-                                        item,
-                                      ),
+                                      title: Text(item),
 
-                                      onTap:
-                                          () {
-                                        widget
-                                                .controller
-                                                .text =
-                                            item;
+                                      onTap: () {
+                                        widget.controller.text = item;
 
-                                        widget
-                                            .onSuggestionTap
-                                            ?.call(
-                                              item,
-                                            );
+                                        widget.onSuggestionTap?.call(item);
 
-                                        setState(
-                                          () {
-                                            showSuggestions =
-                                                false;
-                                          },
-                                        );
+                                        setState(() {
+                                          showSuggestions = false;
+                                        });
                                       },
                                     ),
                                   )
@@ -331,10 +301,7 @@ class _HomeHeaderState
   /// ICON BUTTON
   /// ==========================================
 
-  Widget _iconButton({
-    required IconData icon,
-    VoidCallback? onTap,
-  }) {
+  Widget _iconButton({required IconData icon, VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap,
 

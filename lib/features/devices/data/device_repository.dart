@@ -3,7 +3,6 @@ import 'package:thielal/features/devices/domain/models/device_model.dart';
 
 import '../../../core/network/api_client.dart';
 
-
 class DeviceRepository {
   final Dio dio = ApiClient().dio;
 
@@ -16,9 +15,14 @@ class DeviceRepository {
     );
   }
 
+  Future<void> ping() async {
+    await dio.post("/devices/ping");
+  }
+
   Future<List<DeviceModel>> getMyDevices() async {
-    final response =
-        await dio.get("/devices/my-devices");
+    final response = await dio.get(
+      "/devices/my-devices",
+    );
 
     final data = response.data;
 

@@ -42,9 +42,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get phone => 'Téléphone';
 
   @override
-  String get loginSubtitle => 'Connectez-vous pour accéder à votre espace donneur';
-
-  @override
   String get identifier => 'Identifiant';
 
   @override
@@ -798,7 +795,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get hasBeenValidated => 'a été validé.';
 
   @override
-  String get pleaseCompleteMedicalVerification => 'Veuillez effectuer une vérification médicale.';
+  String get pleaseCompleteMedicalVerification => 'Veuillez vous diriger vers le centre le plus proche.';
 
   @override
   String get overview => 'Aperçu';
@@ -817,4 +814,244 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get secureDonationQrInfo => 'Ce QR contient vos informations de don sécurisées';
+
+  @override
+  String get secureYourAccount => 'Sécurisez votre compte';
+
+  @override
+  String get createPasswordToSecureAccount => 'Créez maintenant votre mot de passe pour sécuriser votre compte LifeLink.';
+
+  @override
+  String get createMyPassword => 'Créer mon mot de passe';
+
+  @override
+  String get passwordMinLength => 'Le mot de passe doit contenir au moins 6 caractères.';
+
+  @override
+  String get newToLifeLink => 'Nouveau sur LifeLink ?';
+
+  @override
+  String get continueWithOtp => 'Continuer avec OTP';
+
+  @override
+  String get alreadyHaveAccount => 'Vous avez déjà un compte ?';
+
+  @override
+  String get messaging => 'Messagerie';
+
+  @override
+  String get myConversations => 'Mes discussions';
+
+  @override
+  String get searchUser => 'Rechercher un utilisateur...';
+
+  @override
+  String get noConversation => 'Aucune conversation';
+
+  @override
+  String get conversationsWillAppearHere => 'Vos discussions apparaîtront ici';
+
+  @override
+  String get noMessage => 'Aucun message';
+
+  @override
+  String get online => 'En ligne';
+
+  @override
+  String get offline => 'Hors ligne';
+
+  @override
+  String get writeMessage => 'Écrire un message...';
+
+  @override
+  String get notSpecified => 'Non renseignée';
+
+  @override
+  String get donationCenter => 'Centre de don';
+
+  @override
+  String get nearbyCentersDisplayed => '3 centres proches affichés • recherchez pour voir tous les centres';
+
+  @override
+  String get searchOrSelectCenter => 'Rechercher ou choisir un centre';
+
+  @override
+  String get viewMyRequests => 'Voir mes demandes';
+
+  @override
+  String get donationTemporarilyUnavailable => 'Don temporairement indisponible';
+
+  @override
+  String get cannotDonateYet => 'Vous ne pouvez pas encore effectuer un don.';
+
+  @override
+  String get nextDonationAuthorizedDate => 'Votre prochaine date de don autorisée est le';
+
+  @override
+  String get participationRecorded => 'Participation enregistrée';
+
+  @override
+  String get youAreNowParticipating => 'Vous participez maintenant à cette demande.';
+
+  @override
+  String get contactCenterToDonate => 'Veuillez contacter le centre ou vous y rendre pour effectuer votre don.';
+
+  @override
+  String get imParticipating => 'Je participe';
+
+  @override
+  String get myRequests => 'Mes demandes';
+
+  @override
+  String get noRequestFound => 'Aucune demande trouvée';
+
+  @override
+  String get delivered => 'Délivrée';
+
+  @override
+  String get cancelled => 'Annulée';
+
+  @override
+  String get bloodRequest => 'Demande de sang';
+
+  @override
+  String get quantity => 'Quantité';
+
+  @override
+  String get accountSecuredSuccessfully => 'Compte sécurisé avec succès ';
+
+  @override
+  String get todayAt => 'Aujourd\'hui à';
+
+  @override
+  String get yesterdayAt => 'Hier à';
+
+  @override
+  String get daysAgo => 'Il y a';
+
+  @override
+  String get days => 'jours';
+
+  @override
+  String get validatedDonation => 'Don validé';
+
+  @override
+  String get notification => 'Notification';
+
+  @override
+  String get mauritania => 'Mauritanie';
+
+  @override
+  String get requester => 'Demandeur';
+
+  @override
+  String get message => 'Message';
+
+  @override
+  String get alreadyParticipant => 'Déjà participant';
+
+  @override
+  String get noNotification => 'Aucune notification';
+
+  @override
+  String get bloodNeed => 'Besoin de sang';
+
+  @override
+  String get eligibleToDonate => 'Apte à donner';
+
+  @override
+  String get connectedDevices => 'Appareils connectés';
+
+  @override
+  String get recentConnections => 'Connexions récentes';
+
+  @override
+  String get noDeviceRegistered => 'Aucun appareil enregistré';
+
+  @override
+  String get disconnectDevice => 'Déconnecter l\'appareil';
+
+  @override
+  String get current => 'Actuel';
+
+  @override
+  String get lastConnection => 'Dernière connexion';
+
+  @override
+  String get confirmDisconnectDevice => 'Voulez-vous vraiment déconnecter';
+
+  @override
+  String get deviceReconnectRequired => 'Après déconnexion, cet appareil devra se reconnecter pour accéder à votre compte.';
+
+  @override
+  String get disconnect => 'Déconnecter';
+
+  @override
+  String get deviceDisconnected => 'Appareil déconnecté';
+
+  @override
+  String get theme => 'Thème';
+
+  @override
+  String get darkMode => 'Mode sombre';
+
+  @override
+  String get lightMode => 'Mode clair';
+
+  @override
+  String get locationLoading => 'Localisation en cours...';
+
+  @override
+  String get sessionExpiredMessage => 'Votre session a expiré. Veuillez vous reconnecter.';
+
+  @override
+  String get noInternetConnection => 'Aucune connexion Internet';
+
+  @override
+  String get checkInternetAndRetry => 'Veuillez vérifier votre connexion Internet puis réessayer.';
+
+  @override
+  String get deliveryReceipt => 'Reçu de délivrance';
+
+  @override
+  String get presentQrToStaff => 'Présentez ce QR Code au personnel de santé.';
+
+  @override
+  String get viewReceipt => 'Voir le reçu';
+
+  @override
+  String get markAllAsRead => 'Tout marquer comme lu';
+
+  @override
+  String get deleteAllNotifications => 'Supprimer toutes les notifications';
+
+  @override
+  String get deleteAllNotificationsTitle => 'Supprimer toutes les notifications ?';
+
+  @override
+  String get deleteAllNotificationsMessage => 'Voulez-vous vraiment supprimer toutes vos notifications ? Cette action est irréversible.';
+
+  @override
+  String get allNotificationsMarkedAsRead => 'Toutes les notifications ont été marquées comme lues.';
+
+  @override
+  String get allNotificationsDeleted => 'Toutes les notifications ont été supprimées.';
+
+  @override
+  String get delete => 'Supprimer';
+
+  @override
+  String get deleteReadNotifications => 'Supprimer les notifications lues';
+
+  @override
+  String get deleteReadNotificationsTitle => 'Supprimer les notifications lues ?';
+
+  @override
+  String get deleteReadNotificationsMessage => 'Toutes les notifications doivent d\'abord être lues avant de pouvoir être supprimées.';
+
+  @override
+  String get allReadNotificationsDeleted => 'Les notifications lues ont été supprimées.';
+
+  @override
+  String get loginSubtitle => 'Connectez-vous pour accéder à votre espace LifeLink';
 }

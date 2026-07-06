@@ -16,7 +16,6 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/auth/presentation/screens/set_password_screen.dart';
 
-
 // USER
 import '../../features/home/screens/home_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -204,7 +203,11 @@ class AppRouter {
 
             GoRoute(
               path: RouteNames.profile,
-              builder: (_, __) => const ProfileScreen(),
+              builder: (context, state) {
+                final initialTab = state.extra as int? ?? 0;
+
+                return ProfileScreen(initialTab: initialTab);
+              },
             ),
 
             GoRoute(
@@ -280,8 +283,6 @@ class AppRouter {
           },
         ),
 
-
-
         // ================= STAFF =================
         // GoRoute(
         //   path: RouteNames.staffDashboard,
@@ -323,8 +324,6 @@ class AppRouter {
         //   path: RouteNames.createStaff,
         //   builder: (_, __) => const CreateStaffScreen(),
         // ),
-
-
 
         // // ================= ADMIN =================
         GoRoute(

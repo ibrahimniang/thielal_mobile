@@ -43,7 +43,9 @@ import '../widgets/empty_profile_state.dart';
 import 'edit_profile_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
-  const ProfileScreen({super.key});
+  final int initialTab;
+
+  const ProfileScreen({super.key, this.initialTab = 0});
 
   @override
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
@@ -57,7 +59,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   void initState() {
     super.initState();
 
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(
+      length: 4,
+      vsync: this,
+      initialIndex: widget.initialTab,
+    );
   }
 
   @override
@@ -79,7 +85,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       backgroundColor:
           isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
       body: profileState.when(
-        loading: () => const ProfileLoadingShimmer(),
+        loading: () => const Center(child: AppHeartLoader(size: 80)),
 
         error:
             (e, _) => ProfileErrorState(
@@ -543,10 +549,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ),
           MedicalInfoTile(
             icon: Icons.volunteer_activism_rounded,
-            label: "Prochain don",
+            label: l10n.nextDonationPossible,
             value:
                 user.dateProchainDon == null
-                    ? "Apte à donner"
+                    ? l10n.eligibleToDonate
                     : "${user.dateProchainDon!.day}/${user.dateProchainDon!.month}/${user.dateProchainDon!.year}",
             iconColor: Colors.green,
           ),
@@ -565,8 +571,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           const SizedBox(height: 24),
 
           ProfileSectionTitle(
-            title: "Appareils connectés",
-            subtitle: "Connexions récentes",
+            title: l10n.connectedDevices,
+            subtitle: l10n.recentConnections,
             icon: Icons.devices_rounded,
           ),
 
@@ -575,11 +581,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           devicesAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
 
-            error: (e, _) => Text("Erreur : $e"),
+            error: (e, _) => Text("${l10n.error} : $e"),
 
             data: (devices) {
               if (devices.isEmpty) {
-                return const Text("Aucun appareil enregistré");
+                return Text(l10n.noDeviceRegistered);
               }
 
               return Column(
@@ -593,7 +599,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         padding: const EdgeInsets.all(16),
 
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.surface,
 
                           borderRadius: BorderRadius.circular(18),
 
@@ -615,28 +621,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               height: 48,
 
                               decoration: BoxDecoration(
-                                color: Colors.red.withOpacity(0.08),
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.error.withOpacity(0.1),
 
                                 borderRadius: BorderRadius.circular(12),
                               ),
 
                               child: Icon(
-  (device.systeme ?? '')
-          .toLowerCase()
-          .contains('android')
-      ? Icons.phone_android
-      : (device.systeme ?? '')
-              .toLowerCase()
-              .contains('ios')
-          ? Icons.phone_iphone
-          : (device.systeme ?? '')
-                  .toLowerCase()
-                  .contains('ipad')
-              ? Icons.tablet_mac
-              : Icons.computer,
+                                (device.systeme ?? '').toLowerCase().contains(
+                                      'android',
+                                    )
+                                    ? Icons.phone_android
+                                    : (device.systeme ?? '')
+                                        .toLowerCase()
+                                        .contains('ios')
+                                    ? Icons.phone_iphone
+                                    : (device.systeme ?? '')
+                                        .toLowerCase()
+                                        .contains('ipad')
+                                    ? Icons.tablet_mac
+                                    : Icons.computer,
 
-  color: Colors.red,
-),
+                                color: Theme.of(context).colorScheme.error,
+                              ),
                             ),
 
                             const SizedBox(width: 14),
@@ -648,21 +656,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                 children: [
                                   Row(
                                     children: [
-                                     Expanded(
-  child: Text(
-    (device.marque?.isNotEmpty ?? false)
-        ? '${device.marque} ${device.modele ?? ''}'
-        : (device.nomAppareil ??
-            'Appareil inconnu'),
-
-    style: const TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w600,
-    ),
-  ),
-
-  
-),
+                                      Expanded(
+                                        child: Text(
+                                          l10n.disconnectDevice,
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.titleLarge?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
 
                                       if (index == 0)
                                         Container(
@@ -679,7 +682,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                             ),
                                           ),
 
-                                          child: const Text("Actuel"),
+                                          child: Text(l10n.current),
                                         ),
                                     ],
                                   ),
@@ -694,11 +697,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
                                   Text(
                                     device.derniereConnexion != null
-                                        ? 'Dernière connexion : '
+                                        ? '${l10n.lastConnection} : '
                                             '${device.derniereConnexion!.day}/'
                                             '${device.derniereConnexion!.month}/'
                                             '${device.derniereConnexion!.year}'
-                                        : 'Date inconnue',
+                                        : l10n.unknownDate,
 
                                     style: const TextStyle(
                                       fontSize: 12,
@@ -706,218 +709,238 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                     ),
                                   ),
                                   if (index != 0) ...[
-  const SizedBox(height: 12),
+                                    const SizedBox(height: 12),
 
-  Align(
-    alignment: Alignment.centerLeft,
-    child: TextButton.icon(
-    onPressed: () async {
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: TextButton.icon(
+                                        onPressed: () async {
+                                          final confirm = await showDialog<
+                                            bool
+                                          >(
+                                            context: context,
 
-  final confirm =
-      await showDialog<bool>(
-        context: context,
+                                            builder: (dialogContext) {
+                                              return Dialog(
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(24),
+                                                ),
 
-        builder: (dialogContext) {
-  return Dialog(
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(24),
-    ),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    24,
+                                                  ),
 
-    child: Padding(
-      padding: const EdgeInsets.all(24),
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
 
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      /// ICONE
+                                                      Container(
+                                                        width: 72,
+                                                        height: 72,
 
-        children: [
-          /// ICONE
-          Container(
-            width: 72,
-            height: 72,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                              color: Colors.red
+                                                                  .withOpacity(
+                                                                    0.1,
+                                                                  ),
+                                                              shape:
+                                                                  BoxShape
+                                                                      .circle,
+                                                            ),
 
-            decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
+                                                        child: const Icon(
+                                                          Icons
+                                                              .devices_other_rounded,
+                                                          color: Colors.red,
+                                                          size: 36,
+                                                        ),
+                                                      ),
 
-            child: const Icon(
-              Icons.devices_other_rounded,
-              color: Colors.red,
-              size: 36,
-            ),
-          ),
+                                                      const SizedBox(
+                                                        height: 20,
+                                                      ),
 
-          const SizedBox(height: 20),
+                                                      /// TITRE
+                                                      Text(
+                                                        l10n.disconnectDevice,
+                                                        textAlign:
+                                                            TextAlign.center,
 
-          /// TITRE
-          const Text(
-            "Déconnecter l'appareil",
-            textAlign: TextAlign.center,
+                                                        style: TextStyle(
+                                                          fontSize: 20,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
 
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+                                                      const SizedBox(
+                                                        height: 16,
+                                                      ),
 
-          const SizedBox(height: 16),
+                                                      /// MESSAGE
+                                                      Text(
+                                                        "${l10n.confirmDisconnectDevice}\n"
+                                                        "${device.marque ?? ''} ${device.modele ?? ''} ?",
 
-          /// MESSAGE
-          Text(
-            "Voulez-vous vraiment déconnecter\n"
-            "${device.marque ?? ''} ${device.modele ?? ''} ?",
+                                                        textAlign:
+                                                            TextAlign.center,
 
-            textAlign: TextAlign.center,
+                                                        style: const TextStyle(
+                                                          fontSize: 15,
+                                                        ),
+                                                      ),
 
-            style: const TextStyle(
-              fontSize: 15,
-            ),
-          ),
+                                                      const SizedBox(
+                                                        height: 12,
+                                                      ),
 
-          const SizedBox(height: 12),
+                                                      Text(
+                                                        l10n.deviceReconnectRequired,
+                                                        textAlign:
+                                                            TextAlign.center,
 
-          const Text(
-            "Après déconnexion, cet appareil devra se reconnecter pour accéder à votre compte.",
-            textAlign: TextAlign.center,
+                                                        style: TextStyle(
+                                                          color: Colors.grey,
+                                                          fontSize: 13,
+                                                        ),
+                                                      ),
 
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 13,
-            ),
-          ),
+                                                      const SizedBox(
+                                                        height: 24,
+                                                      ),
 
-          const SizedBox(height: 24),
+                                                      /// BOUTONS
+                                                      Row(
+                                                        children: [
+                                                          Expanded(
+                                                            child: OutlinedButton(
+                                                              onPressed: () {
+                                                                Navigator.pop(
+                                                                  dialogContext,
+                                                                  false,
+                                                                );
+                                                              },
 
-          /// BOUTONS
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.pop(
-                      dialogContext,
-                      false,
-                    );
-                  },
+                                                              style: OutlinedButton.styleFrom(
+                                                                minimumSize:
+                                                                    const Size.fromHeight(
+                                                                      50,
+                                                                    ),
 
-                  style: OutlinedButton.styleFrom(
-                    minimumSize:
-                        const Size.fromHeight(
-                      50,
-                    ),
+                                                                shape: RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius.circular(
+                                                                        14,
+                                                                      ),
+                                                                ),
+                                                              ),
 
-                    shape:
-                        RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(
-                        14,
-                      ),
-                    ),
-                  ),
+                                                              child: Text(
+                                                                l10n.cancel,
+                                                              ),
+                                                            ),
+                                                          ),
 
-                  child: const Text(
-                    "Annuler",
-                  ),
-                ),
-              ),
+                                                          const SizedBox(
+                                                            width: 12,
+                                                          ),
 
-              const SizedBox(width: 12),
+                                                          Expanded(
+                                                            child: ElevatedButton(
+                                                              onPressed: () {
+                                                                Navigator.pop(
+                                                                  dialogContext,
+                                                                  true,
+                                                                );
+                                                              },
 
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(
-                      dialogContext,
-                      true,
-                    );
-                  },
+                                                              style: ElevatedButton.styleFrom(
+                                                                backgroundColor:
+                                                                    Colors.red,
 
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        Colors.red,
+                                                                foregroundColor:
+                                                                    Colors
+                                                                        .white,
 
-                    foregroundColor:
-                        Colors.white,
+                                                                minimumSize:
+                                                                    const Size.fromHeight(
+                                                                      50,
+                                                                    ),
 
-                    minimumSize:
-                        const Size.fromHeight(
-                      50,
-                    ),
+                                                                shape: RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius.circular(
+                                                                        14,
+                                                                      ),
+                                                                ),
+                                                              ),
 
-                    shape:
-                        RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(
-                        14,
-                      ),
-                    ),
-                  ),
+                                                              child: Text(
+                                                                l10n.disconnect,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          );
 
-                  child: const Text(
-                    "Déconnecter",
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    ),
-  );
-},
-      );
+                                          if (confirm != true) {
+                                            return;
+                                          }
 
-  if (confirm != true) {
-    return;
-  }
+                                          try {
+                                            await DeviceRepository()
+                                                .revokeDevice(
+                                                  device.idAppareil,
+                                                );
 
-  try {
-    await DeviceRepository()
-        .revokeDevice(
-      device.idAppareil,
-    );
+                                            ref.refresh(myDevicesProvider);
 
-    ref.refresh(
-      myDevicesProvider,
-    );
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    l10n.deviceDisconnected,
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          } catch (e) {
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    "${l10n.error} : $e",
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        },
 
-    if (context.mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "Appareil déconnecté",
-          ),
-        ),
-      );
-    }
-  } catch (e) {
-    if (context.mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Erreur : $e",
-          ),
-        ),
-      );
-    }
-  }
-},
+                                        icon: const Icon(
+                                          Icons.logout,
+                                          size: 18,
+                                        ),
 
-      icon: const Icon(
-        Icons.logout,
-        size: 18,
-      ),
-
-      label: const Text(
-        "Déconnecter",
-      ),
-    ),
-  ),
-],
+                                        label: Text(l10n.disconnect),
+                                      ),
+                                    ),
+                                  ],
                                 ],
                               ),
                             ),

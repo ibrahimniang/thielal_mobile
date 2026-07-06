@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
-
+import 'core/providers/app_container.dart';
 import 'firebase_options.dart';
 import 'package:thielal/core/storage/secure_storage_service.dart';
+import 'app/services/locale_service.dart';
 import 'package:thielal/core/services/local_notification_service.dart';
 import 'app/app.dart';
 
@@ -13,29 +14,27 @@ Future<void> main() async {
   // ==========================
   // FIREBASE
   // ==========================
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  debugPrint(
-    "🔥 Firebase initialisé avec succès",
-  );
+  debugPrint("🔥 Firebase initialisé avec succès");
 
   // ==========================
   // LOCAL NOTIFICATIONS
   // ==========================
   await LocalNotificationService.instance.initialize();
 
-  debugPrint(
-    "🔔 Local notifications initialisées",
-  );
+  debugPrint("🔔 Local notifications initialisées");
 
   // Réinitialisation du flag onboarding
   // await SecureStorageService.clearOnboardingFlag();
 
+  await LocaleService.loadSavedLocale();
+
+  final container = ProviderContainer();
+  appContainer = container;
+
+
   runApp(
-    const ProviderScope(
-      child: ThielalApp(),
-    ),
+    UncontrolledProviderScope(container: container, child: const ThielalApp()),
   );
 }

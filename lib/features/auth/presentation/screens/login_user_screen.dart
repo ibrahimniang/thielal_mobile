@@ -11,6 +11,8 @@ import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../../../l10n/app_localizations.dart';
+import 'package:thielal/app/services/locale_service.dart';
+import '../../../../features/profile/data/services/profile_remote_service.dart';
 
 import '../../application/auth_controller.dart';
 import '../../application/auth_state.dart';
@@ -78,63 +80,62 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
     super.dispose();
   }
 
-        Widget _buildHeader(BuildContext context) {
-        final l10n = AppLocalizations.of(context)!;
+  Widget _buildHeader(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
 
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(
-              'assets/images/logo.png',
-              width: 150, // 🔥 réduit (important)
-              fit: BoxFit.contain,
-            ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Image.asset(
+          'assets/images/logo.png',
+          width: 150, // 🔥 réduit (important)
+          fit: BoxFit.contain,
+        ),
 
-            const SizedBox(height: 10),
+        const SizedBox(height: 10),
 
-            Text(
-              l10n.appName,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 20, // 🔥 réduit aussi
-                fontWeight: FontWeight.w800,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
+        Text(
+          l10n.appName,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 20, // 🔥 réduit aussi
+            fontWeight: FontWeight.w800,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
 
-            const SizedBox(height: 4),
+        const SizedBox(height: 4),
 
-                        Text(
-                      l10n.loginSubtitle,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                        height: 1.4, 
-                      ),
-                    ),
-                  ],
-                );
-              }
-            Widget _buildFormCard({
-              required BuildContext context,
-              required AuthState authState,
-              required AuthController auth,
-            }) {
-              final l10n = AppLocalizations.of(context)!;
-              final isDark =
-              Theme.of(context).brightness ==
-              Brightness.dark;
+        Text(
+          l10n.loginSubtitle,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            height: 1.4,
+          ),
+        ),
+      ],
+    );
+  }
 
-              return ClipRRect(
-                borderRadius: BorderRadius.circular(28),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(22),
-                    decoration: BoxDecoration(
+  Widget _buildFormCard({
+    required BuildContext context,
+    required AuthState authState,
+    required AuthController auth,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(28),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
@@ -247,10 +248,12 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
 
                   children: [
                     Text(
-                      'Nouveau sur LifeLink ?',
+                      l10n.newToLifeLink,
 
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.7),
 
                         fontWeight: FontWeight.w500,
                       ),
@@ -261,8 +264,8 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
                         context.go(RouteNames.entryIdentity);
                       },
 
-                      child: const Text(
-                        'Continuer avec OTP',
+                      child: Text(
+                        l10n.continueWithOtp,
 
                         style: TextStyle(
                           color: Colors.red,
@@ -290,7 +293,7 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
     final auth = ref.read(authControllerProvider.notifier);
 
     return Scaffold(
-     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       /*appBar: AppBar(
         title: Text(l10n.login),
         backgroundColor: Colors.red,
@@ -307,37 +310,91 @@ class _LoginUserScreenState extends ConsumerState<LoginUserScreen> {
             padding: const EdgeInsets.all(AppSpacing.screenPadding),
             child: Column(
               children: [
-               Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    /// AIDE (gauche)
+                    Container(
+                      height: 48,
+                      width: 48,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => HelpPdfScreen()),
+                          );
+                        },
+                        icon: const Icon(Icons.help_outline),
+                      ),
+                    ),
 
-    // 👈 AIDE à gauche
-    IconButton(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => HelpPdfScreen(),
-          ),
-        );
-      },
-      icon: const Icon(Icons.help_outline),
-    ),
+                    /// LANGUE + THÈME (droite)
+                    Row(
+                      children: [
+                        Container(
+                          height: 48,
+                          width: 48,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: PopupMenuButton<String>(
+                            icon: const Icon(Icons.language_rounded),
+                            onSelected: (value) async {
+                              await LocaleService.changeLocale(value);
 
-    // 👉 MODE à droite
-    IconButton(
-      onPressed: () {
-        ref.read(themeProvider.notifier).toggleTheme();
-      },
-      icon: Icon(
-        isDark
-            ? Icons.wb_sunny_rounded
-            : Icons.dark_mode_rounded,
-      ),
-    ),
-
-  ],
-),
+                              try {
+                                await ProfileRemoteService().updateLanguage(
+                                  value,
+                                );
+                              } catch (e) {
+                                debugPrint('Erreur mise à jour langue: $e');
+                              }
+                            },
+                            itemBuilder:
+                                (context) => const [
+                                  PopupMenuItem(
+                                    value: 'fr',
+                                    child: Text('Français'),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'en',
+                                    child: Text('English'),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'ar',
+                                    child: Text('العربية'),
+                                  ),
+                                ],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Container(
+                          height: 48,
+                          width: 48,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: IconButton(
+                            onPressed: () {
+                              ref.read(themeProvider.notifier).toggleTheme();
+                            },
+                            icon: Icon(
+                              isDark
+                                  ? Icons.dark_mode_rounded
+                                  : Icons.wb_sunny_rounded,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 10),
                 _buildHeader(context),
                 const SizedBox(height: 16),

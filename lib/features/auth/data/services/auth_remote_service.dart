@@ -39,6 +39,7 @@ class AuthRemoteService {
     String? genre,
     String? dateNaissance,
     String? phone,
+    String? langue,
     String? email,
   }) async {
     return _dio.post(
@@ -49,6 +50,7 @@ class AuthRemoteService {
         'prenom': prenom,
         'genre': genre,
         'date_naissance': dateNaissance,
+        'langue': langue,
       },
     );
   }

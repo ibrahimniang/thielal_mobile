@@ -163,12 +163,6 @@ abstract class AppLocalizations {
   /// **'Phone'**
   String get phone;
 
-  /// No description provided for @loginSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign in to access your donor space'**
-  String get loginSubtitle;
-
   /// No description provided for @identifier.
   ///
   /// In en, this message translates to:
@@ -1678,7 +1672,7 @@ abstract class AppLocalizations {
   /// No description provided for @pleaseCompleteMedicalVerification.
   ///
   /// In en, this message translates to:
-  /// **'Please complete a medical verification.'**
+  /// **'Please go to the nearest center.'**
   String get pleaseCompleteMedicalVerification;
 
   /// No description provided for @overview.
@@ -1716,6 +1710,486 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This QR contains your secured donation information'**
   String get secureDonationQrInfo;
+
+  /// No description provided for @secureYourAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure your account'**
+  String get secureYourAccount;
+
+  /// No description provided for @createPasswordToSecureAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your password now to secure your LifeLink account.'**
+  String get createPasswordToSecureAccount;
+
+  /// No description provided for @createMyPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Create my password'**
+  String get createMyPassword;
+
+  /// No description provided for @passwordMinLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must contain at least 6 characters.'**
+  String get passwordMinLength;
+
+  /// No description provided for @newToLifeLink.
+  ///
+  /// In en, this message translates to:
+  /// **'New to LifeLink?'**
+  String get newToLifeLink;
+
+  /// No description provided for @continueWithOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with OTP'**
+  String get continueWithOtp;
+
+  /// No description provided for @alreadyHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get alreadyHaveAccount;
+
+  /// No description provided for @messaging.
+  ///
+  /// In en, this message translates to:
+  /// **'Messaging'**
+  String get messaging;
+
+  /// No description provided for @myConversations.
+  ///
+  /// In en, this message translates to:
+  /// **'My conversations'**
+  String get myConversations;
+
+  /// No description provided for @searchUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for a user...'**
+  String get searchUser;
+
+  /// No description provided for @noConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'No conversation'**
+  String get noConversation;
+
+  /// No description provided for @conversationsWillAppearHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Your conversations will appear here'**
+  String get conversationsWillAppearHere;
+
+  /// No description provided for @noMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'No message'**
+  String get noMessage;
+
+  /// No description provided for @online.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get online;
+
+  /// No description provided for @offline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline'**
+  String get offline;
+
+  /// No description provided for @writeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a message...'**
+  String get writeMessage;
+
+  /// No description provided for @notSpecified.
+  ///
+  /// In en, this message translates to:
+  /// **'Not specified'**
+  String get notSpecified;
+
+  /// No description provided for @donationCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Donation center'**
+  String get donationCenter;
+
+  /// No description provided for @nearbyCentersDisplayed.
+  ///
+  /// In en, this message translates to:
+  /// **'3 nearby centers displayed • search to see all centers'**
+  String get nearbyCentersDisplayed;
+
+  /// No description provided for @searchOrSelectCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Search or select a center'**
+  String get searchOrSelectCenter;
+
+  /// No description provided for @viewMyRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'View my requests'**
+  String get viewMyRequests;
+
+  /// No description provided for @donationTemporarilyUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Donation temporarily unavailable'**
+  String get donationTemporarilyUnavailable;
+
+  /// No description provided for @cannotDonateYet.
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot donate yet.'**
+  String get cannotDonateYet;
+
+  /// No description provided for @nextDonationAuthorizedDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Your next authorized donation date is'**
+  String get nextDonationAuthorizedDate;
+
+  /// No description provided for @participationRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Participation recorded'**
+  String get participationRecorded;
+
+  /// No description provided for @youAreNowParticipating.
+  ///
+  /// In en, this message translates to:
+  /// **'You are now participating in this request.'**
+  String get youAreNowParticipating;
+
+  /// No description provided for @contactCenterToDonate.
+  ///
+  /// In en, this message translates to:
+  /// **'Please contact the center or go there to make your donation.'**
+  String get contactCenterToDonate;
+
+  /// No description provided for @imParticipating.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m participating'**
+  String get imParticipating;
+
+  /// No description provided for @myRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'My requests'**
+  String get myRequests;
+
+  /// No description provided for @noRequestFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No request found'**
+  String get noRequestFound;
+
+  /// No description provided for @delivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered'**
+  String get delivered;
+
+  /// No description provided for @cancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get cancelled;
+
+  /// No description provided for @bloodRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Blood request'**
+  String get bloodRequest;
+
+  /// No description provided for @quantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get quantity;
+
+  /// No description provided for @accountSecuredSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Account secured successfully '**
+  String get accountSecuredSuccessfully;
+
+  /// No description provided for @todayAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Today at'**
+  String get todayAt;
+
+  /// No description provided for @yesterdayAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday at'**
+  String get yesterdayAt;
+
+  /// No description provided for @daysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Days ago'**
+  String get daysAgo;
+
+  /// No description provided for @days.
+  ///
+  /// In en, this message translates to:
+  /// **'days ago'**
+  String get days;
+
+  /// No description provided for @validatedDonation.
+  ///
+  /// In en, this message translates to:
+  /// **'Validated donation'**
+  String get validatedDonation;
+
+  /// No description provided for @notification.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification'**
+  String get notification;
+
+  /// No description provided for @mauritania.
+  ///
+  /// In en, this message translates to:
+  /// **'Mauritania'**
+  String get mauritania;
+
+  /// No description provided for @requester.
+  ///
+  /// In en, this message translates to:
+  /// **'Requester'**
+  String get requester;
+
+  /// No description provided for @message.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get message;
+
+  /// No description provided for @alreadyParticipant.
+  ///
+  /// In en, this message translates to:
+  /// **'Already participating'**
+  String get alreadyParticipant;
+
+  /// No description provided for @noNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications'**
+  String get noNotification;
+
+  /// No description provided for @bloodNeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Blood needed'**
+  String get bloodNeed;
+
+  /// No description provided for @eligibleToDonate.
+  ///
+  /// In en, this message translates to:
+  /// **'Eligible to donate'**
+  String get eligibleToDonate;
+
+  /// No description provided for @connectedDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected devices'**
+  String get connectedDevices;
+
+  /// No description provided for @recentConnections.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent connections'**
+  String get recentConnections;
+
+  /// No description provided for @noDeviceRegistered.
+  ///
+  /// In en, this message translates to:
+  /// **'No device registered'**
+  String get noDeviceRegistered;
+
+  /// No description provided for @disconnectDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect device'**
+  String get disconnectDevice;
+
+  /// No description provided for @current.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get current;
+
+  /// No description provided for @lastConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Last connection'**
+  String get lastConnection;
+
+  /// No description provided for @confirmDisconnectDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you really want to disconnect'**
+  String get confirmDisconnectDevice;
+
+  /// No description provided for @deviceReconnectRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'After disconnection, this device will need to reconnect to access your account.'**
+  String get deviceReconnectRequired;
+
+  /// No description provided for @disconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get disconnect;
+
+  /// No description provided for @deviceDisconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Device disconnected'**
+  String get deviceDisconnected;
+
+  /// No description provided for @theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get theme;
+
+  /// No description provided for @darkMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark mode'**
+  String get darkMode;
+
+  /// No description provided for @lightMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Light mode'**
+  String get lightMode;
+
+  /// No description provided for @locationLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Location in progress...'**
+  String get locationLoading;
+
+  /// No description provided for @sessionExpiredMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session has expired. Please log in again.'**
+  String get sessionExpiredMessage;
+
+  /// No description provided for @noInternetConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'No Internet connection'**
+  String get noInternetConnection;
+
+  /// No description provided for @checkInternetAndRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check your Internet connection and try again.'**
+  String get checkInternetAndRetry;
+
+  /// No description provided for @deliveryReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery receipt'**
+  String get deliveryReceipt;
+
+  /// No description provided for @presentQrToStaff.
+  ///
+  /// In en, this message translates to:
+  /// **'Present this QR code to the healthcare staff.'**
+  String get presentQrToStaff;
+
+  /// No description provided for @viewReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'View receipt'**
+  String get viewReceipt;
+
+  /// No description provided for @markAllAsRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all as read'**
+  String get markAllAsRead;
+
+  /// No description provided for @deleteAllNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all notifications'**
+  String get deleteAllNotifications;
+
+  /// No description provided for @deleteAllNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all notifications?'**
+  String get deleteAllNotificationsTitle;
+
+  /// No description provided for @deleteAllNotificationsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you really want to delete all your notifications? This action cannot be undone.'**
+  String get deleteAllNotificationsMessage;
+
+  /// No description provided for @allNotificationsMarkedAsRead.
+  ///
+  /// In en, this message translates to:
+  /// **'All notifications have been marked as read.'**
+  String get allNotificationsMarkedAsRead;
+
+  /// No description provided for @allNotificationsDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'All notifications have been deleted.'**
+  String get allNotificationsDeleted;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @deleteReadNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete read notifications'**
+  String get deleteReadNotifications;
+
+  /// No description provided for @deleteReadNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete read notifications?'**
+  String get deleteReadNotificationsTitle;
+
+  /// No description provided for @deleteReadNotificationsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'All notifications must be read before they can be deleted.'**
+  String get deleteReadNotificationsMessage;
+
+  /// No description provided for @allReadNotificationsDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Read notifications have been deleted.'**
+  String get allReadNotificationsDeleted;
+
+  /// No description provided for @loginSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to access your LifeLink space'**
+  String get loginSubtitle;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

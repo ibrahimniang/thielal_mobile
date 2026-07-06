@@ -77,10 +77,10 @@ class _GpsFloatingButtonState
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
 
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
 
                 border: Border.all(
-                  color: Colors.white,
+                   color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
 
                   width: 2,
                 ),

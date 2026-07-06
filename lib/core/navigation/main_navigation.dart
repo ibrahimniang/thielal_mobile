@@ -4,24 +4,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:thielal/features/notifications/presentation/controllers/notification_controller.dart';
-
+import 'package:thielal/features/alerts/presentation/providers/alerts_provider.dart';
+import 'package:thielal/features/collectes/presentation/providers/collectes_provider.dart';
+import 'package:thielal/features/centers/application/centers_provider.dart';
+import 'package:thielal/features/donations/application/donation_controller.dart';
 import '../../app/router/route_names.dart';
 import '../../l10n/app_localizations.dart';
 
 class MainNavigation extends ConsumerWidget {
   final Widget child;
 
-  const MainNavigation({
-    super.key,
-    required this.child,
-  });
+  const MainNavigation({super.key, required this.child});
 
   int _index(String location) {
-
     if (location.startsWith(RouteNames.home)) return 0;
     if (location.startsWith(RouteNames.map)) return 1;
     if (location.startsWith(RouteNames.donations) ||
-        location.startsWith(RouteNames.demandeSang)) return 2;
+        location.startsWith(RouteNames.demandeSang))
+      return 2;
     if (location.startsWith(RouteNames.settings)) return 3;
     if (location.startsWith(RouteNames.notifications)) return 4;
 
@@ -32,15 +32,14 @@ class MainNavigation extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
 
-      /// ==========================================
-      /// BODY
-      /// ==========================================
+    /// ==========================================
+    /// BODY
+    /// ==========================================
 
     final location = GoRouterState.of(context).uri.toString();
     final currentIndex = _index(location);
 
-    final unreadCountAsync =
-        ref.watch(unreadNotificationCountProvider);
+    final unreadCountAsync = ref.watch(unreadNotificationCountProvider);
 
     unreadCountAsync.when(
       data: (count) => debugPrint('🔔 BADGE COUNT = $count'),
@@ -64,7 +63,6 @@ class MainNavigation extends ConsumerWidget {
               alignment: Alignment.bottomCenter,
               clipBehavior: Clip.none,
               children: [
-
                 Positioned(
                   bottom: 0,
                   left: 0,
@@ -78,12 +76,12 @@ class MainNavigation extends ConsumerWidget {
                         height: 66,
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         decoration: BoxDecoration(
-  color: Colors.white.withOpacity(0.18),
+                          color: Colors.white.withOpacity(0.18),
                           borderRadius: BorderRadius.circular(28),
-                        border: Border.all(
-  color: Colors.white.withOpacity(0.25),
-  width: 1,
-),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.25),
+                            width: 1,
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.04),
@@ -99,7 +97,14 @@ class MainNavigation extends ConsumerWidget {
                                 icon: Icons.home_rounded,
                                 label: l10n.home,
                                 selected: currentIndex == 0,
-                                onTap: () => context.go(RouteNames.home),
+                                onTap: () {
+                                  ref.invalidate(alertsProvider);
+                                  ref.invalidate(collectesProvider);
+                                  ref.invalidate(centersProvider);
+                                  ref.invalidate(myDonationsProvider);
+
+                                  context.go(RouteNames.home);
+                                },
                               ),
                             ),
                             Expanded(
@@ -124,8 +129,22 @@ class MainNavigation extends ConsumerWidget {
                                 label: l10n.notifications,
                                 selected: currentIndex == 4,
                                 unreadCountAsync: unreadCountAsync,
-                                onTap: () => context.go(RouteNames.notifications),
 
+                                onTap: () async {
+                                  await ref
+                                      .read(
+                                        notificationControllerProvider.notifier,
+                                      )
+                                      .loadNotifications();
+
+                                  ref.invalidate(
+                                    unreadNotificationCountProvider,
+                                  );
+
+                                  if (context.mounted) {
+                                    context.go(RouteNames.notifications);
+                                  }
+                                },
                               ),
                             ),
                           ],
@@ -149,10 +168,7 @@ class MainNavigation extends ConsumerWidget {
                             gradient: const LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
-                              colors: [
-                                Color(0xFFE53946),
-                                Color(0xFFC1121F),
-                              ],
+                              colors: [Color(0xFFE53946), Color(0xFFC1121F)],
                             ),
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white, width: 5),
@@ -167,9 +183,10 @@ class MainNavigation extends ConsumerWidget {
                         Text(
                           l10n.request,
                           style: TextStyle(
-                            color: currentIndex == 2
-                                ? const Color(0xFFE53946)
-                                : Colors.grey.shade500,
+                            color:
+                                currentIndex == 2
+                                    ? const Color(0xFFE53946)
+                                    : Colors.grey.shade500,
                             fontWeight: FontWeight.w800,
 
                             fontSize: 10,
@@ -187,7 +204,6 @@ class MainNavigation extends ConsumerWidget {
     );
   }
 }
-
 
 /// ==========================================
 /// NAV ITEM
@@ -220,17 +236,16 @@ class _NavItem extends StatelessWidget {
             height: 36,
             width: 36,
             decoration: BoxDecoration(
-              color: selected
-                  ? const Color(0xFFE53946).withOpacity(0.12)
-                  : Colors.transparent,
+              color:
+                  selected
+                      ? const Color(0xFFE53946).withOpacity(0.12)
+                      : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               icon,
               size: 22,
-              color: selected
-                  ? const Color(0xFFE53946)
-                  : Colors.grey.shade500,
+              color: selected ? const Color(0xFFE53946) : Colors.grey.shade500,
             ),
           ),
           const SizedBox(height: 3),
@@ -238,9 +253,7 @@ class _NavItem extends StatelessWidget {
             label,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: selected
-                  ? const Color(0xFFE53946)
-                  : Colors.grey.shade500,
+              color: selected ? const Color(0xFFE53946) : Colors.grey.shade500,
               fontSize: 10,
               fontWeight: FontWeight.w700,
             ),
@@ -249,7 +262,6 @@ class _NavItem extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class _NotificationNavItem extends StatelessWidget {
@@ -278,9 +290,10 @@ class _NotificationNavItem extends StatelessWidget {
             height: 36,
             width: 36,
             decoration: BoxDecoration(
-              color: selected
-                  ? const Color(0xFFE53946).withOpacity(0.12)
-                  : Colors.transparent,
+              color:
+                  selected
+                      ? const Color(0xFFE53946).withOpacity(0.12)
+                      : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Stack(
@@ -290,9 +303,8 @@ class _NotificationNavItem extends StatelessWidget {
                 Icon(
                   Icons.notifications_rounded,
                   size: 22,
-                  color: selected
-                      ? const Color(0xFFE53946)
-                      : Colors.grey.shade500,
+                  color:
+                      selected ? const Color(0xFFE53946) : Colors.grey.shade500,
                 ),
                 unreadCountAsync.when(
                   data: (count) {
@@ -332,9 +344,7 @@ class _NotificationNavItem extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: selected
-                  ? const Color(0xFFE53946)
-                  : Colors.grey.shade500,
+              color: selected ? const Color(0xFFE53946) : Colors.grey.shade500,
               fontSize: 10,
               fontWeight: FontWeight.w700,
             ),
@@ -344,4 +354,3 @@ class _NotificationNavItem extends StatelessWidget {
     );
   }
 }
-  

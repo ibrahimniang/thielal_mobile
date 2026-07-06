@@ -24,6 +24,20 @@ class NotificationService {
 
   /// marquer notification comme lue
   Future<Response> markAsRead(int id) async {
-  return await dio.put(ApiEndpoints.markAsRead(id));
-}
+    return await dio.put(ApiEndpoints.markAsRead(id));
+  }
+
+  /// ===============================
+  /// Tout marquer comme lu
+  /// ===============================
+  Future<Response> markAllAsRead() async {
+    return await dio.put(ApiEndpoints.readAllNotifications);
+  }
+
+  /// ===============================
+  /// Supprimer les notifications lues
+  /// ===============================
+  Future<Response> deleteAllReadNotifications() async {
+    return await dio.delete(ApiEndpoints.deleteReadNotifications);
+  }
 }

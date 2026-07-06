@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import '../../../../l10n/app_localizations.dart';
+import 'package:thielal/shared/widgets/app_heart_loader.dart';
 
 import '../../../../core/config/env.dart';
 import '../../../../core/config/api_endpoints.dart';
@@ -20,9 +22,7 @@ class ConversationsScreen extends ConsumerStatefulWidget {
       _ConversationsScreenState();
 }
 
-class _ConversationsScreenState
-    extends ConsumerState<ConversationsScreen> {
-
+class _ConversationsScreenState extends ConsumerState<ConversationsScreen> {
   Timer? conversationTimer;
   bool isSearching = false;
 
@@ -40,9 +40,7 @@ class _ConversationsScreenState
   void initState() {
     super.initState();
 
-    final user =
-        ref.read(authControllerProvider)
-            .currentUser;
+    final user = ref.read(authControllerProvider).currentUser;
 
     currentUserId = user?.idUtilisateur;
 
@@ -74,30 +72,18 @@ class _ConversationsScreenState
     // CONNECT
     // =========================
     socket.onConnect((_) {
+      debugPrint("✅ Socket conversations connecté");
 
-      debugPrint(
-        "✅ Socket conversations connecté"
-      );
-
-      socket.emit(
-        "joinUser",
-        currentUserId,
-      );
+      socket.emit("joinUser", currentUserId);
     });
 
     // =========================
     // RECONNECT
     // =========================
     socket.onReconnect((_) {
+      debugPrint("🔄 socket reconnect");
 
-      debugPrint(
-        "🔄 socket reconnect"
-      );
-
-      socket.emit(
-        "joinUser",
-        currentUserId,
-      );
+      socket.emit("joinUser", currentUserId);
 
       loadConversations();
     });
@@ -105,61 +91,41 @@ class _ConversationsScreenState
     // =========================
     // REALTIME CONVERSATIONS
     // =========================
-    socket.on(
-      "conversationUpdated",
-      (data) {
+    socket.on("conversationUpdated", (data) {
+      if (!mounted) return;
 
-        if (!mounted) return;
+      debugPrint("🔥 conversationUpdated reçu");
 
-        debugPrint(
-          "🔥 conversationUpdated reçu"
-        );
-
-        loadConversations();
-      },
-    );
+      loadConversations();
+    });
 
     // =========================
     // MESSAGE READ
     // =========================
-    socket.on(
-      "messageRead",
-      (_) {
+    socket.on("messageRead", (_) {
+      if (!mounted) return;
 
-        if (!mounted) return;
-
-        loadConversations();
-      },
-    );
+      loadConversations();
+    });
 
     // =========================
     // SOCKET ERROR
     // =========================
     socket.onConnectError((e) {
-
-      debugPrint(
-        "❌ socket connect error: $e"
-      );
+      debugPrint("❌ socket connect error: $e");
     });
 
     socket.onDisconnect((_) {
-
-      debugPrint(
-        "❌ socket disconnected"
-      );
+      debugPrint("❌ socket disconnected");
     });
 
-    conversationTimer = Timer.periodic(
-      const Duration(seconds: 3),
-      (timer) {
-        loadConversations();
-      },
-    );
+    conversationTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      loadConversations();
+    });
   }
 
   @override
   void dispose() {
-
     conversationTimer?.cancel();
     socket.off("conversationUpdated");
 
@@ -177,65 +143,43 @@ class _ConversationsScreenState
   // LOAD CONVERSATIONS
   // =========================
   Future<void> loadConversations() async {
-
     try {
-
-      final token =
-          ref.read(authControllerProvider)
-              .accessToken;
+      final token = ref.read(authControllerProvider).accessToken;
 
       final res = await http.get(
-        Uri.parse(
-          "${Env.baseUrl}${ApiEndpoints.conversations}",
-        ),
+        Uri.parse("${Env.baseUrl}${ApiEndpoints.conversations}"),
         headers: {
-          "Authorization":
-              "Bearer $token",
+          "Authorization": "Bearer $token",
 
-          "Content-Type":
-              "application/json",
+          "Content-Type": "application/json",
         },
       );
 
-      debugPrint(
-        "📨 conversations status => ${res.statusCode}"
-      );
+      debugPrint("📨 conversations status => ${res.statusCode}");
 
       if (res.statusCode == 200) {
-
-        final data =
-            jsonDecode(res.body);
+        final data = jsonDecode(res.body);
 
         if (!mounted) return;
 
         setState(() {
-
-          conversations =
-              data["data"] ?? [];
+          conversations = data["data"] ?? [];
 
           loading = false;
         });
-
       } else {
-
         if (!mounted) return;
 
         setState(() {
-
           loading = false;
         });
       }
-
     } catch (e) {
-
-      debugPrint(
-        "❌ Erreur conversations: $e",
-      );
+      debugPrint("❌ Erreur conversations: $e");
 
       if (!mounted) return;
 
       setState(() {
-
         loading = false;
       });
     }
@@ -244,27 +188,16 @@ class _ConversationsScreenState
   // =========================
   // DATE
   // =========================
-  String formatDate(
-    String? dateString,
-  ) {
-
+  String formatDate(String? dateString) {
     if (dateString == null) {
       return "";
     }
 
     try {
+      final date = DateTime.parse(dateString).toLocal();
 
-      final date =
-          DateTime.parse(dateString)
-              .toLocal();
-
-      return DateFormat(
-        "d MMM à HH:mm",
-        "fr_FR",
-      ).format(date);
-
+      return DateFormat("d MMM à HH:mm", "fr_FR").format(date);
     } catch (_) {
-
       return "";
     }
   }
@@ -273,16 +206,14 @@ class _ConversationsScreenState
   // FULL NAME
   // =========================
   String getFullName(Map? user) {
-
+    final l10n = AppLocalizations.of(context)!;
     if (user == null) {
-      return "Utilisateur";
+      return l10n.user;
     }
 
-    final prenom =
-        user["prenom"] ?? "";
+    final prenom = user["prenom"] ?? "";
 
-    final nom =
-        user["nom"] ?? "";
+    final nom = user["nom"] ?? "";
 
     return "$prenom $nom".trim();
   }
@@ -291,6 +222,7 @@ class _ConversationsScreenState
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: isDark ? colors.surface : const Color(0xFFF5F7FB),
@@ -298,57 +230,38 @@ class _ConversationsScreenState
       body: SafeArea(
         child: Column(
           children: [
-
             /// =========================
             /// HEADER
             /// =========================
             Container(
-              padding:
-                  const EdgeInsets.fromLTRB(
-                20,
-                20,
-                20,
-                28,
-              ),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
 
-              decoration:
-                  const BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Color(0xFFE53946),
-                    Color(0xFFC1121F),
-                  ],
+                  colors: [Color(0xFFE53946), Color(0xFFC1121F)],
                 ),
 
-                borderRadius:
-                    BorderRadius.only(
-                  bottomLeft:
-                      Radius.circular(30),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
 
-                  bottomRight:
-                      Radius.circular(30),
+                  bottomRight: Radius.circular(30),
                 ),
               ),
 
               child: Row(
                 children: [
-
                   GestureDetector(
                     onTap: () {
-
                       context.pop();
                     },
 
                     child: Container(
-                      padding:
-                          const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(10),
 
-                      decoration:
-                          BoxDecoration(
+                      decoration: BoxDecoration(
                         color: Colors.white24,
 
-                        shape:
-                            BoxShape.circle,
+                        shape: BoxShape.circle,
                       ),
 
                       child: const Icon(
@@ -361,15 +274,13 @@ class _ConversationsScreenState
 
                   const SizedBox(width: 16),
 
-                   Expanded(
+                  Expanded(
                     child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
 
                       children: [
-
                         Text(
-                          "Messagerie",
+                          l10n.messaging,
 
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
@@ -381,7 +292,7 @@ class _ConversationsScreenState
                         SizedBox(height: 4),
 
                         Text(
-                          "Mes discussions",
+                          l10n.myConversations,
 
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
@@ -426,10 +337,11 @@ class _ConversationsScreenState
                 child: TextField(
                   controller: searchController,
                   decoration: InputDecoration(
-                    hintText: "Rechercher un utilisateur...",
-                    prefixIcon:  Icon(Icons.search),
+                    hintText: l10n.searchUser,
+                    prefixIcon: Icon(Icons.search),
                     filled: true,
-                    fillColor: isDark ? colors.surfaceContainerHighest : Colors.white,
+                    fillColor:
+                        isDark ? colors.surfaceContainerHighest : Colors.white,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(18),
                       borderSide: BorderSide.none,
@@ -438,76 +350,58 @@ class _ConversationsScreenState
                 ),
               ),
 
-           
-
             /// =========================
             /// LOADING
             /// =========================
             if (loading)
-
-               Expanded(
-                child: Center(
-                  child:
-                      CircularProgressIndicator(
-                    color:
-                        Color(0xFFE53946),
-                  ),
-                ),
-              )
-
+              Expanded(child: Center(child: AppHeartLoader(size: 90)))
             /// =========================
             /// EMPTY
             /// =========================
             else if (conversations.isEmpty)
-
               Expanded(
                 child: Center(
                   child: Column(
-                    mainAxisAlignment:
-                        MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
 
                     children: [
-
                       Container(
                         height: 100,
                         width: 100,
 
-                        decoration:
-                            BoxDecoration(
-                          color: isDark
-                            ? Colors.red.withOpacity(0.15)
-                            : Colors.red.withOpacity(0.08),
+                        decoration: BoxDecoration(
+                          color:
+                              isDark
+                                  ? Colors.red.withOpacity(0.15)
+                                  : Colors.red.withOpacity(0.08),
 
-                          shape:
-                              BoxShape.circle,
+                          shape: BoxShape.circle,
                         ),
 
                         child: const Icon(
                           Icons.forum_outlined,
                           size: 50,
-                          color:
-                              Color(0xFFE53946),
+                          color: Color(0xFFE53946),
                         ),
                       ),
 
-                      
-                     SizedBox(height: 20),
+                      SizedBox(height: 20),
 
-                       Text(
-                        "Aucune conversation",
+                      Text(
+                        l10n.noConversation,
 
-                       style: TextStyle(
-                        fontSize: 11,
-                        color: isDark ? Colors.white54 : Colors.grey,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isDark ? Colors.white54 : Colors.grey,
+                        ),
                       ),
-                      ),
 
-                       SizedBox(height: 8),
+                      SizedBox(height: 8),
 
-                       Text(
-                        "Vos discussions apparaîtront ici",
+                      Text(
+                        l10n.conversationsWillAppearHere,
 
-                       style: TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           color: isDark ? Colors.white54 : Colors.grey,
                         ),
@@ -516,65 +410,44 @@ class _ConversationsScreenState
                   ),
                 ),
               )
-
             /// =========================
             /// LISTE
             /// =========================
             else
-
               Expanded(
                 child: RefreshIndicator(
-                  color:
-                      const Color(0xFFE53946),
+                  color: const Color(0xFFE53946),
 
-                  onRefresh:
-                      loadConversations,
+                  onRefresh: loadConversations,
 
                   child: ListView.builder(
-                    padding:
-                        const EdgeInsets.symmetric(
-                      horizontal: 20,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
 
-                    itemCount:
-                        conversations.length,
+                    itemCount: conversations.length,
 
-                    itemBuilder:
-                        (context, index) {
+                    itemBuilder: (context, index) {
+                      final c = conversations[index];
 
-                      final c =
-                          conversations[index];
+                      final user1 = c["utilisateur1"];
 
-                      final user1 =
-                          c["utilisateur1"];
+                      final user2 = c["utilisateur2"];
 
-                      final user2 =
-                          c["utilisateur2"];
-
-                      final conversationId =
-                          c["id_conversation"];
+                      final conversationId = c["id_conversation"];
 
                       final otherUser =
                           (user1 != null &&
-                                  user1[
-                                          "id_utilisateur"] ==
-                                      currentUserId)
+                                  user1["id_utilisateur"] == currentUserId)
                               ? user2
                               : user1;
 
-                      final otherUserId =
-                          otherUser?[
-                              "id_utilisateur"];
+                      final otherUserId = otherUser?["id_utilisateur"];
 
-                      final fullName =
-                          getFullName(
-                        otherUser,
-                      );
+                      final fullName = getFullName(otherUser);
                       final telephone =
-                        (otherUser?["telephone"] ?? "")
-                            .toString()
-                            .toLowerCase();
-                            
+                          (otherUser?["telephone"] ?? "")
+                              .toString()
+                              .toLowerCase();
+
                       final search = searchQuery.trim().toLowerCase();
 
                       if (search.isNotEmpty &&
@@ -584,149 +457,100 @@ class _ConversationsScreenState
                       }
 
                       final lastMessage =
-                          c["dernier_message"] ??
-                              "Aucun message";
+                          c["dernier_message"] ?? l10n.noMessage;
 
                       final unreadCount =
-                          int.tryParse(
-                                c["unreadCount"]
-                                    .toString(),
-                              ) ??
-                              0;
+                          int.tryParse(c["unreadCount"].toString()) ?? 0;
 
-                      final hasUnread =
-                          unreadCount > 0;
+                      final hasUnread = unreadCount > 0;
 
-                      final formattedDate =
-                          formatDate(
-                        c["date_dernier_message"]
-                            ?.toString(),
+                      final formattedDate = formatDate(
+                        c["date_dernier_message"]?.toString(),
                       );
-                      
 
                       return GestureDetector(
-
                         onTap: () {
-
                           context.push(
                             '/chat/$conversationId',
 
                             extra: {
-                              "fullName":
-                                  fullName,
+                              "fullName": fullName,
 
-                              "otherUserId":
-                                  otherUserId,
+                              "otherUserId": otherUserId,
                             },
                           );
                         },
 
                         child: Container(
-                          margin:
-                              const EdgeInsets.only(
-                            bottom: 16,
-                          ),
+                          margin: const EdgeInsets.only(bottom: 16),
 
-                          padding:
-                              const EdgeInsets.all(
-                            18,
-                          ),
+                          padding: const EdgeInsets.all(18),
 
-                          decoration:
-                              BoxDecoration(
-                            color: isDark ? colors.surfaceContainerHighest : Colors.white,
+                          decoration: BoxDecoration(
+                            color:
+                                isDark
+                                    ? colors.surfaceContainerHighest
+                                    : Colors.white,
 
-                            borderRadius:
-                                BorderRadius.circular(
-                              24,
-                            ),
+                            borderRadius: BorderRadius.circular(24),
 
                             boxShadow: [
-
                               BoxShadow(
-                                color: Colors.black
-                                    .withOpacity(
-                                  0.05,
-                                ),
+                                color: Colors.black.withOpacity(0.05),
 
                                 blurRadius: 20,
 
-                                offset:
-                                    const Offset(
-                                  0,
-                                  8,
-                                ),
+                                offset: const Offset(0, 8),
                               ),
                             ],
                           ),
 
                           child: Row(
                             children: [
-
                               /// AVATAR
                               Stack(
                                 children: [
-
                                   CircleAvatar(
                                     radius: 28,
 
-                                    backgroundColor:
-                                        const Color(
-                                      0xFFE53946,
-                                    ),
+                                    backgroundColor: const Color(0xFFE53946),
 
                                     child: Text(
-                                      fullName
-                                              .isNotEmpty
-                                          ? fullName[0]
-                                              .toUpperCase()
+                                      fullName.isNotEmpty
+                                          ? fullName[0].toUpperCase()
                                           : "?",
 
-                                      style:
-                                           TextStyle(
-                                        color:
-                                            Colors.white,
+                                      style: TextStyle(
+                                        color: Colors.white,
 
-                                        fontWeight:
-                                            FontWeight.bold,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ),
 
                                   if (hasUnread)
-
                                     Positioned(
                                       right: 0,
                                       top: 0,
 
-                                      child:
-                                          Container(
-                                        padding:
-                                            const EdgeInsets
-                                                .all(6),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(6),
 
-                                        decoration:
-                                            const BoxDecoration(
-                                          color:
-                                              Colors.red,
+                                        decoration: const BoxDecoration(
+                                          color: Colors.red,
 
-                                          shape:
-                                              BoxShape.circle,
+                                          shape: BoxShape.circle,
                                         ),
 
                                         child: Text(
-                                          unreadCount
-                                              .toString(),
+                                          unreadCount.toString(),
 
-                                          style:
-                                               TextStyle(
-                                            color:
-                                                Colors.white,
+                                          style: TextStyle(
+                                            color: Colors.white,
 
                                             fontSize: 10,
 
-                                            fontWeight:
-                                                FontWeight.bold,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                         ),
                                       ),
@@ -739,39 +563,29 @@ class _ConversationsScreenState
                               /// MESSAGE
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
 
                                   children: [
-
                                     Text(
                                       fullName,
 
-                                      style:
-                                           TextStyle(
-                                        fontWeight:
-                                            FontWeight.bold,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
 
                                         fontSize: 16,
                                       ),
                                     ),
 
-                                    const SizedBox(
-                                      height: 6,
-                                    ),
+                                    const SizedBox(height: 6),
 
                                     Text(
                                       lastMessage,
 
                                       maxLines: 1,
 
-                                      overflow:
-                                          TextOverflow.ellipsis,
+                                      overflow: TextOverflow.ellipsis,
 
-                                      style: TextStyle(
-                                        color:
-                                            Colors.grey[600],
-                                      ),
+                                      style: TextStyle(color: Colors.grey[600]),
                                     ),
                                   ],
                                 ),
@@ -780,16 +594,13 @@ class _ConversationsScreenState
                               const SizedBox(width: 10),
 
                               Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.end,
 
                                 children: [
-
                                   Text(
                                     formattedDate,
 
-                                    style:
-                                        TextStyle(
+                                    style: TextStyle(
                                       fontSize: 11,
 
                                       color: Colors.grey,

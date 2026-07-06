@@ -99,6 +99,18 @@ class ApiEndpoints {
 
   static const unreadCount = "/notifications/unread-count";
 
+  /// Marquer toutes les notifications comme lues
+static const String readAllNotifications =
+    '/notifications/read-all';
+
+/// Supprimer toutes les notifications lues
+static const String deleteReadNotifications =
+    '/notifications/delete-read';
+
+/// Supprimer une notification
+static String deleteNotification(int id) =>
+    '/notifications/$id';
+
   //static const String unreadCount = '/notifications/unread-count';
 
   /// Marquer notification comme lue
@@ -109,6 +121,13 @@ class ApiEndpoints {
   static String markAsRead(dynamic id) {
     return '/notifications/$id/read';
   }
+
+  // ==========================
+// RECEIPT
+// ==========================
+
+static String receipt(int demandeId) =>
+    '/dons/receipt/$demandeId';
 
   /// Enregistrement device
   static const String registerDevice = '/register-device';

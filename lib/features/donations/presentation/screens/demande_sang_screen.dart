@@ -727,8 +727,8 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
                     /// ==================================
                     /// CENTRE DE DON
                     /// ==================================
-                    const Text(
-                      "Centre de don",
+                    Text(
+                      l10n.donationCenter,
 
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
@@ -738,8 +738,8 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
 
                     const SizedBox(height: 8),
 
-                    const Text(
-                      "3 centres proches affichés • recherchez pour voir tous les centres",
+                    Text(
+                      l10n.nearbyCentersDisplayed,
 
                       style: TextStyle(
                         color: Colors.grey,
@@ -797,7 +797,7 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
                               focusNode: focusNode,
 
                               decoration: InputDecoration(
-                                hintText: "Rechercher ou choisir un centre",
+                                hintText: l10n.searchOrSelectCenter,
 
                                 prefixIcon: const Icon(Icons.local_hospital),
 
@@ -981,8 +981,8 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
 
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 12,
+                        horizontal: 20,
+                        vertical: 18,
                       ),
 
                       decoration: BoxDecoration(
@@ -995,64 +995,29 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
                       ),
 
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
                         children: [
-                          /// MINUS
-                          IconButton(
-                            onPressed: () {
-                              if (quantite > 1) {
-                                setState(() {
-                                  quantite--;
-                                });
-                              }
-                            },
-
-                            icon: Container(
-                              padding: const EdgeInsets.all(6),
-
-                              decoration: BoxDecoration(
-                                color:
-                                    isDark
-                                        ? const Color(0xFF475569)
-                                        : Colors.white,
-
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-
-                              child: const Icon(Icons.remove),
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFE5E8),
+                              borderRadius: BorderRadius.circular(14),
                             ),
+                            child: Icon(
+  Icons.bloodtype,
+  color: Color(0xFFC1121F),
+  size: 28,
+),
                           ),
-
-                          /// VALUE
-                          Text(
-                            "$quantite ${l10n.bags}",
-
-                            style: const TextStyle(
-                              fontSize: 18,
-
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-
-                          /// PLUS
-                          IconButton(
-                            onPressed: () {
-                              setState(() {
-                                quantite++;
-                              });
-                            },
-
-                            icon: Container(
-                              padding: const EdgeInsets.all(6),
-
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFC1121F),
-
-                                borderRadius: BorderRadius.circular(12),
+                          const Expanded(
+                            child: Center(
+                              child: Text(
+                                "1 poche",
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
-
-                              child: const Icon(Icons.add, color: Colors.white),
                             ),
                           ),
                         ],
@@ -1071,7 +1036,7 @@ class _DemandeSangScreenState extends ConsumerState<DemandeSangScreen> {
                     context.push('/my-demandes');
                   },
                   icon: const Icon(Icons.history),
-                  label: const Text('Voir mes demandes'),
+                  label: Text(l10n.viewMyRequests),
                 ),
               ),
 

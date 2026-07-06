@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../../../../l10n/app_localizations.dart';
+
 class BloodRequestNotificationCard extends StatelessWidget {
   final String bloodGroup;
   final String city;
   final String date;
   final bool isRead;
+  final bool isLoading;
   final VoidCallback? onTap;
 
   const BloodRequestNotificationCard({
@@ -13,22 +16,26 @@ class BloodRequestNotificationCard extends StatelessWidget {
     required this.city,
     required this.date,
     required this.isRead,
+    required this.isLoading,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
 
-    final bgColor = isRead
-        ? (isDark ? colorScheme.surface : Colors.grey.shade100)
-        : (isDark ? colorScheme.surfaceVariant : const Color(0xFFE3F2FD));
+    final bgColor =
+        isRead
+            ? (isDark ? colorScheme.surface : Colors.grey.shade100)
+            : (isDark ? colorScheme.surfaceVariant : const Color(0xFFE3F2FD));
 
-    final borderColor = isRead
-        ? (isDark ? colorScheme.outline : Colors.grey.shade300)
-        : (isDark ? colorScheme.primary : const Color(0xFF4FC3F7));
+    final borderColor =
+        isRead
+            ? (isDark ? colorScheme.outline : Colors.grey.shade300)
+            : (isDark ? colorScheme.primary : const Color(0xFF4FC3F7));
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -40,9 +47,7 @@ class BloodRequestNotificationCard extends StatelessWidget {
 
         borderRadius: BorderRadius.circular(16),
 
-        border: Border.all(
-          color: borderColor,
-        ),
+        border: Border.all(color: borderColor),
       ),
 
       child: Row(
@@ -53,9 +58,10 @@ class BloodRequestNotificationCard extends StatelessWidget {
             width: 50,
 
             decoration: BoxDecoration(
-              color: isDark
-                  ? colorScheme.primary.withOpacity(0.15)
-                  : const Color(0xFFFFEBEE),
+              color:
+                  isDark
+                      ? colorScheme.primary.withOpacity(0.15)
+                      : const Color(0xFFFFEBEE),
 
               shape: BoxShape.circle,
             ),
@@ -75,7 +81,7 @@ class BloodRequestNotificationCard extends StatelessWidget {
 
               children: [
                 Text(
-                  "🚨 Besoin de sang $bloodGroup",
+                  "🚨 ${l10n.bloodNeed} $bloodGroup",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -112,12 +118,11 @@ class BloodRequestNotificationCard extends StatelessWidget {
             margin: const EdgeInsets.only(left: 12),
 
             child: ElevatedButton(
-              onPressed: onTap,
+              onPressed: isLoading ? null : onTap,
 
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDark
-                    ? colorScheme.primary
-                    : const Color(0xFFC1121F),
+                backgroundColor:
+                    isDark ? colorScheme.primary : const Color(0xFFC1121F),
 
                 foregroundColor: Colors.white,
 
@@ -128,9 +133,19 @@ class BloodRequestNotificationCard extends StatelessWidget {
                 ),
               ),
 
-              child: const Text("J'y vais"),
+              child:
+    isLoading
+        ? const SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Colors.white,
             ),
           )
+        : Text(l10n.imGoing),
+            ),
+          ),
         ],
       ),
     );

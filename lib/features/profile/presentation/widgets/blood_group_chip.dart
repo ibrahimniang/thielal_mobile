@@ -29,18 +29,18 @@ class BloodGroupChip extends StatelessWidget {
         vertical: large ? 10 : 6,
       ),
       decoration: BoxDecoration(
-        color: isDark
-            ? colors.surface.withOpacity(0.6)
-            : baseColor.withOpacity(0.08),
+        color:
+            isDark
+                ? colors.surface.withOpacity(0.6)
+                : baseColor.withOpacity(0.08),
 
-        borderRadius: BorderRadius.circular(
-          large ? 40 : AppRadius.xl,
-        ),
+        borderRadius: BorderRadius.circular(large ? 40 : AppRadius.xl),
 
         border: Border.all(
-          color: isDark
-              ? colors.outline.withOpacity(0.3)
-              : baseColor.withOpacity(0.18),
+          color:
+              isDark
+                  ? colors.outline.withOpacity(0.3)
+                  : baseColor.withOpacity(0.18),
         ),
       ),
 
@@ -50,7 +50,7 @@ class BloodGroupChip extends StatelessWidget {
           Icon(
             Icons.bloodtype_rounded,
             size: large ? 20 : 16,
-            color: isDark ? colors.onSurface : baseColor,
+            color: isDark ? colors.onSurface : const Color(0xFF8B0000),
           ),
 
           SizedBox(width: large ? 8 : 6),
@@ -58,7 +58,7 @@ class BloodGroupChip extends StatelessWidget {
           Text(
             bloodGroup,
             style: TextStyle(
-              color: isDark ? colors.onSurface : baseColor,
+              color: isDark ? colors.onSurface : const Color(0xFF8B0000),
               fontWeight: FontWeight.w800,
               fontSize: large ? 16 : 13,
             ),
@@ -68,21 +68,17 @@ class BloodGroupChip extends StatelessWidget {
             SizedBox(width: large ? 10 : 6),
 
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 4,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
 
               decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.green.withOpacity(0.18)
-                    : Colors.green.withOpacity(0.12),
+                color:
+                    isDark
+                        ? Colors.green.withOpacity(0.18)
+                        : Colors.green.withOpacity(0.12),
 
                 borderRadius: BorderRadius.circular(30),
 
-                border: Border.all(
-                  color: Colors.green.withOpacity(0.35),
-                ),
+                border: Border.all(color: Colors.green.withOpacity(0.35)),
               ),
 
               child: Row(

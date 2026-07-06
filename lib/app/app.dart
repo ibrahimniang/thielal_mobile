@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+// import 'package:flutter_localizations/flutter_localizations.dart';
+import '../features/devices/data/device_repository.dart';
+import '../features/auth/application/auth_controller.dart';
 
 import '../l10n/app_localizations.dart';
 
@@ -29,13 +31,42 @@ class ThielalApp extends ConsumerStatefulWidget {
   ConsumerState<ThielalApp> createState() => _ThielalAppState();
 }
 
-class _ThielalAppState extends ConsumerState<ThielalApp> {
+class _ThielalAppState extends ConsumerState<ThielalApp>
+    with WidgetsBindingObserver {
   late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
+
+    WidgetsBinding.instance.addObserver(this);
+
     _router = AppRouter.router(ref);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.resumed) {
+      final auth = ref.read(authControllerProvider);
+
+      if (!auth.isAuthenticated || auth.accessToken == null) {
+        return;
+      }
+
+      try {
+        await DeviceRepository().ping();
+
+        debugPrint("📡 Device ping envoyé");
+      } catch (e) {
+        debugPrint("❌ Device ping error => $e");
+      }
+    }
   }
 
   @override

@@ -12,6 +12,8 @@ import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../application/auth_controller.dart';
 import '../../../../l10n/app_localizations.dart';
+import 'package:thielal/app/services/locale_service.dart';
+import '../../../../features/profile/data/services/profile_remote_service.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -44,6 +46,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   double? _latitude;
   double? _longitude;
   bool _isFetchingLocation = false;
+  String _selectedLanguage = localeNotifier.value.languageCode;
 
   static const List<String> _bloodGroups = [
     'O+',
@@ -57,38 +60,38 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   ];
 
   /// ==========================================
-/// VILLES + QUARTIERS
-/// ==========================================
+  /// VILLES + QUARTIERS
+  /// ==========================================
 
-final Map<String, List<String>> mauritaniaLocations = {
-  "Nouakchott": [
-    "Tevragh Zeina",
-    "Ksar",
-    "Sebkha",
-    "El Mina",
-    "Arafat",
-    "Riyadh",
-    "Dar Naim",
-    "Toujounine",
-    "Teyarett",
-  ],
-  "Nouadhibou": ["Cansado", "Numerowat", "Baghdad"],
-  "Rosso": ["Escale", "Satara", "Medina"],
-  "Kaedi": ["Moderne", "Touldé", "Gurel"],
-  "Kiffa": ["Bellewar", "Siyassa", "Moughataa"],
-  "Selibaby": ["Collège", "Silo", "Quartier Administratif", "Medina"],
-  "Atar": ["Atar Centre", "Tiyaret", "Extention"],
-  "Zouerate": ["Ksar", "Robinet", "Centre"],
-  "Aioun": ["Centre", "Medina"],
-  "Nema": ["Centre", "Jedida"],
-  "Aleg": ["Centre", "Jedida"],
-  "Akjoujt": ["Centre", "Ancien Quartier"],
-  "Tidjikja": ["Centre", "Moughataa"],
-  "Boghé": ["Centre", "Wendou"],
-  "Boutilimit": ["Centre", "Ancien Quartier"],
-};
+  final Map<String, List<String>> mauritaniaLocations = {
+    "Nouakchott": [
+      "Tevragh Zeina",
+      "Ksar",
+      "Sebkha",
+      "El Mina",
+      "Arafat",
+      "Riyadh",
+      "Dar Naim",
+      "Toujounine",
+      "Teyarett",
+    ],
+    "Nouadhibou": ["Cansado", "Numerowat", "Baghdad"],
+    "Rosso": ["Escale", "Satara", "Medina"],
+    "Kaedi": ["Moderne", "Touldé", "Gurel"],
+    "Kiffa": ["Bellewar", "Siyassa", "Moughataa"],
+    "Selibaby": ["Collège", "Silo", "Quartier Administratif", "Medina"],
+    "Atar": ["Atar Centre", "Tiyaret", "Extention"],
+    "Zouerate": ["Ksar", "Robinet", "Centre"],
+    "Aioun": ["Centre", "Medina"],
+    "Nema": ["Centre", "Jedida"],
+    "Aleg": ["Centre", "Jedida"],
+    "Akjoujt": ["Centre", "Ancien Quartier"],
+    "Tidjikja": ["Centre", "Moughataa"],
+    "Boghé": ["Centre", "Wendou"],
+    "Boutilimit": ["Centre", "Ancien Quartier"],
+  };
 
-String? _selectedVille;
+  String? _selectedVille;
 
   @override
   void dispose() {
@@ -367,55 +370,44 @@ String? _selectedVille;
     if (_step == 1) {
       final isValid = _formKey.currentState?.validate() ?? false;
       if (!isValid) return;
+
       /// ======================================
-/// AGE VALIDATION
-/// ======================================
+      /// AGE VALIDATION
+      /// ======================================
 
-if (_dateNaissanceController
-    .text
-    .trim()
-    .isNotEmpty) {
-  final birthDate = DateTime.parse(
-    _dateNaissanceController.text.trim(),
-  );
+      if (_dateNaissanceController.text.trim().isNotEmpty) {
+        final birthDate = DateTime.parse(_dateNaissanceController.text.trim());
 
-  final today = DateTime.now();
+        final today = DateTime.now();
 
-  int age =
-      today.year -
-      birthDate.year;
+        int age = today.year - birthDate.year;
 
-  if (today.month <
-          birthDate.month ||
-      (today.month ==
-              birthDate.month &&
-          today.day <
-              birthDate.day)) {
-    age--;
-  }
+        if (today.month < birthDate.month ||
+            (today.month == birthDate.month && today.day < birthDate.day)) {
+          age--;
+        }
 
-  /// minimum 18 ans
-  if (age < 18) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
-      SnackBar(
-        backgroundColor:
-            Colors.red.shade600,
+        /// minimum 18 ans
+        if (age < 18) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.red.shade600,
 
-        content: const Text(
-          'Vous devez avoir au moins 18 ans pour créer un compte LifeLink.',
-        ),
-      ),
-    );
+              content: const Text(
+                'Vous devez avoir au moins 18 ans pour créer un compte LifeLink.',
+              ),
+            ),
+          );
 
-    return;
-  }
-}
+          return;
+        }
+      }
 
       await authCtrl.registerStep1(
         nom: _nomController.text.trim(),
         prenom: _prenomController.text.trim(),
         genre: _mapGenreForApi(),
+        langue: _selectedLanguage,
         dateNaissance:
             _dateNaissanceController.text.trim().isEmpty
                 ? null
@@ -457,15 +449,15 @@ if (_dateNaissanceController
     if (_step == 3) {
       if (_aDonneRecemment == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text(l10n.recentDonationQuestionError)),
+          SnackBar(content: Text(l10n.recentDonationQuestionError)),
         );
         return;
       }
 
       if (!_accepteConditions || !_acceptePolitique) {
-        ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text(l10n.acceptConditionsError)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.acceptConditionsError)));
         return;
       }
 
@@ -777,16 +769,16 @@ if (_dateNaissanceController
       child: CheckboxListTile(
         value: value,
         onChanged: onChanged,
-       title: GestureDetector(
-        onTap: onTap,
-        child: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            decoration: TextDecoration.underline,
+        title: GestureDetector(
+          onTap: onTap,
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              decoration: TextDecoration.underline,
+            ),
           ),
         ),
-      ),
         activeColor: accent,
         contentPadding: const EdgeInsets.symmetric(horizontal: 10),
         controlAffinity: ListTileControlAffinity.leading,
@@ -899,72 +891,73 @@ if (_dateNaissanceController
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
-  value: _selectedVille,
+            value: _selectedVille,
 
-  decoration: InputDecoration(
-    labelText: l10n.city,
-    hintText: l10n.city,
-    filled: true,
-    fillColor: Colors.white,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(18),
-    ),
-  ),
+            decoration: InputDecoration(
+              labelText: l10n.city,
+              hintText: l10n.city,
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
 
-  items: mauritaniaLocations.keys.map((ville) {
-    return DropdownMenuItem(
-      value: ville,
-      child: Text(ville),
-    );
-  }).toList(),
+            items:
+                mauritaniaLocations.keys.map((ville) {
+                  return DropdownMenuItem(value: ville, child: Text(ville));
+                }).toList(),
 
-  onChanged: (value) {
-    setState(() {
-      _selectedVille = value;
-      _villeController.text = value ?? "";
+            onChanged: (value) {
+              setState(() {
+                _selectedVille = value;
+                _villeController.text = value ?? "";
 
-      /// reset quartier
-      _quartierController.clear();
-    });
-  },
-),
+                /// reset quartier
+                _quartierController.clear();
+              });
+            },
+          ),
 
-const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-DropdownButtonFormField<String>(
-  value: _quartierController.text.isEmpty
-      ? null
-      : _quartierController.text,
+          DropdownButtonFormField<String>(
+            value:
+                _quartierController.text.isEmpty
+                    ? null
+                    : _quartierController.text,
 
-  decoration: InputDecoration(
-    labelText: l10n.district,
-    hintText: l10n.district,
-    filled: true,
-    fillColor: Colors.white,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(18),
-    ),
-  ),
+            decoration: InputDecoration(
+              labelText: l10n.district,
+              hintText: l10n.district,
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
 
-  items: (_selectedVille != null
-          ? mauritaniaLocations[_selectedVille]!
-          : <String>[])
-      .map((quartier) {
-    return DropdownMenuItem(
-      value: quartier,
-      child: Text(quartier),
-    );
-  }).toList(),
+            items:
+                (_selectedVille != null
+                        ? mauritaniaLocations[_selectedVille]!
+                        : <String>[])
+                    .map((quartier) {
+                      return DropdownMenuItem(
+                        value: quartier,
+                        child: Text(quartier),
+                      );
+                    })
+                    .toList(),
 
-  onChanged: _selectedVille == null
-      ? null
-      : (value) {
-          setState(() {
-            _quartierController.text = value ?? "";
-          });
-        },
-),
-          
+            onChanged:
+                _selectedVille == null
+                    ? null
+                    : (value) {
+                      setState(() {
+                        _quartierController.text = value ?? "";
+                      });
+                    },
+          ),
         ],
       ),
     );
@@ -1094,6 +1087,7 @@ DropdownButtonFormField<String>(
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,
       ),
+
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -1115,6 +1109,47 @@ DropdownButtonFormField<String>(
               child: SingleChildScrollView(
                 child: Column(
                   children: [
+                    if (_step == 1) ...[
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child:
+                        /// LANGUE
+                        Container(
+                          height: 48,
+                          width: 48,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: PopupMenuButton<String>(
+                            icon: const Icon(Icons.language_rounded),
+                            onSelected: (value) async {
+                              setState(() {
+                                _selectedLanguage = value;
+                              });
+
+                              await LocaleService.changeLocale(value);
+                            },
+                            itemBuilder:
+                                (context) => const [
+                                  PopupMenuItem(
+                                    value: 'fr',
+                                    child: Text('Français'),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'en',
+                                    child: Text('English'),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'ar',
+                                    child: Text('العربية'),
+                                  ),
+                                ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     _buildProgressHeader(),
                     const SizedBox(height: 22),
                     AnimatedSwitcher(

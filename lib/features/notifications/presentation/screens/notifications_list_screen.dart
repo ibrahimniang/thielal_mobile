@@ -1,57 +1,75 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:thielal/features/home/widgets/blood_request_notification_card.dart';
 import 'package:thielal/features/participation/data/repositories/participation_repository.dart';
+import 'package:thielal/features/receipt/data/repositories/receipt_repository.dart';
+import 'package:thielal/features/receipt/data/services/receipt_remote_service.dart';
+import '../../../../core/network/dio_provider.dart';
+import 'package:thielal/shared/widgets/app_heart_loader.dart';
 
 import '../controllers/notification_controller.dart';
 import '../../data/models/notification_model.dart';
 import 'package:thielal/features/chat/data/repositories/chat_repository.dart';
 import '../../../auth/application/auth_controller.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../l10n/app_localizations.dart';
 
-class NotificationsListScreen extends ConsumerWidget {
+class NotificationsListScreen extends ConsumerStatefulWidget {
   const NotificationsListScreen({super.key});
+
+  @override
+  ConsumerState<NotificationsListScreen> createState() =>
+      _NotificationsListScreenState();
+}
+
+class _NotificationsListScreenState
+    extends ConsumerState<NotificationsListScreen> {
+  int? loadingNotificationId;
+  int? loadingParticipationId;
 
   /// ==========================
   /// FORMAT DATE
   /// ==========================
-  String formatNotificationDate(DateTime date) {
+  String formatNotificationDate(BuildContext context, DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
-      return "Aujourd'hui à ${DateFormat('HH:mm').format(date)}";
+      return "${AppLocalizations.of(context)!.todayAt} ${DateFormat('HH:mm').format(date)}";
     }
 
     if (difference.inDays == 1) {
-      return "Hier à ${DateFormat('HH:mm').format(date)}";
+      return "${AppLocalizations.of(context)!.yesterdayAt} ${DateFormat('HH:mm').format(date)}";
     }
 
     if (difference.inDays < 7) {
-      return "Il y a ${difference.inDays} jours";
+      return "${AppLocalizations.of(context)!.daysAgo} ${difference.inDays} ${AppLocalizations.of(context)!.days}";
     }
-
     return DateFormat('dd/MM/yyyy à HH:mm').format(date);
   }
 
   //titre pour les notification
-  String getNotificationTitle(NotificationModel notification) {
-    final message = notification.message.toLowerCase();
+  String getNotificationTitle(
+    BuildContext context,
+    NotificationModel notification,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
 
-    if (message.contains('urgence')) {
-      return '🚨 Urgence';
+    switch (notification.type) {
+      case 'CERTIFICAT_GENERE':
+        return '❤️ ${l10n.validatedDonation}';
+
+      case 'DEMANDE_SANG':
+        return '🩸 ${l10n.bloodRequest}';
+
+      case 'DEMANDE_DELIVREE':
+        return '✅ ${l10n.bloodRequest}';
+
+      default:
+        return '📢 ${l10n.notification}';
     }
-
-    if (message.contains('validé') || message.contains('contribution')) {
-      return '❤️ Don validé';
-    }
-
-    if (message.contains('sang')) {
-      return '🩸 Demande de sang';
-    }
-
-    return '📢 Notif';
   }
 
   String _extractBloodGroup(String message) {
@@ -66,7 +84,7 @@ class NotificationsListScreen extends ConsumerWidget {
     return '?';
   }
 
-  String _extractCity(String message) {
+  String _extractCity(BuildContext context, String message) {
     final regex = RegExp(r'à\s+(.+)');
 
     final match = regex.firstMatch(message);
@@ -75,7 +93,7 @@ class NotificationsListScreen extends ConsumerWidget {
       return match.group(1) ?? '';
     }
 
-    return 'Mauritanie';
+    return AppLocalizations.of(context)!.mauritania;
   }
 
   Future<void> _showDemandeModal(
@@ -83,14 +101,12 @@ class NotificationsListScreen extends ConsumerWidget {
     WidgetRef ref, // ✅ AJOUT MINIMAL ICI
     NotificationModel notification,
   ) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final isDark =
-    Theme.of(context).brightness == Brightness.dark;
-
-    final colors =
-    Theme.of(context).colorScheme;
+    final colors = Theme.of(context).colorScheme;
     String demandeurNom = notification.fullName;
     final token = ref.read(authControllerProvider).accessToken;
+    final l10n = AppLocalizations.of(context)!;
 
     final participationRepo = ParticipationRepository(token: token);
 
@@ -143,8 +159,9 @@ class NotificationsListScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    "🚨 Demande de sang",
+                  Text(
+                    "🚨 ${l10n.bloodRequest}",
+
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
 
@@ -163,13 +180,13 @@ class NotificationsListScreen extends ConsumerWidget {
                   const SizedBox(height: 10),
 
                   Text(
-                    demandeurNom.isEmpty ? "Demandeur" : demandeurNom,
+                    demandeurNom.isEmpty ? l10n.requester : demandeurNom,
                     style: TextStyle(
                       color: colors.onSurface,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
-                  ), 
+                  ),
 
                   const SizedBox(height: 16),
 
@@ -217,7 +234,7 @@ class NotificationsListScreen extends ConsumerWidget {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       icon: const Icon(Icons.message),
-                      label: const Text("Message"),
+                      label: Text(l10n.message),
                       onPressed: () async {
                         context.pop();
 
@@ -263,16 +280,38 @@ class NotificationsListScreen extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      icon: Icon(
-                        estParticipant ? Icons.check_circle : Icons.bloodtype,
-                      ),
+                      icon:
+                          loadingParticipationId == notification.idNotification
+                              ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                              : Icon(
+                                estParticipant
+                                    ? Icons.check_circle
+                                    : Icons.bloodtype,
+                              ),
                       label: Text(
-                        estParticipant ? "Déjà participant" : "Je participe",
+                        estParticipant
+                            ? l10n.alreadyParticipant
+                            : l10n.imParticipating,
                       ),
                       onPressed:
                           estParticipant
                               ? null
                               : () async {
+                                setState(() {
+                                  loadingParticipationId =
+                                      notification.idNotification;
+                                });
+
+                                await Future.delayed(
+                                  const Duration(milliseconds: 25),
+                                );
                                 try {
                                   await participationRepo.participer(
                                     notification.demandeId!,
@@ -287,13 +326,13 @@ class NotificationsListScreen extends ConsumerWidget {
 
                                       builder: (successDialogContext) {
                                         return AlertDialog(
-                                          title: const Text(
-                                            'Participation enregistrée',
+                                          title: Text(
+                                            l10n.participationRecorded,
                                           ),
 
                                           content: Text(
-                                            'Vous participez maintenant à cette demande.\n\n'
-                                            'Veuillez contacter le centre ou vous y rendre pour effectuer votre don.',
+                                            '${l10n.youAreNowParticipating}\n\n'
+                                            '${l10n.contactCenterToDonate}',
                                           ),
 
                                           actions: [
@@ -304,7 +343,7 @@ class NotificationsListScreen extends ConsumerWidget {
                                                 ).pop();
                                               },
 
-                                              child: const Text('OK'),
+                                              child: Text(l10n.ok),
                                             ),
                                           ],
                                         );
@@ -339,25 +378,167 @@ class NotificationsListScreen extends ConsumerWidget {
     );
   }
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final notifications = ref.watch(notificationControllerProvider);
-    final isDark =
-    Theme.of(context).brightness == Brightness.dark;
+  Future<void> _showReceiptDialog(
+    BuildContext context,
+    WidgetRef ref,
+    NotificationModel notification,
+  ) async {
+    // print("===== RECEIPT =====");
+    // print("TYPE : ${notification.type}");
+    // print("DEMANDE ID : ${notification.demandeId}");
 
-final colors =
-    Theme.of(context).colorScheme;
+    if (notification.demandeId == null) {
+      // print("DEMANDE ID NULL");
+      return;
+    }
+
+    try {
+      final repository = ReceiptRepository(
+        ReceiptService(ref.read(dioProvider)),
+      );
+
+      // print("AVANT API");
+
+      final token = await repository.getReceiptToken(notification.demandeId!);
+
+      // print("TOKEN : $token");
+
+      if (!context.mounted) return;
+
+      showDialog(
+        context: context,
+        builder: (_) {
+          final l10n = AppLocalizations.of(context)!;
+          return AlertDialog(
+            title: Text(l10n.deliveryReceipt),
+            content: SizedBox(
+              width: 260,
+              height: 320,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Center(
+                      child: QrImageView(data: token, version: QrVersions.auto),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  Text(l10n.presentQrToStaff, textAlign: TextAlign.center),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      // print("ERREUR : $e");
+
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final notifications = ref.watch(notificationControllerProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: colors.surface,
         title: Text(
-          "Notifications",
+          l10n.notifications,
           style: TextStyle(
             color: colors.onSurface,
             fontWeight: FontWeight.w700,
           ),
         ),
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (value) async {
+              switch (value) {
+                case "read_all":
+                  await ref
+                      .read(notificationControllerProvider.notifier)
+                      .markAllAsRead();
+
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(l10n.allNotificationsMarkedAsRead),
+                      ),
+                    );
+                  }
+                  break;
+
+                case "delete_all":
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder:
+                        (dialogContext) => AlertDialog(
+                          title: Text(l10n.deleteAllNotificationsTitle),
+                          content: Text(l10n.deleteAllNotificationsMessage),
+                          actions: [
+                            TextButton(
+                              onPressed:
+                                  () => Navigator.of(dialogContext).pop(false),
+                              child: Text(l10n.cancel),
+                            ),
+                            FilledButton(
+                              onPressed:
+                                  () => Navigator.of(dialogContext).pop(true),
+                              child: Text(l10n.delete),
+                            ),
+                          ],
+                        ),
+                  );
+
+                  if (confirm == true) {
+                    await ref
+                        .read(notificationControllerProvider.notifier)
+                        .deleteAllReadNotifications();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(l10n.allNotificationsDeleted)),
+                      );
+                    }
+                  }
+
+                  break;
+              }
+            },
+            itemBuilder:
+                (_) => [
+                  PopupMenuItem(
+                    value: "read_all",
+                    child: Row(
+                      children: [
+                        Icon(Icons.done_all),
+                        SizedBox(width: 10),
+                        Text(l10n.markAllAsRead),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: "delete_all",
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline),
+                        SizedBox(width: 10),
+                        Text(l10n.deleteReadNotifications),
+                      ],
+                    ),
+                  ),
+                ],
+          ),
+        ],
       ),
 
       body: notifications.when(
@@ -365,10 +546,8 @@ final colors =
           if (list.isEmpty) {
             return Center(
               child: Text(
-                "Aucune notification",
-                style: TextStyle(
-                  color: colors.onSurface,
-                ),
+                l10n.noNotification,
+                style: TextStyle(color: colors.onSurface),
               ),
             );
           }
@@ -378,21 +557,40 @@ final colors =
             itemBuilder: (context, index) {
               final notification = list[index];
 
-              if (notification.message.toLowerCase().contains("sang")) {
+              if (notification.type == "DEMANDE_SANG") {
+                print("MESSAGE = ${notification.message}");
                 return BloodRequestNotificationCard(
                   bloodGroup: _extractBloodGroup(notification.message),
-                  city: _extractCity(notification.message),
-                  date: formatNotificationDate(notification.dateCreation),
+                  city: notification.ville ?? l10n.mauritania,
+                  date: formatNotificationDate(
+                    context,
+                    notification.dateCreation,
+                  ),
                   isRead: notification.lu,
+                  isLoading:
+                      loadingNotificationId == notification.idNotification,
 
                   onTap: () async {
-                    if (!notification.lu) {
-                      await ref
-                          .read(notificationControllerProvider.notifier)
-                          .markAsRead(notification.idNotification);
-                    }
+                    setState(() {
+                      loadingNotificationId = notification.idNotification;
+                    });
+                    await Future.delayed(const Duration(milliseconds: 25));
 
-                    _showDemandeModal(context, ref, notification); // ✅ FIX
+                    try {
+                      if (!notification.lu) {
+                        await ref
+                            .read(notificationControllerProvider.notifier)
+                            .markAsRead(notification.idNotification);
+                      }
+
+                      await _showDemandeModal(context, ref, notification);
+                    } finally {
+                      if (mounted) {
+                        setState(() {
+                          loadingNotificationId = null;
+                        });
+                      }
+                    }
                   },
                 );
               }
@@ -400,30 +598,30 @@ final colors =
               return Container(
                 margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: notification.lu
-                  ? (isDark
-                      ? colors.surfaceContainerHighest
-                      : Colors.grey.shade100)
-                  : (isDark
-                      ? colors.primaryContainer
-                      : const Color(0xFFE3F2FD)),
+                  color:
+                      notification.lu
+                          ? (isDark
+                              ? colors.surfaceContainerHighest
+                              : Colors.grey.shade100)
+                          : (isDark
+                              ? colors.primaryContainer
+                              : const Color(0xFFE3F2FD)),
                   borderRadius: BorderRadius.circular(12),
                 ),
 
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: notification.lu
-                      ? (isDark
-                          ? colors.outline
-                          : Colors.grey.shade400)
-                      : (isDark
-                          ? colors.primary
-                          : const Color(0xFF4FC3F7)),
+                    backgroundColor:
+                        notification.lu
+                            ? (isDark ? colors.outline : Colors.grey.shade400)
+                            : (isDark
+                                ? colors.primary
+                                : const Color(0xFF4FC3F7)),
                     child: const Icon(Icons.notifications, color: Colors.white),
                   ),
 
                   title: Text(
-                    getNotificationTitle(notification),
+                    getNotificationTitle(context, notification),
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
 
@@ -434,23 +632,39 @@ final colors =
                       Text(
                         notification.message,
                         style: TextStyle(
-                          color: isDark
-                              ? colors.onSurface.withOpacity(0.8)
-                              : Colors.black87,
+                          color:
+                              isDark
+                                  ? colors.onSurface.withOpacity(0.8)
+                                  : Colors.black87,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        formatNotificationDate(notification.dateCreation),
+                        formatNotificationDate(
+                          context,
+                          notification.dateCreation,
+                        ),
                         style: TextStyle(
-                          color: isDark
-                              ? colors.onSurface.withOpacity(0.6)
-                              : Colors.grey,
+                          color:
+                              isDark
+                                  ? colors.onSurface.withOpacity(0.6)
+                                  : Colors.grey,
                           fontSize: 12,
                         ),
                       ),
                     ],
                   ),
+
+                  trailing:
+                      notification.type == "DEMANDE_DELIVREE"
+                          ? IconButton(
+                            icon: const Icon(Icons.visibility_outlined),
+                            tooltip: l10n.viewReceipt,
+                            onPressed: () {
+                              _showReceiptDialog(context, ref, notification);
+                            },
+                          )
+                          : null,
 
                   onTap: () async {
                     if (!notification.lu) {
@@ -465,9 +679,9 @@ final colors =
           );
         },
 
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: AppHeartLoader(size: 90)),
 
-        error: (e, _) => Center(child: Text(e.toString())),
+        error: (e, _) => const SizedBox.shrink(),
       ),
     );
   }

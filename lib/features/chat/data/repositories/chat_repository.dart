@@ -10,9 +10,7 @@ import '../models/message_model.dart';
 class ChatRepository {
   final String? token;
 
-  ChatRepository({
-    required this.token,
-  });
+  ChatRepository({required this.token});
 
   // =========================
   // CONVERSATIONS
@@ -20,9 +18,7 @@ class ChatRepository {
 
   Future<List<ConversationModel>> getConversations() async {
     final res = await http.get(
-      Uri.parse(
-        "${Env.baseUrl}${ApiEndpoints.conversations}",
-      ),
+      Uri.parse("${Env.baseUrl}${ApiEndpoints.conversations}"),
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",
@@ -37,22 +33,16 @@ class ChatRepository {
 
     final List list = data["data"] ?? [];
 
-    return list
-        .map((e) => ConversationModel.fromJson(e))
-        .toList();
+    return list.map((e) => ConversationModel.fromJson(e)).toList();
   }
 
   // =========================
   // MESSAGES
   // =========================
 
-  Future<List<MessageModel>> getMessages(
-    int conversationId,
-  ) async {
+  Future<List<MessageModel>> getMessages(int conversationId) async {
     final res = await http.get(
-      Uri.parse(
-        "${Env.baseUrl}${ApiEndpoints.messages(conversationId)}",
-      ),
+      Uri.parse("${Env.baseUrl}${ApiEndpoints.messages(conversationId)}"),
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",
@@ -67,9 +57,7 @@ class ChatRepository {
 
     final List list = data["data"] ?? [];
 
-    return list
-        .map((e) => MessageModel.fromJson(e))
-        .toList();
+    return list.map((e) => MessageModel.fromJson(e)).toList();
   }
 
   // =========================
@@ -81,17 +69,12 @@ class ChatRepository {
     required String contenu,
   }) async {
     final res = await http.post(
-      Uri.parse(
-        "${Env.baseUrl}${ApiEndpoints.sendMessage}",
-      ),
+      Uri.parse("${Env.baseUrl}${ApiEndpoints.sendMessage}"),
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",
       },
-      body: jsonEncode({
-        "conversation_id": conversationId,
-        "contenu": contenu,
-      }),
+      body: jsonEncode({"conversation_id": conversationId, "contenu": contenu}),
     );
 
     if (res.statusCode != 200) {
@@ -103,37 +86,24 @@ class ChatRepository {
   // CREER CONVERSATION
   // =========================
 
-  Future<int> createConversation(
-    int user2Id,
-  ) async {
+  Future<int> createConversation(int user2Id) async {
     final res = await http.post(
-      Uri.parse(
-        "${Env.baseUrl}${ApiEndpoints.createConversation}",
-      ),
+      Uri.parse("${Env.baseUrl}${ApiEndpoints.createConversation}"),
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",
       },
-      body: jsonEncode({
-        "user2": user2Id,
-      }),
+      body: jsonEncode({"user2": user2Id}),
     );
 
-    print(
-      "CREATE CONVERSATION STATUS => ${res.statusCode}",
-    );
+    print("CREATE CONVERSATION STATUS => ${res.statusCode}");
 
-    print(
-      "CREATE CONVERSATION BODY => ${res.body}",
-    );
+    print("CREATE CONVERSATION BODY => ${res.body}");
 
     final data = jsonDecode(res.body);
 
     if (res.statusCode != 200) {
-      throw Exception(
-        data["message"] ??
-            "Erreur conversation",
-      );
+      throw Exception(data["message"] ?? "Erreur conversation");
     }
 
     return data["data"]["id_conversation"];
@@ -143,13 +113,9 @@ class ChatRepository {
   // DEMANDE PAR ID
   // =========================
 
-  Future<Map<String, dynamic>> getDemandeById(
-    int demandeId,
-  ) async {
+  Future<Map<String, dynamic>> getDemandeById(int demandeId) async {
     final res = await http.get(
-      Uri.parse(
-        "${Env.baseUrl}/dons/demandes/$demandeId",
-      ),
+      Uri.parse("${Env.baseUrl}/dons/demandes/$demandeId"),
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",
@@ -159,12 +125,27 @@ class ChatRepository {
     final data = jsonDecode(res.body);
 
     if (res.statusCode != 200) {
-      throw Exception(
-        data["message"] ??
-            "Erreur récupération demande",
-      );
+      throw Exception(data["message"] ?? "Erreur récupération demande");
     }
 
     return data["data"];
+  }
+
+  Future<int> getUnreadCount() async {
+    final res = await http.get(
+      Uri.parse("${Env.baseUrl}${ApiEndpoints.unreadMessages}"),
+      headers: {
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json",
+      },
+    );
+
+    final data = jsonDecode(res.body);
+
+    if (res.statusCode != 200) {
+      throw Exception("Erreur compteur messages");
+    }
+
+    return data["count"] as int;
   }
 }

@@ -16,9 +16,8 @@ class LocalNotificationService {
 
   Future<void> initialize() async {
     const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
+      '@drawable/ic_notification',
     );
-
     const settings = InitializationSettings(android: androidSettings);
 
     await _notifications.initialize(
@@ -66,12 +65,20 @@ class LocalNotificationService {
     required String body,
     required Map<String, dynamic> payload,
   }) async {
+    // const androidDetails = AndroidNotificationDetails(
+    //   'chat_channel',
+    //   'Chat Notifications',
+    //   channelDescription: 'Notifications des messages',
+    //   importance: Importance.max,
+    //   priority: Priority.high,
+    // );
     const androidDetails = AndroidNotificationDetails(
       'chat_channel',
       'Chat Notifications',
       channelDescription: 'Notifications des messages',
       importance: Importance.max,
       priority: Priority.high,
+      icon: '@drawable/ic_notification',
     );
 
     const details = NotificationDetails(android: androidDetails);
