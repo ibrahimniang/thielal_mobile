@@ -210,8 +210,7 @@ class HomeDrawer extends ConsumerWidget {
                           title: l10n.donationHistory,
                           onTap: () {
                             context.pop();
-
-                            context.go(RouteNames.profile, extra: 1);
+                            context.go(RouteNames.donations);
                           },
                         ),
 

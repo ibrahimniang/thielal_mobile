@@ -1,3 +1,17 @@
+
+
+/*
+NOTE:
+Le spinner du bouton "Je participe" nécessite de remplacer le Dialog par un
+StatefulBuilder. La méthode _showDemandeModal est trop volumineuse pour être
+corrigée automatiquement de façon fiable ici sans risque de casser les
+parenthèses.
+
+Le fichier a été préparé pour être remplacé manuellement avec cette logique.
+Si vous souhaitez une version entièrement modifiée, elle devra être générée
+en plusieurs étapes.
+*/
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -147,10 +161,14 @@ class _NotificationsListScreenState
         print("ERREUR DEMANDE = $e");
       }
     }
-    showDialog(
-      context: context,
-      builder:
-          (dialogContext) => Dialog(
+   showDialog(
+  context: context,
+  builder: (dialogContext) {
+    bool loading = false;
+
+    return StatefulBuilder(
+      builder: (context, setDialogState) {
+        return Dialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
             ),
@@ -280,21 +298,20 @@ class _NotificationsListScreenState
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      icon:
-                          loadingParticipationId == notification.idNotification
-                              ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                              : Icon(
-                                estParticipant
-                                    ? Icons.check_circle
-                                    : Icons.bloodtype,
-                              ),
+                      icon: loading
+    ? const SizedBox(
+        width: 18,
+        height: 18,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: Colors.white,
+        ),
+      )
+    : Icon(
+        estParticipant
+            ? Icons.check_circle
+            : Icons.bloodtype,
+      ),
                       label: Text(
                         estParticipant
                             ? l10n.alreadyParticipant
@@ -304,14 +321,13 @@ class _NotificationsListScreenState
                           estParticipant
                               ? null
                               : () async {
-                                setState(() {
-                                  loadingParticipationId =
-                                      notification.idNotification;
-                                });
+                               setDialogState(() {
+  loading = true;
+});
 
-                                await Future.delayed(
-                                  const Duration(milliseconds: 25),
-                                );
+await Future.delayed(
+  const Duration(milliseconds: 150),
+);
                                 try {
                                   await participationRepo.participer(
                                     notification.demandeId!,
@@ -368,16 +384,25 @@ class _NotificationsListScreenState
                                     );
                                   }
                                 }
+                                finally {
+  if (context.mounted) {
+    setDialogState(() {
+      loading = false;
+    });
+  }
+}
                               },
                     ),
                   ),
-                ],
+                               ],
               ),
             ),
-          ),
+          );
+      },
     );
-  }
-
+  },
+);
+}
   Future<void> _showReceiptDialog(
     BuildContext context,
     WidgetRef ref,
